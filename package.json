@@ -1,0 +1,41 @@
+{
+  "name": "shift_handover_system",
+  "version": "1.0.0",
+  "description": "Shift handover system for amo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amrit-regmi/Shift-Handover-System.git"
+  },
+  "keywords": [
+    "handover",
+    "amo",
+    "shift",
+    "handover",
+    "worktime",
+    "staff",
+    "time",
+    "punch",
+    "in",
+    "punch",
+    "out"
+  ],
+  "author": "Amrit Regmi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/amrit-regmi/Shift-Handover-System/issues"
+  },
+  "homepage": "https://github.com/amrit-regmi/Shift-Handover-System#readme",
+  "dependencies": {
+    "apollo-server": "^2.17.0",
+    "graphql": "^15.3.0",
+    "mongoose": "^5.10.2",
+    "mongoose-unique-validator": "^2.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^7.8.0"
+  }
+}

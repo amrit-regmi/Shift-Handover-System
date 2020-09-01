@@ -13,6 +13,12 @@ const costumerSchema = mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Staff'
     }
+  ],
+  stations: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Station'
+    }
   ]
 
 })

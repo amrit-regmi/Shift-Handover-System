@@ -17,3 +17,10 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 7. Staff Panel 
     - Individual Staff can login  to view their working hours / Add clerification
     - Request for Approval of time sheet Per Week  or Month
+    
+# Work Time Accounting
+
+| Day        | Hours| Tasks Done                          |
+| :---------:|:-----| :-----------------------------------|
+| 31.01.2020 | 4    | Inital planning and database design |
+| 01.09.2020 | 3    | Schema Implementation               |

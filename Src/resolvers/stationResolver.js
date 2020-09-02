@@ -4,7 +4,7 @@ const Costumer = require('../models/Costumer')
 const stationResolver = {
   Query: {
     allStations: async () => {
-      const stations =  await Station.find({})
+      const stations =  await Station.find({}).populate('costumers')
       return stations
     }
   },
@@ -13,21 +13,25 @@ const stationResolver = {
     addStation : async (root,args) => {
       const station = new Station({ ...args })
       const costumers = args.costumers
-
-      Costumer.bulkWrite(
-        costumers.map((costumer) => ({
-          updateOne: {
-            filter: { id:costumer.id },
-            update: { $addToSet:{ stations: station.id }
+      station.save((err,result) => {
+        if (err){
+          console.log(err)
+          return
+        }
+        Costumer.bulkWrite(
+          costumers.map((costumer) => ({
+            updateOne: {
+              filter: { id:costumer.id },
+              update: { $addToSet:{ stations: result._id }
+              }
             }
-          }
-        }))
-      )
-
-      return station
+          }))
+        )
+      })
+      return Station.populate(station,'costumers')
     }
 
-  }
+  },
 
 }
 

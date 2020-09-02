@@ -1,11 +1,9 @@
-const { gql } = require('apollo-server')
-
-const stationMutation = gql`
-  type Mutation {
+const stationMutation = `
+  extend type Mutation {
     addStation(
       location: String,
-      costumers: String
-      shiftInfo: [ShiftInfoInput]
+      costumers: [String]
+      shift: [ShiftInfoInput]
     ):Station
   }
 

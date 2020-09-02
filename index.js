@@ -1,9 +1,14 @@
-const { ApolloServer,gql } = require('apollo-server')
+const { ApolloServer, makeExecutableSchema } = require('apollo-server')
 const { typeDefs } = require('./Src/typeDefs')
 const { resolvers } = require('./Src/resolvers')
 const mongoose = require('mongoose')
 const config = require('./config')
-const server = new ApolloServer({ typeDefs, resolvers })
+
+const schema = makeExecutableSchema({
+  typeDefs, resolvers
+})
+
+const server = new ApolloServer({ schema })
 
 server.listen().then(({ url }) => {
   console.log(`Server ready at ${url}`)

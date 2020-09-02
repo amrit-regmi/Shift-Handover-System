@@ -26,3 +26,4 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 | 01.09.2020 | 3    | MongoDb Schema Implementation       |       
 |            | 3    | GraphQL schema  implemented         |
 |            | 3    | Reading on GraphQl modularization   |
+| 02.09.2020 | 1    | Got schema to work after structuring|

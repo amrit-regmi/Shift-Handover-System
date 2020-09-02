@@ -1,11 +1,10 @@
-const { gql } = require('apollo-server')
 
-const costumerMutation = gql`
-  type Mutation {
+const costumerMutation = `
+   extend type Mutation {
     addCostumer(
       name: String
       stations: [String]
-    ):Station
+    ):Costumer
   }
 `
 

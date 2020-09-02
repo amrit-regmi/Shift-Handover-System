@@ -1,9 +1,7 @@
-const { gql } = require('apollo-server')
-const stationType = gql `
+const stationType = `
   type Station {
     id: ID!
     location: String!
-   
     costumers: [Costumer]
     shift: [ShiftInfo]
   }

@@ -1,7 +1,7 @@
-const { gql } = require('apollo-server')
 
-const costumerQuery = gql`
-  type Query {
+
+const costumerQuery = `
+  extend type Query {
     allCostumers: [Costumer]
   }
 `

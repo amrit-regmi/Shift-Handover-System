@@ -3,7 +3,7 @@ const Costumer = require('../models/Costumer')
 const costumerResolver = {
   Query: {
     allCostumers: async () => {
-      const costumers =  await Costumer.find({})
+      const costumers =  await Costumer.find({}).populate('stations')
       return costumers
     }
   },
@@ -13,7 +13,7 @@ const costumerResolver = {
       const costumer = new Costumer({ ...args })
       costumer.save()
 
-      return costumer
+      return Costumer.populate(costumer,'stations')
     }
 
   }

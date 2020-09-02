@@ -2,7 +2,15 @@ const { types } = require('./types/')
 const { queries } = require('./queries/')
 const { mutations } = require('./mutations/')
 
+const Query = `
+  type Query {
+    _empty: String
+  }`
 
-const typeDefs = [...types,...queries,...mutations]
-console.log(typeDefs)
+const Mutation = `
+type Mutation {
+  _empty: String
+}`
+
+const typeDefs = [Query,...types,...queries,Mutation,...mutations]
 module.exports = { typeDefs }

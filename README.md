@@ -27,3 +27,6 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |            | 3    | GraphQL schema  implemented         |
 |            | 3    | Reading on GraphQl modularization   |
 | 02.09.2020 | 1    | Got schema to work after structuring|
+|            | 2    | Basic Arcraft api functions implemented   |
+|03.09.2020  | 2    | More Arcraft api functions implemented   |
+|            | 5    | basic Staff api functions implemented     |

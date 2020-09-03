@@ -8,7 +8,10 @@ const staffSchema = new mongoose.Schema({
     minlength: 5,
   },
 
-  idCardCode: String,
+  idCardCode: {
+    type:String,
+    unique:true
+  },
 
   currentStation:{
     type: mongoose.Schema.Types.ObjectId,
@@ -34,7 +37,7 @@ const staffSchema = new mongoose.Schema({
     enum: ['Station Supervisor','Base Maintenance Manager', 'Station Manger', 'Engineer','Mechanic', 'Administrator'] ,
   },
 
-  type: {
+  contractType: {
     type:String,
     enum: ['Contractor','Employee']
   },

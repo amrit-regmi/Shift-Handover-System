@@ -1,4 +1,4 @@
-const stationMutation = `
+const staffMutation = `
   extend type Mutation {
     addStaff(
       name: String!,
@@ -15,16 +15,18 @@ const stationMutation = `
       username:String!
       passwordHash: String!
       registerCode:String!
-    )
+    ):Staff
 
     resetPassword(
-      resetCode: String!
-      password: String!
-    )
+      id: String
+      resetCode: String
+      password: String
+    ):Message
     }
+
 
 `
 
 module.exports = {
-  stationMutation
+  staffMutation
 }

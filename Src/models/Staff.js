@@ -10,7 +10,10 @@ const staffSchema = new mongoose.Schema({
 
   idCardCode: {
     type:String,
-    unique:true
+    unique:true,
+    index:true,
+    trim: true,
+    sparse: true
   },
 
   currentStation:{
@@ -28,21 +31,21 @@ const staffSchema = new mongoose.Schema({
     type:String,
     unique: true,
     minlength: 5,
-    required: true
   },
 
   passwordHash: String,
-  postion:  {
+  position:  {
     type:String,
     enum: ['Station Supervisor','Base Maintenance Manager', 'Station Manger', 'Engineer','Mechanic', 'Administrator'] ,
   },
 
   contractType: {
     type:String,
-    enum: ['Contractor','Employee']
+    enum: ['Contracter','Employee']
   },
 
   registerCode: String,
+  resetCode: String,
   lastActive: String
   /* last active is based on handover not user login if the user is listed on handover then last active time is updted refernce to that handover*/
 })

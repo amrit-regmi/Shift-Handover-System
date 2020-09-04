@@ -8,7 +8,6 @@ const staffType =  `
     position:String
     contractType:String
     lastActive: String
-
     username:String
     passwordHash: String
     registerCode:String

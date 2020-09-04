@@ -1,39 +1,52 @@
+const { isExpired } = require('../utils/helper')
 const Staff = require('../models/Staff')
 const { UserInputError,ApolloError } = require('apollo-server')
-const aircraftResolver = {
+const { v4: uuidv4, validate: uuidValidate } = require('uuid')
+
+const staffResolver = {
   Query: {
+    /*Returns all staff with sensitive field omitted*/
     allStaff: async (root,args) => {
       const staffs =  await Staff.find({ ...args },{ username:0,passwordHash:0,registerCode:0,resetCode:0 })
       return staffs
     },
 
+    /*Returns staff by ID or registraion Code*/
     getStaff: async(root,args) => {
+      /*If Id is set then returns staff values except username / password / registercode and resetcode */
       if (args.id && args.id !== null  && args.id !== undefined){
         return  await Staff.findById(args.id,{ username:0,passwordHash:0,registerCode:0,resetCode:0 } )
       }
 
-      if (args.registerCode)
-      /*TO DO:
-        Code validity timecheck to be implemented
-        if (!isValid(args.registerCode)){
-        return ({error:"Register code expired, please contact your supervisor"})
-      }
-      return ({valid:true})
-      */
+      /* If registrCode is set then checks the validity code and returns existing details */
+      if (args.registerCode) {
+        if(!uuidValidate(args.registerCode)){
+          throw new ApolloError('Registration code Invalid')
+        }
+
+        if(isExpired(args.registerCode,48)){
+          throw new ApolloError('Registration code has expired, please contact your supervisor' )
+
+        }
+
         return await Staff.findOne({ ...args })
+      }
+
     }
   },
 
   Mutation: {
     /*Create staff with inital information and send the register code to staff to complete registration*/
     addStaff : async (root,args) => {
-      const staff = new Staff({ ...args })
+      const registerCode = uuidv4()
+      const staff = new Staff({ ...args,registerCode:registerCode })
       try {
         await staff.save()
         /*
-          Generate Register Code
-          Send Email to Staff to set Username/Password
+          To DO:
+          Send Email to Staff to set Username/Password with register link
         */
+        return ({ registerCode:registerCode })
       }
       catch (error){
         throw new UserInputError(error.message)
@@ -44,52 +57,72 @@ const aircraftResolver = {
     Complete staff registration from the registration Link
      */
     registerStaff: async(root, args) => {
-      /*
-      TO DO:
-      Code validity timecheck to be implemented
-      if (!isValid(args.registerCode)){
-        return ({error:"Register code expired, please contact your supervisor"})
+
+      if(!uuidValidate(args.registerCode)){
+        throw new ApolloError('Registration code Invalid')
       }
-      */
+
+      if(isExpired(args.registerCode,48)){
+        throw new ApolloError('Registration code has expired, please contact your supervisor')
+      }
+
       try {
-        const staff = Staff.findOneAndUpdate({ registerCode: args.registerCode },{ ...args,registerCode: null,password: 'passwordHash' })
+        /*Update and reset the registration code to null*/
+        const staff = await Staff.findOneAndUpdate({ registerCode: args.registerCode },{ ...args,registerCode: null,password: 'passwordHash' })
+        if(!staff){
+          throw new UserInputError('Incorrect Registration Code ')
+        }
+        console.log(staff.registerCode)
         return staff
       }catch (error){
         throw new UserInputError(error.message)
       }
 
     },
-
+    /*Reset the password, if args.id is set sends reset link , if resetCode is set then checks and update the password*/
     resetPassword: async (root,args) => {
       if(args.id && args.id!== null && args.id !== undefined){
-        const resetCode = 'dummyresetCode'
-        const staffById = Staff.findByIdAndUpdate(args.id,{ resetCode:resetCode })
+        const resetCode = uuidv4()
+        console.log(args.id)
+        const staffById = await Staff.findByIdAndUpdate(args.id,{ resetCode:resetCode })
         /*
         To DO:
         Send email to user with reset link
         */
-        return({ message: `Password resetlink  sent to ${staffById.name}`  })
+        console.log(resetCode)
+        return({ status:'SUCCESS', message: `Password resetlink  sent to ${staffById.name}`  })
       }
-      /*
-      TO DO :
-      Code validity timecheck to be implemented
-      if (args.resetCode && !isValid(args.resetCode)){
-        return ({error:"Reset code expired, please contact your supervisor"})
-      }
-      */
-      const staff = await Staff.findOne({ resetCode: args.resetCode })
-      if (staff){
-        staff.passwordHash = 'passwordHash'
-        staff.resetCode = null
-        try {
-          await staff.save()
+
+      if(args.resetCode && args.password){
+
+        if(!uuidValidate(args.resetCode)){
+          throw new ApolloError('Reset code Invalid')
         }
-        catch (error){
-          throw new ApolloError(error.message)
+
+        if(isExpired(args.resetCode,48)){
+          throw new ApolloError('Reset code has expired, please contact your supervisor')
+        }
+
+        const staff = await Staff.findOne({ resetCode: args.resetCode })
+        if (staff){
+          staff.passwordHash = 'passwordReset'
+          /*set reset code to null*/
+          staff.resetCode = null
+          try {
+            await staff.save()
+            return({ status:'SUCCESS', message: 'Password reset, login now'  })
+          }
+          catch (error){
+            throw new ApolloError(error.message)
+          }
+        }else{
+          throw new ApolloError('Reset code Invalid')
         }
       }else{
-        return { error:'Invalid Reset Code ' }
+        throw new ApolloError('Missing Arguments')
       }
+
+
     }
 
   }
@@ -97,4 +130,5 @@ const aircraftResolver = {
 }
 
 
-module.exports = { aircraftResolver }
+
+module.exports = { staffResolver }

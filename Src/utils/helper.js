@@ -23,4 +23,17 @@ const isExpired = (uuid, hours ) => {
 
 }
 
-module.exports = { isExpired }
+/**
+ * Returns the unique shiftReportId
+ * @param {String} location location value of shiftReport station
+ * @param {ISODateTime} date shiftReportdate
+ * @param {String} shift shiftName
+ * @returns {String} shiftReportId
+ */
+
+const generateShiftReportId = (location,date,shift) => {
+  const id = `${location}${date.substring(0,10)}${shift}`
+  return id
+}
+
+module.exports = { isExpired,generateShiftReportId }

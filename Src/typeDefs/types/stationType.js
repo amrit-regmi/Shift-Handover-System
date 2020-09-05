@@ -12,5 +12,5 @@ const stationType = `
   }
 `
 
-module.exports = { stationType }
+module.exports =  stationType
 /* staffList: [Staff]*/

@@ -6,4 +6,4 @@ const aircraftType =  `
   }
 `
 
-module.exports = { aircraftType }
+module.exports =  aircraftType

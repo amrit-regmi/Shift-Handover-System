@@ -1,24 +1,24 @@
 const mongoose = require('mongoose')
 const timeSheetSchema = new mongoose.Schema({
   staff:{
+    required:true,
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Staff'
   },
-  date: String,
   startTime: String,
   endTime: String,
-  station:{
+  shiftReport: {
     type:mongoose.Schema.Types.ObjectId,
-    ref:'Station'
-  },
-  handover: {
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Handover'
+    ref:'ShiftReport'
   },
   status: {
     type: String,
-    enum: ['Approved', 'Amended','Clarification Requested', 'Pending Approval'],
-    default: 'Pending Approval'
+    enum: [
+      'APPROVED',
+      'AMENDED',
+      'CLARIFICATION_REQUSTED',
+      'PENDING_APPROVAL'],
+    default: 'PENDING_APPROVAL'
   },
   remarks: {
     type: Array,

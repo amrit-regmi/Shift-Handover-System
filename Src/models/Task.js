@@ -1,14 +1,14 @@
 const mongoose = require('mongoose')
 
 const taskSchema = new mongoose.Schema({
-  taskType: {
+  taskCategory: {
     type:String,
     required:true
   },
   aircaft:{
     type:mongoose.Schema.Types.ObjectId,
     ref:'Aircraft',
-    required:  () => this.taskType === 'Aircraft'
+    required:  () => this.taskCategory === 'AIRCRAFT'
   },
   description: {
     type:String,
@@ -16,10 +16,10 @@ const taskSchema = new mongoose.Schema({
   },
   status: {
     type:String,
-    enum:['Deffered', 'Closed', 'Open'],
-    default: 'Open'
+    enum:['DEFERRED', 'CLOSED', 'OPEN'],
+    default: 'OPEN'
   },
-  createdDate: {
+  createdAt: {
     type:String,
     required:true
   },

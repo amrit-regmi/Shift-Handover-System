@@ -8,5 +8,5 @@ const costumerType =  `
   }
 `
 
-module.exports = { costumerType }
+module.exports =  costumerType
 

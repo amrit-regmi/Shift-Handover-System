@@ -21,7 +21,7 @@ const staffMutation = `
       id: String
       resetCode: String
       password: String
-    ):Message
+    ):ResponseMessage
     }
 
 

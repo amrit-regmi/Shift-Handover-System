@@ -1,13 +1,9 @@
 const mongoose = require('mongoose')
 
-const handoverSchema = new mongoose.Schema({
+const shiftReportSchema = new mongoose.Schema({
   station:{ type:mongoose.Schema.Types.ObjectId,
     ref:'Station',
     required:true
-  },
-  date: {
-    type: String,
-    required: true
   },
   shift: {
     type: String,
@@ -19,17 +15,18 @@ const handoverSchema = new mongoose.Schema({
   },
   endTime: {
     type: String,
-    required: true
   },
-  tasks:{
+  tasks:[{
     type:mongoose.Schema.Types.ObjectId,
     ref:'Task'
-  },
-  staffAndTime:{
+  }],
+  staffAndTime:[{
     type:mongoose.Schema.Types.ObjectId,
     ref:'TimeSheet'
-  }
+  }],
+  flag: String,
+  submittedAt: String
 })
 
 
-module.exports = mongoose.model('Handover', handoverSchema)
+module.exports = mongoose.model('ShiftReport', shiftReportSchema)

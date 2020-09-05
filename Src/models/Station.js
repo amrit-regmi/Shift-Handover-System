@@ -21,8 +21,14 @@ const stationSchema = new mongoose.Schema({
 
   shift:[
     {
-      name: String,
-      startTime: String
+      name:  {
+        type:String,
+        required: true,
+      },
+      startTime: {
+        type:String,
+        required: true,
+      }
     }
   ]
 

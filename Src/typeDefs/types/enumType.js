@@ -1,15 +1,28 @@
 const enumType =  `
     
-  type Message{
-    status: Status
+  type ResponseMessage{
+    status: Response
     message: String
   }
 
-  enum Status {
+  enum Response {
     SUCCESS,
     ERROR
     WARNING
   }
+
+  enum TaskCategory {
+    AIRCRAFT
+    LOGISTICS
+    OTHER
+  }
+
+  enum TaskStatus {
+    DEFERRED
+    CLOSED
+    OPEN
+
+  }
 `
 
-module.exports = { enumType }
+module.exports =  enumType

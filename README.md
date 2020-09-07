@@ -33,4 +33,5 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |            | 1    | More work on staff |
 | 04.09.2020 | 4    | testing staff api, everything works to this point |
 | 05.09.2020 | 3    | Updating to timesheet implemented, study about graphql scaler types |
-|            | 3    | Shift Report / task creation functionality works |  
+|            | 3    | Shift Report / task creation functionality works | 
+|07.09.2020  | 3    | Started with frontend / landing page layout | 

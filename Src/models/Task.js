@@ -5,7 +5,7 @@ const taskSchema = new mongoose.Schema({
     type:String,
     required:true
   },
-  aircaft:{
+  aircraft:{
     type:mongoose.Schema.Types.ObjectId,
     ref:'Aircraft',
     required:  () => this.taskCategory === 'AIRCRAFT'

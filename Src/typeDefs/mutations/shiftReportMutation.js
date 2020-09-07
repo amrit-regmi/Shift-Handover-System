@@ -28,7 +28,7 @@ const shiftReportMutation = `
   }
 
   input ShiftReportStaffs{
-    staff: String
+    staff: String!
     startTime: String!
     endTime: String!
   }

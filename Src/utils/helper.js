@@ -36,4 +36,12 @@ const generateShiftReportId = (location,date,shift) => {
   return id
 }
 
-module.exports = { isExpired,generateShiftReportId }
+
+/**
+ * @param {double} ms sleep duraion in ms 
+ */
+const sleep = (ms) => {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+module.exports = { isExpired,generateShiftReportId,sleep }

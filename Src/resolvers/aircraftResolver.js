@@ -4,7 +4,7 @@ const { UserInputError } = require('apollo-server')
 const aircraftResolver = {
   Query: {
     allAircraft: async () => {
-      const aircrafts =  await Aircraft.find({}).populate('stations')
+      const aircrafts =  await Aircraft.find({}).populate('costumer')
       return aircrafts
     },
 

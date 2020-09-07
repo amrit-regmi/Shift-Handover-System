@@ -24,8 +24,13 @@ const shiftReportSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:'TimeSheet'
   }],
-  flag: String,
-  submittedAt: String
+  flag: {
+    type: String,
+    enum: ['MOST_RECENTLY_COMPLETED', 'ON_PROGRESS', 'COMPLETE'],
+    default: 'ON_PROGRESS'
+  },
+  submittedAt: String,
+  stationKey: String,
 })
 
 

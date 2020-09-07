@@ -7,13 +7,14 @@ const stationResolver = {
     allStations: async () => {
       const stations =  await Station.find({}).populate('costumers')
       return stations
+
     },
 
     getStation: async (root,args) => {
       if (args.id){
         return  await Station.findById(args.id ).populate('costumers')
       }
-      return await Station.findOne({ ...args }).populate('costumers')
+      return await Station.findOne({ ...args }).populate({ path:'costumers', populate:({ path:'aircrafts' }) })
     }
   },
 

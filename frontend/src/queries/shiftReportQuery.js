@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import { gql } from '@apollo/client'
 
 export const GET_SHIFT_REPORT = gql `
 query fetchReport($id:String, $station: String, $flag: String){

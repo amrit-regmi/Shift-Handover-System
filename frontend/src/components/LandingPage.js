@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useHistory } from "react-router-dom"
-import { useQuery, useLazyQuery } from '@apollo/client';  
+import { useQuery } from '@apollo/client';  
 import { Button, Form, Radio, Grid, Header, Image, Label, Segment, Divider, FormGroup } from 'semantic-ui-react'
 import {ALL_STATION} from '../queries/stationQuery'
 

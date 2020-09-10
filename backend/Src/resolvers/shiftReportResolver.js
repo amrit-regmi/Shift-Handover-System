@@ -33,15 +33,33 @@ const shiftReportResolver = {
           })
 
           const taskIds  = await  Task.insertMany(tasks)
-
           shiftReport.tasks = taskIds
         }
 
-        shiftReport.flag = 'MOST_RECENTLY_COMPLETED'
+        /**
+         * Setting last shift report from the station as complete
+         */
+        await ShiftReport.findOneAndUpdate({ flag:'MOST_RECENTLY_COMPLETED', station:args.station },{ flag: 'COMPLETE' })
 
+        /**
+         * Setting the current report as Most recent report
+         */
+        shiftReport.flag = 'MOST_RECENTLY_COMPLETED'
         await shiftReport.save()
 
-        return await ShiftReport.populate(shiftReport,[{ path:'station' },{ path:'staffAndTime',populate:{ path:'staff' } },{ path:'tasks' }])
+        return await ShiftReport.populate(
+          shiftReport,[
+            {
+              path:'station'
+            },{
+              path:'staffAndTime',
+              populate:{
+                path:'staff'
+              }
+            },{
+              path:'tasks'
+            }
+          ])
 
       }catch(err){
         throw new UserInputError(err.message)
@@ -51,7 +69,7 @@ const shiftReportResolver = {
 
   Query:{
     getShiftReport: async(root,args) => {
-      if(!args.id || (!args.station && !args.flag)){
+      if (!args.station && !args.flag){
         throw new UserInputError('Missing arguments')
       }
       const shiftReport = await ShiftReport.findOne({ ...args }).populate([{ path:'station' },{ path:'staffAndTime',populate:{ path:'staff' } },{ path:'tasks' , populate:{ path:'aircraft',populate:{ path: 'costumer' } } }])

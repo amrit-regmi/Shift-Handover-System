@@ -1,9 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const GET_SHIFT_REPORT = gql `
-query{
-  getShiftReport($id:String, $station: String, $flag: String){
-    getShiftReport(id:$id, station: $station, flag: $flag) {
+query fetchReport($id:String, $station: String, $flag: String){
+    getShiftReport(id: $id, station: $station, flag: $flag) {
       endTime
       id
       shift
@@ -29,10 +28,12 @@ query{
           }
         }
         taskCategory
+        description
+        id
+        status
+        updates
       }
-    }
-    
-  }
+    } 
 }
 
 `

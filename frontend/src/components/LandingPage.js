@@ -1,26 +1,31 @@
 import React, { useState } from 'react'
-import { useQuery } from '@apollo/client';  
-import { Button, Form, Radio, Grid, Header, Image, Dimmer,Loader, Segment, Divider, FormGroup } from 'semantic-ui-react'
+import { useHistory } from "react-router-dom"
+import { useQuery, useLazyQuery } from '@apollo/client';  
+import { Button, Form, Radio, Grid, Header, Image, Label, Segment, Divider, FormGroup } from 'semantic-ui-react'
 import {ALL_STATION} from '../queries/stationQuery'
 
+
 const LandingPage = () => {
+  const history = useHistory();
   const [radioButton, setRadioButton] = useState({})
   const {loading, error, data } =  useQuery(ALL_STATION,{notifyOnNetworkStatusChange: true})
   
   if (error) return `Error! ${error}`;
-  
-  const displayKeyField = (event,{value,label}) =>{
+    const displayKeyField = (event,{value,label}) =>{
       setRadioButton({value,label})
   }
 
-  const loginStation = (event) => {
+  const loginToStation = async (event) => {
     event.preventDefault()
-    console.log(event.target)
+    //TODO:
+    //Key verification to be implemente
+    history.push(`/shiftReport/station/${radioButton.value}`)
   }
 
   const RenderPasswordInput = ({radioButton}) => {
     return (<>
            <Form.Input 
+            name= 'stationKey'
             label= {`Enter password for ${radioButton.label}`}
             fluid
             icon='lock'
@@ -29,7 +34,7 @@ const LandingPage = () => {
             type='password'
             
           />
-          <Form.Checkbox label='Remember on this computer' />
+          <Form.Checkbox name="rememberKey" label='Remember on this computer'/>
           <Button fluid size='large' color="blue">Retrieve Shift Report</ Button>
           </>)
     
@@ -41,7 +46,7 @@ const LandingPage = () => {
       <Header as='h2' color='blue' textAlign='center'>
         <Image src='/LogoMin.png' /> Please select a station
       </Header>
-      <Form size='large' style={{ textAlign:'left' } } onSubmit={loginStation}>
+      <Form size='large' style={{ textAlign:'left' } } onSubmit={loginToStation}>
         <Segment clearing stacked>
           {  loading &&
              <Segment loading basic>   
@@ -66,8 +71,12 @@ const LandingPage = () => {
     <Segment clearing stacked>
     <Button content='Log in to personal page' icon='user'  size='large' color="teal" fluid />
     </Segment>
+
     </Grid.Column>
+
     </Grid>
+
+    
   )
     
     

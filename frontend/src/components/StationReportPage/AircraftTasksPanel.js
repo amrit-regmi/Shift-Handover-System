@@ -1,6 +1,6 @@
 import React from 'react'
 import { Segment, Header, SegmentGroup ,Icon } from 'semantic-ui-react'
-import TaskInfo from '../TaskInfo'
+import TaskInfo from './TaskInfo'
 import  _ from  'lodash'
 
 const AircraftTaskPanel = ({ aircraftTasks }) => {

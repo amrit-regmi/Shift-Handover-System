@@ -1,16 +1,18 @@
-import React from 'react'
+import React,{ useState } from 'react'
 import { useQuery } from '@apollo/client'
 import { GET_SHIFT_REPORT } from '../../queries/shiftReportQuery'
 import { useParams } from 'react-router-dom'
 import { Loader,Image,Segment, Header } from 'semantic-ui-react'
 import MenuBar from './MenuBar'
-import ShiftReport from './ShiftReport'
+import ShiftReport from '../ShiftReport'
 
 
-const ShiftReportPage = () => {
+const StationReportPage = () => {
   const params = useParams()
   const id =params.id
   const station = params.station
+
+  const [activeItem, setActiveItem] = useState('lastShiftReport')
 
   let queryParams
   if (station && id ){
@@ -18,13 +20,9 @@ const ShiftReportPage = () => {
       station: id,
       flag:'MOST_RECENTLY_COMPLETED'
     }
-  }else{
-    queryParams = { id:id }
-    console.log('only id set')
   }
 
   const { loading, error,data } = useQuery(GET_SHIFT_REPORT,{ variables:queryParams })
-
 
   if (loading) {
     return (
@@ -40,16 +38,17 @@ const ShiftReportPage = () => {
   return (
     <>
       <Segment  basic>
+        <Header textAlign ="right" color ="blue" floated="right">Shift Reporting System <br/><span><h5> Station: {data.getShiftReport.station.location}</h5></span></Header>
         <Image src='\LogoBig.png' size="medium" />
-        <Header textAlign ="right" color ="blue"  dividing >Shift Reporting System </Header>
       </Segment>
-
-      <MenuBar/>
-      <ShiftReport reportData= {data.getShiftReport} />
+      <MenuBar activeItem= {activeItem} setActiveItem={setActiveItem}/>
+      { activeItem === 'lastShiftReport' &&
+        <ShiftReport reportData= {data.getShiftReport} />
+      }
     </>
   )
 
 }
 
-export default (ShiftReportPage)
+export default (StationReportPage)
 

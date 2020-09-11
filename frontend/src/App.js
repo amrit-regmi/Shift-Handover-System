@@ -2,17 +2,17 @@ import React from 'react'
 import { BrowserRouter as  Router, Switch, Route } from 'react-router-dom'
 import LandingPage from './components/LandingPage'
 import './App.css'
-import ShiftReportPage from './components/ShiftReportPage/ShiftReportPage'
+import StationReportPage from './components/StationReportPage/StationReportPage'
 
 const  App = () =>   {
   return (
     <Router>
       <Switch>
         <Route path = "/shiftReport/:station/:id">
-          <ShiftReportPage></ShiftReportPage>
+          <StationReportPage></StationReportPage>
         </Route>
         <Route path = "/shiftReport/:id">
-          <ShiftReportPage></ShiftReportPage>
+          <StationReportPage></StationReportPage>
         </Route>
         <Route path = "/">
           <LandingPage></LandingPage>

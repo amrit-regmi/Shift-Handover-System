@@ -1,9 +1,9 @@
 import React from 'react'
-import GenericTaskPanel from './GenericTasksPanel'
-import AircraftTaskPanel from './AircraftTasksPanel'
+import GenericTaskPanel from './StationReportPage/GenericTasksPanel'
+import AircraftTaskPanel from './StationReportPage/AircraftTasksPanel'
 import { SegmentGroup, Segment, Header } from 'semantic-ui-react'
 import _ from 'lodash'
-import StaffWorkTime from './StaffWorkTime'
+import StaffWorkTime from './StationReportPage/StaffWorkTime'
 
 
 const ShiftReport = ({ reportData }) => {

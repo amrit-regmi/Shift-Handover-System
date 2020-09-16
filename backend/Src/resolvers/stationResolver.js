@@ -1,6 +1,8 @@
 const Station = require('../models/Station')
 const Costumer = require('../models/Costumer')
 const { UserInputError } = require('apollo-server')
+const config = require('../../config')
+const jwt  = require('jsonwebtoken')
 
 const stationResolver = {
   Query: {
@@ -12,7 +14,7 @@ const stationResolver = {
 
     getStation: async (root,args) => {
       if (args.id){
-        return  await Station.findById(args.id ).populate('costumers')
+        return  await Station.findById(args.id ).populate({ path:'costumers', populate:({ path:'aircrafts' }) })
       }
       return await Station.findOne({ ...args }).populate({ path:'costumers', populate:({ path:'aircrafts' }) })
     }
@@ -38,6 +40,21 @@ const stationResolver = {
       } catch(err) {
         throw UserInputError(err.message)
       }
+    },
+
+    loginToStation : async (root,args) => {
+      const station = await Station.findById(args.id ).populate({ path:'costumers', populate:({ path:'aircrafts' }) })
+
+      if(!station || args.password !=='stationkey'){
+        throw new UserInputError('Wrong Credentials')
+      }
+
+      const stationToken = {
+        stationId: station.id,
+        location: station.location
+      }
+
+      return  { value: jwt.sign(stationToken,config.JWT_SECRET),id: station.id, location:station.location  }
     }
 
   },

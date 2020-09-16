@@ -1,4 +1,4 @@
-import {gql} from '@apollo/client'
+import { gql } from '@apollo/client'
 export const ALL_AIRCRAFT = gql`
 query {
     allAircraft{

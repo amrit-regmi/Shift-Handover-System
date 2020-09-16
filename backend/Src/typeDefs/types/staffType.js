@@ -13,7 +13,7 @@ const staffType =  `
     registerCode:String
     resetCode: String
   }
-  
+
 `
 
 module.exports =  staffType

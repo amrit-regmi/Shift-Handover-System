@@ -2,9 +2,12 @@ import React from 'react'
 import { BrowserRouter as  Router, Switch, Route } from 'react-router-dom'
 import LandingPage from './components/LandingPage'
 import './App.css'
-import StationReportPage from './components/StationReportPage/StationReportPage'
+import StationReportPage from './components/StationReportPage'
+
 
 const  App = () =>   {
+
+
   return (
     <Router>
       <Switch>
@@ -15,7 +18,7 @@ const  App = () =>   {
           <StationReportPage></StationReportPage>
         </Route>
         <Route path = "/">
-          <LandingPage></LandingPage>
+          <LandingPage ></LandingPage>
         </Route>
       </Switch>
     </Router>

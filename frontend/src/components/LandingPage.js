@@ -1,31 +1,68 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import { Button, Form, Radio, Grid, Header, Image, Segment, Divider } from 'semantic-ui-react'
 import { ALL_STATION } from '../queries/stationQuery'
+import { LOGIN_TO_STATION } from '../mutations/stationMutation'
 
 
 const LandingPage = () => {
   const history = useHistory()
   const [radioButton, setRadioButton] = useState({})
+  const [stationKey,setStationKey]= useState('')
+  const [remember, setRemember] = useState(false)
   const { loading, error, data } =  useQuery(ALL_STATION,{ notifyOnNetworkStatusChange: true })
 
-  if (error) return `Error! ${error}`
-  const displayKeyField = (event,{ value,label }) => {
-    setRadioButton({ value,label })
-  }
+  const [login,result] = useMutation(LOGIN_TO_STATION,{
+    onError: (error) => {
+      console.log(error)
+    }
+  })
+
+  useEffect(() => {
+    if ( result.data ) {
+      const station = result.data.loginToStation
+      setStationKey(station)
+      sessionStorage.setItem('stationKey',JSON.stringify(station))
+
+      if(remember){
+        localStorage.setItem('stationKey',JSON.stringify(station))
+      }
+      history.push(`/shiftReport/station/${radioButton.value}`)
+    }
+  }, [history, radioButton.value, remember, result, result.data])
 
   const loginToStation = async (event) => {
     event.preventDefault()
-    //TODO:
-    //Key verification to be implemente
-    history.push(`/shiftReport/station/${radioButton.value}`)
+    login({ variables:{ id:radioButton.value, password: stationKey } })
+
   }
 
-  const RenderPasswordInput = ({ radioButton }) => {
+  /**
+   * If stationKey is found on local storage skip the login and browse shift report
+   */
+  const storedStationKey = JSON.parse(localStorage.getItem('stationKey'))
+  if(storedStationKey){
+    history.push(`/shiftReport/station/${storedStationKey.id}`)
+  }
+
+
+  const toggleRemember = () => {
+    if (remember) {
+      setRemember(false)
+    }else {
+      setRemember(true)
+    }
+  }
+
+
+  const renderPasswordInput = (radioButton) => {
     return (<>
       <Form.Input
         name= 'stationKey'
+        value={stationKey}
+        onChange= {({ target }) => setStationKey(target.value)}
+
         label= {`Enter password for ${radioButton.label}`}
         fluid
         icon='lock'
@@ -33,11 +70,17 @@ const LandingPage = () => {
         placeholder='Password'
         type='password'
 
+
       />
-      <Form.Checkbox name="rememberKey" label='Remember on this computer'/>
+      <Form.Checkbox name="rememberKey" label='Remember on this computer' checked={remember} onClick = {toggleRemember}/>
       <Button fluid size='large' color="blue">Retrieve Shift Report</ Button>
     </>)
 
+  }
+
+  if (error) return `Error! ${error}`
+  const displayKeyField = (event,{ value,label }) => {
+    setRadioButton({ value,label })
   }
   return (
 
@@ -60,8 +103,7 @@ const LandingPage = () => {
 
             <div style={{ clear:'both' }}></div>
 
-            {radioButton.value &&
-            <RenderPasswordInput radioButton={radioButton}/>
+            {radioButton.value && renderPasswordInput(radioButton)
             }
 
 

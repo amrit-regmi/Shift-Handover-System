@@ -37,6 +37,7 @@
     "graphql": "^15.3.0",
     "graphql-iso-date": "^3.6.1",
     "graphql-type-json": "^0.3.2",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.10.2",
     "mongoose-unique-validator": "^2.0.3",
     "nodemon": "^2.0.4",

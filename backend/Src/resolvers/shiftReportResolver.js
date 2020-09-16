@@ -1,7 +1,7 @@
 const ShiftReport =  require('../models/ShiftReport')
 const TimeSheet = require('../models/TimeSheet')
 const Task = require('../models/Task')
-const { UserInputError } = require('apollo-server')
+const { UserInputError,AuthenticationError } = require('apollo-server')
 
 
 const shiftReportResolver = {
@@ -27,7 +27,6 @@ const shiftReportResolver = {
 
         if (args.tasks.length > 0){
           const tasks = args.tasks.map(task => {
-            task.shiftReport = shiftReport.id
             task.createdAt = args.endTime
             return task
           })
@@ -65,10 +64,27 @@ const shiftReportResolver = {
         throw new UserInputError(err.message)
       }
     },
+
+
+    startReporting : async ( root,args ) => {
+      const shiftReport = new ShiftReport({
+        station:args.station,
+        shift: args.shift,
+        startTime:args.startTime,
+      })
+      //await shiftReport.save()
+      const lastShiftsTasks = await ShiftReport.findOne({ station:args.station, flag:'MOST_RECENTLY_COMPLETED' }).populate([{ path:'tasks' , populate:{ path:'aircraft',populate:{ path: 'costumer' } } }]).select('tasks')
+      shiftReport.tasks = lastShiftsTasks.tasks.filter(task => task.status === 'CLOSED' || task.status === 'DEFERRED')
+      return shiftReport
+    }
   },
 
   Query:{
-    getShiftReport: async(root,args) => {
+    getShiftReport: async(root,args,context) => {
+      const currentStation = context.currentStation
+      if (!currentStation) {
+        throw new AuthenticationError('Invalid authentication')
+      }
       if (!args.station && !args.flag){
         throw new UserInputError('Missing arguments')
       }

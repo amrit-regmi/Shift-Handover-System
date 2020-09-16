@@ -36,3 +36,5 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |            | 3    | Shift Report / task creation functionality works | 
 |07.09.2020  | 3    | Started with frontend / landing page layout | 
 |10.09.2020  | 6    | Shift Report page and compnents implemented |
+|16.09.2020  | 4    | New Report Models implemented |
+|16.09.2020  | 2    | Login with station key implemented  |

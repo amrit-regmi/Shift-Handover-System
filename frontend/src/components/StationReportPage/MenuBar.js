@@ -1,11 +1,16 @@
 import React from 'react'
 import { Button, Menu } from 'semantic-ui-react'
+import { useHistory } from 'react-router-dom'
 
 
 const MenuBar = ({ activeItem, setActiveItem }) => {
 
-
+  const history = useHistory()
   const handleMenuClick = (e, { name }) => setActiveItem( name )
+  const switchStation = () => {
+    localStorage.removeItem('stationKey')
+    history.push('/')
+  }
 
   return (
 
@@ -35,7 +40,7 @@ const MenuBar = ({ activeItem, setActiveItem }) => {
         <Button primary
           name='Switch Station '
           active={activeItem === 'logout'}
-          onClick={handleMenuClick}
+          onClick={switchStation}
         >Switch Station</Button>
       </Menu.Menu>
     </Menu>

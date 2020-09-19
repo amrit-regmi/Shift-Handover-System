@@ -7,6 +7,10 @@ import StaffWorkTime from './StationReportPage/StaffWorkTime'
 
 
 const ShiftReport = ({ reportData }) => {
+
+  if(!reportData){
+    return<Segment>No reports found</Segment>
+  }
   const tasksByCat = _.groupBy(reportData.tasks, task => task.taskCategory)
   const tasks = _.mapValues(
     tasksByCat,(cat,k) =>
@@ -20,11 +24,12 @@ const ShiftReport = ({ reportData }) => {
         :cat
   )
 
+
   return (
     <SegmentGroup>
       <Segment basic clearing>
         <Header floated ="left"> Shift Report from {reportData.shift} shift <span><h5>({reportData.startTime.substring(10)} - {reportData.endTime.substring(10)})</h5></span></Header>
-        <Header floated ="right" as="h5">  {reportData.startTime.substring(10,0)}<span><br/>Arlanda</span> </Header>
+        <Header floated ="right" as="h5">  {reportData.startTime.substring(10,0)}<span><br/>{reportData.station.location}</span> </Header>
       </Segment>
 
       <StaffWorkTime timesheets = {reportData.staffAndTime} />

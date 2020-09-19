@@ -26,6 +26,8 @@ export const GET_STATION = gql`
         name
         startTime
       }
+      location
+      id
     }
   }
 

@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { Modal,Header, Button ,Icon, Checkbox, Loader,Radio ,Form } from 'semantic-ui-react'
-import { useApolloClient, gql, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { GET_SHIFT_REPORT } from '../../queries/shiftReportQuery'
+import Context from './Context'
 
 const NewReportShiftSelectModel = ({ stationId  }) => {
-  const client = useApolloClient()
+  //const client = useApolloClient()
   const [shiftActiveAlert, setShiftActiveAlertOpen ] = useState(false)
   const [selectShift, setSelectShiftOpen ] = useState(false)
   const [overrideShiftAlert, setOverrideShiftAlertOpen] = useState(false)
-  const [shiftList,setShiftList] = useState({})
+  //const [shiftList,setShiftList] = useState({})
   const [radioButton, setRadioButton] = useState()
+  const { state } = useContext(Context)
+
 
   const { loading, error, data } = useQuery(GET_SHIFT_REPORT,{ variables:{
     station: stationId,
@@ -24,26 +27,6 @@ const NewReportShiftSelectModel = ({ stationId  }) => {
     }
   }, [data])
 
-
-  useEffect(() => {
-    if(selectShift){
-      const slst = client.readFragment({
-        id:`Station:${stationId}` ,
-        fragment : gql `
-          fragment My on Station{ 
-            shift {
-              name
-              startTime
-            }
-          }
-        `
-      })
-
-      if(slst){
-        setShiftList(slst)
-      }
-    }
-  }, [client, selectShift, shiftList, stationId])
 
   if (loading) {
     return (
@@ -112,7 +95,7 @@ const NewReportShiftSelectModel = ({ stationId  }) => {
         open= {selectShift}>
         <Modal.Header>Select Shift</Modal.Header>
         <Modal.Content>
-          {shiftList.shift && shiftList.shift.map(shift =>  <Form.Field>
+          {state.station.shift && state.station.shift.map(shift =>  <Form.Field>
             <Radio
               key = {shift.name}
               label= {`${shift.name} Start time: ${shift.startTime}  `}

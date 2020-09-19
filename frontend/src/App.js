@@ -6,8 +6,6 @@ import StationReportPage from './components/StationReportPage'
 
 
 const  App = () =>   {
-
-
   return (
     <Router>
       <Switch>

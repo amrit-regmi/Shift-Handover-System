@@ -13,40 +13,56 @@ const LandingPage = () => {
   const [remember, setRemember] = useState(false)
   const { loading, error, data } =  useQuery(ALL_STATION,{ notifyOnNetworkStatusChange: true })
 
-  const [login,result] = useMutation(LOGIN_TO_STATION,{
+  /**
+   * loginStation mutation hook
+   */
+  const [loginStation,loginToStationResult] = useMutation(LOGIN_TO_STATION,{
     onError: (error) => {
       console.log(error)
     }
   })
 
+  /**
+   * side effect when the loginStation mutation is executed and loginToStationResult is set
+   */
   useEffect(() => {
-    if ( result.data ) {
-      const station = result.data.loginToStation
+    if ( loginToStationResult.data ) {
+      const station = loginToStationResult.data.loginToStation
       setStationKey(station)
       sessionStorage.setItem('stationKey',JSON.stringify(station))
-
+      //If remember button is checked store key in local storage
       if(remember){
         localStorage.setItem('stationKey',JSON.stringify(station))
       }
       history.push(`/shiftReport/station/${radioButton.value}`)
     }
-  }, [history, radioButton.value, remember, result, result.data])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loginToStationResult.data])
 
+  /**
+   * function for station loginStation action
+   * @param {event} event submit button event
+   */
   const loginToStation = async (event) => {
     event.preventDefault()
-    login({ variables:{ id:radioButton.value, password: stationKey } })
+    loginStation({ variables:{ id:radioButton.value, password: stationKey } })
 
   }
 
   /**
-   * If stationKey is found on local storage skip the login and browse shift report
+   * If stationKey is found on localStorage/sessionStorage skip the loginStation and browse shift report
    */
-  const storedStationKey = JSON.parse(localStorage.getItem('stationKey'))
+  let storedStationKey = JSON.parse(sessionStorage.getItem('stationKey'))
+  if(!storedStationKey){
+    storedStationKey = JSON.parse(localStorage.getItem('stationKey'))
+  }
   if(storedStationKey){
     history.push(`/shiftReport/station/${storedStationKey.id}`)
   }
 
-
+  /**
+   * remeber checkbox toggle action
+   */
   const toggleRemember = () => {
     if (remember) {
       setRemember(false)
@@ -55,33 +71,48 @@ const LandingPage = () => {
     }
   }
 
+  /**
+   * Renders station password input filed
+   * @param {radioButton DOM} radioButton
+   * @returns {Component} password input field
+   */
 
   const renderPasswordInput = (radioButton) => {
-    return (<>
-      <Form.Input
-        name= 'stationKey'
-        value={stationKey}
-        onChange= {({ target }) => setStationKey(target.value)}
+    return (
+      <>
+        <Form.Input
+          name= 'stationKey'
+          value={stationKey}
+          onChange= {({ target }) => setStationKey(target.value)}
 
-        label= {`Enter password for ${radioButton.label}`}
-        fluid
-        icon='lock'
-        iconPosition='left'
-        placeholder='Password'
-        type='password'
+          label= {`Enter password for ${radioButton.label}`}
+          fluid
+          icon='lock'
+          iconPosition='left'
+          placeholder='Password'
+          type='password'
 
 
-      />
-      <Form.Checkbox name="rememberKey" label='Remember on this computer' checked={remember} onClick = {toggleRemember}/>
-      <Button fluid size='large' color="blue">Retrieve Shift Report</ Button>
-    </>)
+        />
+        <Form.Checkbox name="rememberKey" label='Remember on this computer' checked={remember} onClick = {toggleRemember}/>
+        <Button fluid size='large' color="blue">Retrieve Shift Report</ Button>
+      </>)
 
   }
-
-  if (error) return `Error! ${error}`
-  const displayKeyField = (event,{ value,label }) => {
+  /**
+   * Radiobutton change action
+   * @param {event} event
+   * @param {DOM {value, label}} value,label
+   *
+   */
+  const radioButtonChange = (event,{ value,label }) => {
     setRadioButton({ value,label })
   }
+
+  /**If Login mutation error */
+  if (error) return `Error! ${error}`
+
+
   return (
 
     <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
@@ -97,7 +128,7 @@ const LandingPage = () => {
             }
 
             {!loading && data.allStations && data.allStations.map(station =>  <Form.Field style={{ float: 'left', clear:'none',  marginRight:'10px' }} key={station.id}>
-              <Radio  label={station.location} value={station.id} checked={ radioButton.value === station.id} onChange={(event,value) => displayKeyField(event,value)}>
+              <Radio  label={station.location} value={station.id} checked={ radioButton.value === station.id} onChange={(event,value) => radioButtonChange(event,value)}>
               </Radio>
             </Form.Field>)}
 

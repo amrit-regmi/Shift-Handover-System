@@ -9,12 +9,12 @@ const MenuBar = ({ activeItem, setActiveItem }) => {
   const handleMenuClick = (e, { name }) => setActiveItem( name )
   const switchStation = () => {
     localStorage.removeItem('stationKey')
+    sessionStorage.removeItem('stationKey')
     history.push('/')
   }
 
   return (
-
-    <Menu inverted color="blue">
+    <Menu inverted color="blue" >
       <Menu.Item header>  Shift Reporting System </Menu.Item>
       <Menu.Item name= "lastShiftReport"
         active = {activeItem === 'lastShiftReport'}
@@ -44,6 +44,8 @@ const MenuBar = ({ activeItem, setActiveItem }) => {
         >Switch Station</Button>
       </Menu.Menu>
     </Menu>
+
+
 
 
   )

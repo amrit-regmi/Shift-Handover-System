@@ -1,9 +1,9 @@
 import React, { useState, useContext, Fragment, useEffect } from 'react'
 import { Formik, FieldArray } from 'formik'
 import Context from './Context'
-import { Form, Segment, Header, Button, Icon , Label } from 'semantic-ui-react'
-import DateInputFiled, { AircraftCheckBox, InputFiled } from './FormFields'
-import  _  from 'lodash'
+import { Form, Segment, Header, Button, Icon , Label,  } from 'semantic-ui-react'
+import DateInputFiled, { AircraftCheckBox, InputFiled, TaskDescriptionField, TextAreaField  } from './FormFields'
+
 
 const NewReport = ({ reportData }) => {
   const context = useContext(Context)
@@ -21,18 +21,20 @@ const NewReport = ({ reportData }) => {
 
 
   useEffect (() => {
+    //initial aircraft list from last shift report
     let list = {}
+    //initial task list from last shift report
     let taskList = {}
+
     // eslint-disable-next-line array-callback-return
     reportData.tasks.map(task =>  {
+      if(task.id && task.aircraft && (task.status==='DEFERRED' || task.status==='OPEN') ){
+        const simplifiedTask = { id:task.id, description:task.description, status:task.status ,updates: task.updates, newUpdate:'' }
 
-      if(task.aircraft ){
+        //From the last shift report if the aircraft has open tasks it is checked by default and cannot be disabled
+        list[task.aircraft.registration] = { checked:true,disbleCheck:true }
 
-        const simplifiedTask = { id:task.id, description:task.description, status:task.status }
-        list[task.aircraft.registration] = true
-
-
-
+        //arranging tasks based on aircraft registration
         if(taskList[task.aircraft.registration]){
 
           taskList[task.aircraft.registration].push( simplifiedTask)
@@ -46,6 +48,7 @@ const NewReport = ({ reportData }) => {
       }
     }
     )
+
     setInitialFields({ ...initialFields,tasks:taskList })
     setCheckedAircrafts(list)
 
@@ -155,18 +158,52 @@ const NewReport = ({ reportData }) => {
 
               {costumer.aircrafts.map(aircraft =>
                 <>
-                  <AircraftCheckBox label = {aircraft.registration} key={aircraft.id} checked = {checkedAircrafts[aircraft.registration]}
+                  <AircraftCheckBox
+                    label = {aircraft.registration}
+                    key={aircraft.id}
+                    checked = {checkedAircrafts[aircraft.registration]&& checkedAircrafts[aircraft.registration]['checked']}
+                    disabled = {checkedAircrafts[aircraft.registration]&& checkedAircrafts[aircraft.registration]['disbleCheck']}
                     onChange={
-                      (e,{ checked }) =>  setCheckedAircrafts({ ...checkedAircrafts,[aircraft.registration]:checked })
+                      (e,{ checked }) =>  {
+                        e.preventDefault()
+                        setCheckedAircrafts({ ...checkedAircrafts,[aircraft.registration]:{ 'checked':checked } })
+                      }
 
-                    }>{checkedAircrafts[aircraft.registration] &&
-                       /* <Form.Input type="textarea"></Form.Input>*/
+                    }>
+                    {checkedAircrafts[aircraft.registration]&& checkedAircrafts[aircraft.registration]['checked'] &&
                        <FieldArray name={`tasks.${aircraft.registration}`}>
-                         {({ push }) => (<>
+                         {({ push,remove }) => (<>
+                           {!values.tasks[aircraft.registration]?push({ description:'',status:'' }):''}
                            {values.tasks[aircraft.registration] && values.tasks[aircraft.registration].map((task,index) =>
-                             <><InputFiled name={`tasks.${aircraft.registration}.${index}.description`} type="textarea"></InputFiled></>
+                             <TaskDescriptionField
+                               label= {index}
+                               taskName = {`tasks.${aircraft.registration}.${index}`}
+                               name={`tasks.${aircraft.registration}.${index}.description`}
+                               //The input filed is disabled if the task is open for deffered from previous shifts implied by task.id field
+                               disabled = {task.id && (task.status === 'DEFERRED' || task.status==='OPEN')}
+                               onRemove = {
+                                 () => {
+                                   if(values.tasks[aircraft.registration].length===1){
+                                     setCheckedAircrafts({ ...checkedAircrafts,[aircraft.registration]:{ 'checked':false } })
+                                   }
+                                   remove(index)
+                                 }
+                               }
+                             >
+                               <TextAreaField style= {{ paddingBotton:'5px' }} name={`tasks.${aircraft.registration}.${index}.newUpdate.note` }/>
+                             </TaskDescriptionField>
+
+
                            )}
-                           <Button icon primary onClick={ () => push({ description:'',status:'' })}> <Icon name="plus circle"/> Add </Button>
+                           <Button
+                             icon
+                             style={{ marginLeft:'10px' }}
+                             primary
+                             onClick={
+                               () => push({ description:'',status:'' })
+                             }>
+                             <Icon name="plus circle"/> Add
+                           </Button>
 
                          </>)}
 

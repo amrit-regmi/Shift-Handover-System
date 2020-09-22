@@ -41,3 +41,4 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |19.09.2020  | 4    | New Report Form- studied Formik and FieldArrays |
 |19.09.2020  | 5    | More work on New Report Form |
 |20.09.2020  | 6    | More Work on New Report Form, form has a nice layout and dynamic fields now work properly |
+|22.09.2020  | 3.5  | Date helper and new report front end validation partially complete | 

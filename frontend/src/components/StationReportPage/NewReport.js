@@ -1,8 +1,13 @@
 import React, { useState, useContext, Fragment, useEffect } from 'react'
 import { Formik, FieldArray } from 'formik'
 import Context from './Context'
-import { Form, Segment, Header, Button, Icon , Label,  } from 'semantic-ui-react'
+import { Form, Segment, Header, Button, Icon , Label } from 'semantic-ui-react'
 import DateInputFiled, { AircraftCheckBox, InputFiled, TaskDescriptionField, TextAreaField  } from './FormFields'
+import ErrorMessage from './ErrorMessage'
+import { validateUserField } from './validator'
+import { formatDate, operateDate } from '../../utils/DateHelper'
+
+
 
 
 const NewReport = ({ reportData }) => {
@@ -29,7 +34,7 @@ const NewReport = ({ reportData }) => {
     // eslint-disable-next-line array-callback-return
     reportData.tasks.map(task =>  {
       if(task.id && task.aircraft && (task.status==='DEFERRED' || task.status==='OPEN') ){
-        const simplifiedTask = { id:task.id, description:task.description, status:task.status ,updates: task.updates, newUpdate:'' }
+        const simplifiedTask = { id:task.id, description:task.description, status:task.status ,updates: task.updates }
 
         //From the last shift report if the aircraft has open tasks it is checked by default and cannot be disabled
         list[task.aircraft.registration] = { checked:true,disbleCheck:true }
@@ -49,6 +54,7 @@ const NewReport = ({ reportData }) => {
     }
     )
 
+    //Set initail form values based on shiftreport
     setInitialFields({ ...initialFields,tasks:taskList })
     setCheckedAircrafts(list)
 
@@ -64,35 +70,49 @@ const NewReport = ({ reportData }) => {
     <Formik
       enableReinitialize
       initialValues = {initialFields}
+      validate = {values => {
+        const errors = {}
+        errors.staffs = validateUserField(values.staffs)
+        console.log(errors)
+        return errors
+
+      }}
       onSubmit={(values) => {
         console.log('submit Clicked')
         console.log(values)
+
       }}
     >
 
-      {({ values,handleSubmit }) =>
+      {({ values,handleSubmit,errors }) =>
         <Form onSubmit = {handleSubmit}>
           <Form.Group >
-            <DateInputFiled label = "Shift Start Time" name='startTime' ></DateInputFiled>
-            <DateInputFiled label = "Shift End Time" name='endTime' ></DateInputFiled>
+            <ErrorMessage name='startTime'/>
+            <DateInputFiled  label = "Shift Start Time" name='startTime' maxDate = {operateDate(Date.now(),30,'m','sub')} minDate= {operateDate(Date.now(),20,'h','sub')}></DateInputFiled>
+            <ErrorMessage name='endTime'/>
+            <DateInputFiled label = "Shift End Time" name='endTime' maxDate = {formatDate(Date.now())} minDate= {operateDate(values.startTime,20,'m','add')}></DateInputFiled>
           </Form.Group>
 
           <Header as="h3">Staffs</Header>
 
           <FieldArray name="staffs">
             {({ remove, push, replace }) => (
-              <>
+              <Fragment >
                 <Segment.Group>
 
+                  <ErrorMessage name='staffs'/>
                   { values.staffs.length >0 && values.staffs.map((staff,index) =>
                     <Segment basic key= {index}>
+                      <ErrorMessage name={`staffs[${index}].name`}/>
+                      <ErrorMessage name= {`staffs[${index}].startTime`}/>
+                      <ErrorMessage name={`staffs[${index}].endTime`}/>
                       <Form.Group >
-                        <InputFiled disabled= {staff.signedOffKey? true:false } name={`staffs[${index}].name`}></InputFiled>
-
-                        <InputFiled type='hidden' value="" name={`staffs[${index}].signedOffKey`}></InputFiled>
-                        < DateInputFiled disabled= {staff.signedOffKey && !staff.changing? true:false } name = {`staffs[${index}].startTime`}/>
-                        < DateInputFiled disabled= {staff.signedOffKey  && !staff.changing?  true:false } name = {`staffs[${index}].endTime`}/>
+                        <InputFiled  disabled= {staff.signedOffKey? true:false } name={`staffs[${index}].name`}></InputFiled>
+                        <InputFiled  type='hidden' value="" name={`staffs[${index}].signedOffKey`}></InputFiled>
+                        < DateInputFiled  disabled= {staff.signedOffKey && !staff.changing? true:false } name = {`staffs[${index}].startTime`}/>
+                        < DateInputFiled  disabled= {staff.signedOffKey  && !staff.changing?  true:false } name = {`staffs[${index}].endTime`}/>
                         <Button
+                          type='button'
                           disabled= {staff.signedOffKey  && !staff.changing? true:false }
                           circular
                           icon='cancel'
@@ -102,9 +122,12 @@ const NewReport = ({ reportData }) => {
                           }
                           }></Button>
 
+
+
                         {staff.signedOffKey && !staff.changing &&
                       <>
                         <Button
+                          type='button'
                           inverted
                           color='red'
                           size="small"
@@ -119,6 +142,7 @@ const NewReport = ({ reportData }) => {
                         {staff.signedOffKey && staff.changing &&
                       <>
                         <Button
+                          type='button'
                           inverted
                           color='green'
                           size="small"
@@ -132,19 +156,23 @@ const NewReport = ({ reportData }) => {
 
                         {!staff.signedOffKey &&
                       <Button
+                        type='button'
                         inverted  primary
                         onClick = {() => {
                           replace(index, { ...staff, signedOffKey:'testKey' })
                           console.log(values.staffs[index])
                         }
                         } > Sign Off</Button> }
+
+                        <ErrorMessage name= {`staffs[${index}].signedOffKey`}/>
                       </Form.Group>
                     </Segment>
                   )
 
                   }
                 </Segment.Group>
-                <Button icon primary onClick={ () => push({ name:'',startTime:'',endTime:'' })}> <Icon name="plus circle"/> Add </Button></>
+                <Button type='button' icon primary onClick={ () => push({ name:'',startTime:'',endTime:'' ,signedOffKey:'' })}> <Icon name="plus circle"/> Add </Button>
+              </Fragment>
             )}
 
           </FieldArray>
@@ -157,25 +185,32 @@ const NewReport = ({ reportData }) => {
 
 
               {costumer.aircrafts.map(aircraft =>
-                <>
+                <Fragment key={aircraft.id}>
                   <AircraftCheckBox
                     label = {aircraft.registration}
-                    key={aircraft.id}
+
                     checked = {checkedAircrafts[aircraft.registration]&& checkedAircrafts[aircraft.registration]['checked']}
                     disabled = {checkedAircrafts[aircraft.registration]&& checkedAircrafts[aircraft.registration]['disbleCheck']}
                     onChange={
                       (e,{ checked }) =>  {
                         e.preventDefault()
                         setCheckedAircrafts({ ...checkedAircrafts,[aircraft.registration]:{ 'checked':checked } })
+                        //if the aircraft is checked by user it should initalize with a taskarea input
+                        if(checked && (!values.tasks[aircraft.registration] || values.tasks[aircraft.registration].length === 0) ){
+                          values.tasks[aircraft.registration] = [{  }]
+
+                        }
                       }
 
                     }>
                     {checkedAircrafts[aircraft.registration]&& checkedAircrafts[aircraft.registration]['checked'] &&
                        <FieldArray name={`tasks.${aircraft.registration}`}>
                          {({ push,remove }) => (<>
-                           {!values.tasks[aircraft.registration]?push({ description:'',status:'' }):''}
+
+
                            {values.tasks[aircraft.registration] && values.tasks[aircraft.registration].map((task,index) =>
-                             <TaskDescriptionField
+                             <TaskDescriptionField key={index}
+
                                label= {index}
                                taskName = {`tasks.${aircraft.registration}.${index}`}
                                name={`tasks.${aircraft.registration}.${index}.description`}
@@ -183,6 +218,7 @@ const NewReport = ({ reportData }) => {
                                disabled = {task.id && (task.status === 'DEFERRED' || task.status==='OPEN')}
                                onRemove = {
                                  () => {
+
                                    if(values.tasks[aircraft.registration].length===1){
                                      setCheckedAircrafts({ ...checkedAircrafts,[aircraft.registration]:{ 'checked':false } })
                                    }
@@ -215,7 +251,7 @@ const NewReport = ({ reportData }) => {
 
                   </AircraftCheckBox>
 
-                </>
+                </Fragment>
               )}
 
 

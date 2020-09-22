@@ -13,7 +13,7 @@ export const DateInputFiled = ({ label,...props }) => {
       {label &&
       <label>{label }</label>
       }
-      <DateTimeInput popupPosition='right center' {...field} {...props} dateTimeFormat= 'YYYY-MM-DD HH:mm' closable onBlur= {() => {
+      <DateTimeInput popupPosition='right center' {...field} {...props} dateTimeFormat= 'DD-MM-YYYY HH:mm' closable onBlur= {() => {
         setFieldTouched(field.name,true)
       }} onChange={(event,{ value }) => {
         setFieldValue(field.name, value)
@@ -40,7 +40,7 @@ export const InputFiled = ({ label,...props }) => {
 
 
 export const TaskDescriptionField = ({ label,onRemove,disabled,children,taskName, ...props }) => {
-  const [field] = useField(props)
+  const [field,meta] = useField(props)
   const { setFieldValue,getFieldProps } = useFormikContext()
 
   const removeButtonClick = ( e ) => {
@@ -104,6 +104,9 @@ export const TaskDescriptionField = ({ label,onRemove,disabled,children,taskName
   return(
     <>
       <Divider></Divider>
+      {meta.touched && meta.error ? (
+        <div className="error">{meta.error}</div>
+      ) : null}
       {disabled &&
        <TaskStatusBar></TaskStatusBar>
       }
@@ -176,7 +179,7 @@ export const TaskDescriptionField = ({ label,onRemove,disabled,children,taskName
 export const AircraftCheckBox = ({ label,children,checked,...props }) => {
   return(
     <Segment
-      style= {{ display:checked?'block':'inline-block',marginRight:'20px',marginBottom:'20px'  }}>
+      style= {{ display:checked?'block':'inline-block'  }}>
       <Checkbox checked={checked} {...props} toggle/>
       <label style={{ display: 'inline-block' , marginLeft: '5px', verticalAlign: 'super' }}> {label.toUpperCase()} </label>
       {children}

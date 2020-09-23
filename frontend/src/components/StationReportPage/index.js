@@ -9,7 +9,7 @@ import NewReportShiftSelectModel from './NewReportShiftSelectModel'
 import Context from './Context'
 import reducer from './stationReducer'
 import { GET_STATION } from '../../queries/stationQuery'
-import NewReport from './NewReport'
+import NewReportForm from './NewReportForm'
 
 
 const StationReportPage = () => {
@@ -81,7 +81,7 @@ const StationReportPage = () => {
 
         {activeItem === 'startNewReport'&&
           //<NewReportShiftSelectModel  stationId={id} ></NewReportShiftSelectModel>
-          <NewReport reportData = {dataReport.getShiftReport}  ></NewReport>
+          <NewReportForm reportData = {dataReport.getShiftReport}  ></NewReportForm>
         }
       </Context.Provider>
     </>

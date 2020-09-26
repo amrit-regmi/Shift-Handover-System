@@ -2,6 +2,8 @@ const ShiftReport =  require('../models/ShiftReport')
 const TimeSheet = require('../models/TimeSheet')
 const Task = require('../models/Task')
 const { UserInputError,AuthenticationError } = require('apollo-server')
+const config = require('../../config')
+const jwt  = require('jsonwebtoken')
 
 
 const shiftReportResolver = {
@@ -17,9 +19,16 @@ const shiftReportResolver = {
         })
 
         const staffAndTime = args.staffs.map( staff => {
-          staff.shiftReport = shiftReport.id
-          return staff
+          const user =  staff.name
+          try{
+            const data = jwt.verify(staff.signOffKey, config.JWT_SECRET)
+            return data
+          } catch (err){
+            throw new AuthenticationError(`${user} cannot be authenticated, please signoff again : ${err}`)
+          }
         })
+
+
         const timeSheetResult = await TimeSheet.insertMany(staffAndTime)
 
         shiftReport.staffAndTime = timeSheetResult

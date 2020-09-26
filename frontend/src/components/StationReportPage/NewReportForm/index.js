@@ -1,13 +1,15 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { Formik } from 'formik'
+import { Formik, FieldArray } from 'formik'
 import Context from '../Context'
 import { Form, Header, Button, Icon } from 'semantic-ui-react'
-import DateInputField from './FormFields'
-import { validateStaffsField, validateTasks } from '../validator'
+import { DateInputField } from './FormFields'
+import { validateStaffsField, validateTasks } from './validator'
 import { formatDate, operateDate } from '../../../utils/DateHelper'
 import _ from 'lodash'
 import StaffForm from './StaffForm'
 import AircraftSelectionForm from './AircraftSelectionForm'
+import TaskForm from './TaskForm'
+import TaskForms from './TaskForms'
 
 
 
@@ -15,12 +17,11 @@ const NewReport = ({ reportData }) => {
   const context = useContext(Context)
   const station = context.state.station
 
-  //if there is a task from a costumer who is not on costumers list we add it here along with the
+  // costumers assigned to this station
   const [costumers,setCostumers] = useState(station.costumers)
 
   const [checkedAircrafts, setCheckedAircrafts] = useState({})
   const init = {
-    station: station.id,
     startTime:'', //default shift starttime
     endTime:'',
     staffs:[],
@@ -38,29 +39,39 @@ const NewReport = ({ reportData }) => {
 
     // eslint-disable-next-line array-callback-return
     reportData.tasks.map(task =>  {
-      if(task.id && task.aircraft && (task.status==='DEFERRED' || task.status==='OPEN') ){
+      if(task.id  && (task.status==='DEFERRED' || task.status==='OPEN') ){
         // Initial field for deferred or open tasks
-        const simplifiedTask = { id:task.id, description:task.description, status:task.status ,updates: task.updates ,action:'', newNote:'' }
+        const simplifiedTask = { id:task.id, description:task.description, status:task.status ,updates: task.updates ,action:'', newNote:'',taskCategory:task.taskCategory }
 
-        //From the last shift report if the aircraft has open tasks it is checked by default and cannot be disabled
-        list[task.aircraft.registration] = { checked:true,disbleCheck:true }
+        //From the last shift report if the task is aircraft tasks aircraft has open tasks it is checked by default and cannot be disabled
+        if(task.aircraft) {
+          list[task.aircraft.registration] = { checked:true,disbleCheck:true }
+        }
 
         //arranging tasks based on aircraft registration
-        if(taskList[task.aircraft.registration]){
+        if(task.aircraft && taskList[task.aircraft.registration]){
+          taskList[task.aircraft.registration].push( { ...simplifiedTask })
 
-          taskList[task.aircraft.registration].push( simplifiedTask)
+        }else if (task.aircraft){
+          taskList[task.aircraft.registration] = [ { ...simplifiedTask }]
 
-        }else {
-
-          taskList[task.aircraft.registration] = [ simplifiedTask]
+        }else{
+          if(taskList[task.taskCategory]){
+            taskList[task.taskCategory].push(simplifiedTask)
+          }
+          taskList[task.taskCategory] = [simplifiedTask]
 
         }
 
-        if(! _.find( station.costumers,_.matchesProperty('name',task.aircraft.costumer.name))){
-          if( ! _.find( costumerList,_.matchesProperty('name',task.aircraft.costumer.name))){
-            costumerList.push({ name:task.aircraft.costumer.name,aircrafts:[{ registration:task.aircraft.registration,id: task.aircraft.id }] })
-          }else{
-            costumerList.aircrafts.push({ registration:task.aircraft.registration , id: task.aircraft.id })
+        //if there is a task from a costumer who is not assigned to this station we add that arcraft & costumer to list
+        if(task.aircraft){
+          if(! _.find( station.costumers,_.matchesProperty('name',task.aircraft.costumer.name))){
+
+            if( ! _.find( costumerList,_.matchesProperty('name',task.aircraft.costumer.name))){
+              costumerList.push({ name:task.aircraft.costumer.name,aircrafts:[{ registration:task.aircraft.registration,id: task.aircraft.id }] })
+            }else{
+              costumerList.aircrafts.push({ registration:task.aircraft.registration , id: task.aircraft.id })
+            }
           }
         }
       }
@@ -78,8 +89,17 @@ const NewReport = ({ reportData }) => {
   ,[])
 
 
+  const submitForm = (formdata) => {
+    let submitData = { station: station.id , staffs: formdata.staffs, startTime:formdata.startTime, endTime: formdata.endTime, tasks:{} }
+
+    _.reduce(formdata.tasks, (tasks,tasksIdentifier) => {
+      tasks = [...tasks,...tasksIdentifier]
+    },[])
 
 
+
+
+  }
 
   return (
     <Formik
@@ -88,11 +108,11 @@ const NewReport = ({ reportData }) => {
       validate = { values => {
         let errors = {}
         //errors = { ...errors,...validateStartEndTime(values.startTime,values.endTime) }
-        const staffErrors = validateStaffsField(values.staffs)
+        // const staffErrors = validateStaffsField(values.staffs)
         const taskErrors = validateTasks(values.tasks)
 
         if(!_.isEmpty(taskErrors) ) errors.tasks = taskErrors
-        if(!_.isEmpty(staffErrors) ) errors.staffs = staffErrors
+        //if(!_.isEmpty(staffErrors) ) errors.staffs = staffErrors
         console.log(errors)
         return errors
 
@@ -100,6 +120,11 @@ const NewReport = ({ reportData }) => {
       onSubmit={(values) => {
         console.log('submit Clicked')
         console.log(values)
+
+        console.log(_.reduce(values.tasks, (tasks,tasksIdentifier) => {
+          return [...tasks,...tasksIdentifier]
+        },[]))
+
 
       }}
     >
@@ -127,16 +152,19 @@ const NewReport = ({ reportData }) => {
           {/*Dynamic Input fields for Aircraft Tasks*/}
           <AircraftSelectionForm costumers ={costumers} checkedAircrafts={checkedAircrafts} setCheckedAircrafts= {setCheckedAircrafts} values={values} />
 
-
-
+          {/**
+           * TODO:
+           * Input fields if the aircraft/costumer is not listed on the reporting page
+           */}
           <Header as="h3">Work Performed for Other Costumer</Header>
           <Button  type='button' icon primary><Icon name="plus circle"/> Add </Button>
 
           <Header as="h3">Other Tasks</Header>
-          <Button  type='button' icon primary><Icon name="plus circle"/> Add </Button>
+          <TaskForms tasksIdentifier = 'OTHER' tasks = {values.tasks.OTHER}> </TaskForms>
 
           <Header as="h3">Logistics Task</Header>
-          <Button  type='button' icon primary><Icon name="plus circle"/> Add </Button>
+          <TaskForms tasksIdentifier = 'LOGISTICS' tasks = {values.tasks.LOGISTICS}> </TaskForms>
+
 
 
 

@@ -16,6 +16,11 @@ const timeSheetType = `
     PENDING_APPROVAL
   }
 
+  type SignOffToken{
+    value: String!
+    name: String!   
+  }
+
 
 `
 

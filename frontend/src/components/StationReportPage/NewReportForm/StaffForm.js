@@ -1,11 +1,38 @@
 import React, { Fragment } from 'react'
-import { FieldArray, Field } from 'formik'
+import { FieldArray, Field, useFormikContext } from 'formik'
 import ErrorMessage from './ErrorMessage'
 import { Segment, Label,Form, Button,Icon,Header } from 'semantic-ui-react'
-import DateInputField, { InputField } from './FormFields'
+import{ DateInputField,  InputField } from './FormFields'
 import { operateDate, formatDate } from '../../../utils/DateHelper'
 
 const StaffForm = ({ values, touched,errors }) => {
+  const{ getFieldMeta,setFieldTouched } = useFormikContext()
+
+  const signOff = async (index) => {
+    setFieldTouched(`staffs[${index}].startTime`)
+    setFieldTouched(`staffs[${index}].endTime`)
+    setFieldTouched(`staffs[${index}].name`)
+
+    if(getFieldMeta(`staffs[${index}].startTime`).error || getFieldMeta(`staffs[${index}].endTime`).error || getFieldMeta(`staffs[${index}].name`).error) {
+      setFieldTouched(`staffs[${index}].signedOffKey`,true)
+      console.log(getFieldMeta(`staffs[${index}].signedOffKey`))
+      return false
+    }
+
+    const signOffKey = 'testingKey'
+    return ({ key:signOffKey })
+
+  }
+  const save = () => {
+
+
+  }
+
+  const change = () => {
+
+  }
+
+
 
   return (
     <FieldArray name="staffs">
@@ -14,7 +41,7 @@ const StaffForm = ({ values, touched,errors }) => {
           <Header as="h3">Staffs</Header>
           <Segment.Group >
 
-            <ErrorMessage name='staffs'/>
+
             { values.staffs.length >0 && values.staffs.map((staff,index) =>
               <Segment  key= {index}>
                 {staff.signedOffKey &&
@@ -41,7 +68,7 @@ const StaffForm = ({ values, touched,errors }) => {
                     circular
                     icon='cancel'
                     basic
-                    disbled = {staff.signedOffKey  && !staff.changing? true:false }
+                    disabled = {staff.signedOffKey  && !staff.changing? true:false }
                     onClick = {() => {
                       remove(index)
                     }}
@@ -67,12 +94,17 @@ const StaffForm = ({ values, touched,errors }) => {
                         <Button
                           style={{ height:'fit-content' }}
                           type='button'
-
                           inverted
                           color='green'
                           size="small"
                           onClick = {() => {
-                            replace(index, { ...staff, changing: false })
+                            setFieldTouched(`staffs[${index}].startTime`)
+                            setFieldTouched(`staffs[${index}].endTime`)
+                            setFieldTouched(`staffs[${index}].name`)
+                            if(!getFieldMeta(`staffs[${index}]`).error) {
+                              replace(index, { ...staff, changing: false })
+                            }
+
                           }
                           }> Save </Button>
 
@@ -85,8 +117,11 @@ const StaffForm = ({ values, touched,errors }) => {
                         color = {touched.staffs && touched.staffs[index] && touched.staffs[index].signedOffKey && errors.staffs && errors.staffs[index].signedOffKey?'red':'blue'}
                         type='button'
                         inverted
-                        onClick = {() => {
-                          replace(index, { ...staff, signedOffKey:'testKey' })
+                        onClick = {async () => {
+                          const signoff = await signOff(index)
+                          if(signoff && signoff.key) {
+                            replace(index, { ...staff, signedOffKey:'testKey' })
+                          }
                         }
                         } > Sign Off </Button> }
                   <ErrorMessage pointing='left' name= {`staffs[${index}].signedOffKey`}/>
@@ -100,7 +135,7 @@ const StaffForm = ({ values, touched,errors }) => {
             }
           </Segment.Group>
           <Button type='button' icon
-            primary onClick={ () => push({ name:'',startTime:'',endTime:'' ,signedOffKey:'' })}>< Icon name="plus circle"/> Add </Button>
+            primary onClick={ () => push({ name:'',startTime:'',endTime:'' ,signedOffKey:'' })}>< Icon name="plus circle"/> Add </Button>  <ErrorMessage name='staffs' pointing='left'/>
         </Fragment>
       )}
 

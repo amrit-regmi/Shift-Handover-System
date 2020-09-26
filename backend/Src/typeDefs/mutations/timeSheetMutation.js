@@ -7,7 +7,17 @@ const timeSheetMutation = `
       staff: String!
     )
     : TimeSheet
+
+    signOffTimeSheet(
+      startTime: String!
+      endTime: String!
+      username: String
+      password: String
+      idCardCode: String
+    ): SignOffToken
   }
+
+
 
 `
 module.exports =  { timeSheetMutation }

@@ -14,7 +14,7 @@ const MenuBar = ({ activeItem, setActiveItem }) => {
   }
 
   return (
-    <Menu inverted color="blue" >
+    <Menu inverted color="blue" stackable >
       <Menu.Item header>  Shift Reporting System </Menu.Item>
       <Menu.Item name= "lastShiftReport"
         active = {activeItem === 'lastShiftReport'}

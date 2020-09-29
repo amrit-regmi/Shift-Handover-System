@@ -5,9 +5,10 @@ const mongoose = require('mongoose')
 const config = require('./config')
 const Station = require('./Src/models/Station')
 const jwt = require('jsonwebtoken')
+const ConstraintDirective = require('apollo-server-constraint-directive')
 
 const schema = makeExecutableSchema({
-  typeDefs, resolvers, 
+  typeDefs, resolvers, schemaDirectives: { constraint: ConstraintDirective }
 
 })
 

@@ -13,7 +13,7 @@ export const DateInputField = ({ label,...props }) => {
       {label &&
       <label>{label}</label>}
 
-      <DateTimeInput  error = {meta.touched && meta.error?true:false} popupPosition='right center' {...field} {...props} dateTimeFormat= 'DD-MM-YYYY HH:mm' closable onBlur= {() => {
+      <DateTimeInput  error = {meta.touched && meta.error?true:false} popupPosition='right center'  {...field} {...props} dateTimeFormat= 'DD-MM-YYYY HH:mm' closable onBlur= {() => {
         setFieldTouched(field.name,true)
       }} onChange={(event,{ value }) => {
         setFieldValue(field.name, value)
@@ -33,9 +33,10 @@ export const DateInputField = ({ label,...props }) => {
 export const InputField = ({ label,...props }) => {
   const [field,meta] = useField(props)
   return (
-    <Form.Field width= '4'>
-      <Form.Input error= { props.type !== 'hidden' && meta.touched && meta.error} {...field} {...props} />
-    </Form.Field>
+    <>
+      <label>{label }</label>
+      <Form.Input  error= { props.type !== 'hidden' && meta.touched && meta.error} {...field} {...props} />
+    </>
   )
 
 }

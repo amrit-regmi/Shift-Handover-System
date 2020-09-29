@@ -54,7 +54,12 @@ const LandingPage = () => {
    */
   let storedStationKey = JSON.parse(sessionStorage.getItem('stationKey'))
   if(!storedStationKey){
-    storedStationKey = JSON.parse(localStorage.getItem('stationKey'))
+    const key = localStorage.getItem('stationKey')
+    storedStationKey = JSON.parse(key)
+    /**
+     * store the key to session storage*
+     */
+    sessionStorage.setItem('stationKey',JSON.stringify(key))
   }
   if(storedStationKey){
     history.push(`/shiftReport/station/${storedStationKey.id}`)

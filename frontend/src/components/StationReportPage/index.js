@@ -1,7 +1,7 @@
 import React,{ useState, useContext, useReducer, useEffect } from 'react'
 import { useQuery } from '@apollo/client'
 import { GET_SHIFT_REPORT } from '../../queries/shiftReportQuery'
-import { useParams } from 'react-router-dom'
+import { useParams, Redirect, useHistory } from 'react-router-dom'
 import { Loader,Image,Segment, Header } from 'semantic-ui-react'
 import MenuBar from './MenuBar'
 import ShiftReport from '../ShiftReport'
@@ -13,12 +13,15 @@ import NewReportForm from './NewReportForm'
 
 
 const StationReportPage = () => {
+  const history = useHistory()
 
   const initialState = useContext(Context)
   const [state,dispatch] = useReducer(reducer, initialState)
 
 
-  const location =JSON.parse( sessionStorage.getItem('stationKey')).location
+  if(!JSON.parse( sessionStorage.getItem('stationKey'))){
+    history.push('/')
+  }
 
   const params = useParams()
   const id =params.id
@@ -69,7 +72,7 @@ const StationReportPage = () => {
     <>
       <Context.Provider value={{ state, dispatch }}>
         <Segment  basic>
-          <Header textAlign ="right" color ="blue" floated="right">Shift Reporting System <br/><span><h5> Station: {location} </h5></span></Header>
+          <Header textAlign ="right" color ="blue" floated="right">Shift Reporting System <br/><span><h5> Station: {dataStation && dataStation.getStation.location} </h5></span></Header>
           <Image src='\LogoBig.png' size="medium" />
         </Segment>
 

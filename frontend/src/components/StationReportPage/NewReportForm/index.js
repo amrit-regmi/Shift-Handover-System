@@ -6,16 +6,19 @@ import { DateInputField } from './FormFields'
 import { validateStaffsField, validateTasks } from './validator'
 import { formatDate, operateDate } from '../../../utils/DateHelper'
 import _ from 'lodash'
-import StaffForm from './StaffForm'
+import StaffForms from './StaffForms'
 import AircraftSelectionForm from './AircraftSelectionForm'
 import TaskForm from './TaskForm'
 import TaskForms from './TaskForms'
+import StaffAddModel from './StaffAddModel'
 
 
 
 const NewReport = ({ reportData }) => {
   const context = useContext(Context)
   const station = context.state.station
+
+  const [openAddStaffModel,setOpenAddStaffModel] = useState (false)
 
   // costumers assigned to this station
   const [costumers,setCostumers] = useState(station.costumers)
@@ -92,86 +95,93 @@ const NewReport = ({ reportData }) => {
   const submitForm = (formdata) => {
     let submitData = { station: station.id , staffs: formdata.staffs, startTime:formdata.startTime, endTime: formdata.endTime, tasks:{} }
 
-    _.reduce(formdata.tasks, (tasks,tasksIdentifier) => {
-      tasks = [...tasks,...tasksIdentifier]
+    const tasks =  _.reduce(formdata.tasks, (tasks,tasksIdentifier) => {
+      return [...tasks,...tasksIdentifier]
     },[])
 
+    const staffs = formdata.staffs.map((staff) => staff.signedOffKey)
 
+    submitData = { ...submitData,tasks: tasks, staffs: staffs }
 
+    return submitData
 
   }
 
   return (
-    <Formik
-      enableReinitialize
-      initialValues = {initialFields}
-      validate = { values => {
-        let errors = {}
-        //errors = { ...errors,...validateStartEndTime(values.startTime,values.endTime) }
-        // const staffErrors = validateStaffsField(values.staffs)
-        const taskErrors = validateTasks(values.tasks)
+    <>
+      <Formik
+        enableReinitialize
+        initialValues = {initialFields}
+        validate = { values => {
+          let errors = {}
+          //errors = { ...errors,...validateStartEndTime(values.startTime,values.endTime) }
+          //const staffErrors = validateStaffsField(values.staffs)
+          const taskErrors = validateTasks(values.tasks)
 
-        if(!_.isEmpty(taskErrors) ) errors.tasks = taskErrors
-        //if(!_.isEmpty(staffErrors) ) errors.staffs = staffErrors
-        console.log(errors)
-        return errors
+          if(!_.isEmpty(taskErrors) ) errors.tasks = taskErrors
+          // if(!_.isEmpty(staffErrors) ) errors.staffs = staffErrors
+          //console.log(errors)
+          return errors
 
-      }}
-      onSubmit={(values) => {
-        console.log('submit Clicked')
-        console.log(values)
+        }}
+        onSubmit={(values) => {
+          console.log('submit Clicked')
+          // console.log(values)
+          console.log(submitForm(values))
 
-        console.log(_.reduce(values.tasks, (tasks,tasksIdentifier) => {
-          return [...tasks,...tasksIdentifier]
-        },[]))
+        }}
+      >
 
+        {({ values,handleSubmit,errors,touched }) =>
+          <>
+            <Form onSubmit = {handleSubmit}>
+              {/*Shift start end times*/}
+              <Form.Group >
+                <DateInputField
+                  label = "Shift Start Time"
+                  name='startTime'
+                  maxDate = {operateDate(Date.now(),30,'m','sub')}
+                  minDate= {operateDate(Date.now(),20,'h','sub')}/>
 
-      }}
-    >
+                <DateInputField
+                  label = "Shift End Time"
+                  name='endTime'
+                  maxDate = {formatDate(Date.now())}
+                  minDate= {operateDate(values.startTime,20,'m','add')}/>
+              </Form.Group>
 
-      {({ values,handleSubmit,errors,touched }) =>
-        <Form onSubmit = {handleSubmit}>
-          {/*Shift start end times*/}
-          <Form.Group >
-            <DateInputField
-              label = "Shift Start Time"
-              name='startTime'
-              maxDate = {operateDate(Date.now(),30,'m','sub')}
-              minDate= {operateDate(Date.now(),20,'h','sub')}/>
+              {/*Dynamic Input fields for staff Information*/}
+              <StaffForms values={values} touched={touched} errors={errors} addStaffOpen =  {setOpenAddStaffModel}/>
 
-            <DateInputField
-              label = "Shift End Time"
-              name='endTime'
-              maxDate = {formatDate(Date.now())}
-              minDate= {operateDate(values.startTime,20,'m','add')}/>
-          </Form.Group>
+              {/*Dynamic Input fields for Aircraft Tasks*/}
+              <AircraftSelectionForm costumers ={costumers} checkedAircrafts={checkedAircrafts} setCheckedAircrafts= {setCheckedAircrafts} values={values} />
 
-          {/*Dynamic Input fields for staff Information*/}
-          <StaffForm values={values} touched={touched} errors={errors}  />
-
-          {/*Dynamic Input fields for Aircraft Tasks*/}
-          <AircraftSelectionForm costumers ={costumers} checkedAircrafts={checkedAircrafts} setCheckedAircrafts= {setCheckedAircrafts} values={values} />
-
-          {/**
+              {/**
            * TODO:
            * Input fields if the aircraft/costumer is not listed on the reporting page
            */}
-          <Header as="h3">Work Performed for Other Costumer</Header>
-          <Button  type='button' icon primary><Icon name="plus circle"/> Add </Button>
+              <Header as="h3">Work Performed for Other Costumer</Header>
+              <Button  type='button' icon primary><Icon name="plus circle"/> Add </Button>
 
-          <Header as="h3">Other Tasks</Header>
-          <TaskForms tasksIdentifier = 'OTHER' tasks = {values.tasks.OTHER}> </TaskForms>
+              <Header as="h3">Other Tasks</Header>
+              <TaskForms tasksIdentifier = 'OTHER' tasks = {values.tasks.OTHER}> </TaskForms>
 
-          <Header as="h3">Logistics Task</Header>
-          <TaskForms tasksIdentifier = 'LOGISTICS' tasks = {values.tasks.LOGISTICS}> </TaskForms>
-
-
+              <Header as="h3">Logistics Task</Header>
+              <TaskForms tasksIdentifier = 'LOGISTICS' tasks = {values.tasks.LOGISTICS}> </TaskForms>
 
 
-          <Button  primary type="submit"> Submit Report </Button>
-        </Form> }
 
-    </Formik>
+
+              <Button  primary type="submit"> Submit Report </Button>
+            </Form>
+
+
+            <StaffAddModel setOpen= {setOpenAddStaffModel} open= {openAddStaffModel} shiftStartTime = {values.startTime} shiftEndTime={values.endTime}></StaffAddModel></>}
+
+
+      </Formik>
+
+    </>
 
   )
 }

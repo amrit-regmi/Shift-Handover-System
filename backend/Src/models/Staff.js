@@ -31,6 +31,9 @@ const staffSchema = new mongoose.Schema({
     type:String,
     unique: true,
     minlength: 5,
+    index:true,
+    trim: true,
+    sparse: true
   },
 
   passwordHash: String,

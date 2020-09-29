@@ -36,7 +36,7 @@ const staffResolver = {
   },
 
   Mutation: {
-    /*Create staff with inital information and send the register code to staff to complete registration*/
+    /*Create staff with initial information and send the register code to staff to complete registration*/
     addStaff : async (root,args) => {
       const registerCode = uuidv4()
       const staff = new Staff({ ...args,registerCode:registerCode })
@@ -80,6 +80,7 @@ const staffResolver = {
 
     },
     /*Reset the password, if args.id is set sends reset link , if resetCode is set then checks and update the password*/
+
     resetPassword: async (root,args) => {
       if(args.id && args.id!== null && args.id !== undefined){
         const resetCode = uuidv4()

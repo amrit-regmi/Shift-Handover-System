@@ -26,9 +26,9 @@ export const validateStaffsField= (value) => {
       }
 
       /**
-       * If staff is not sogned off
+       * If staff is not signed off
        */
-      if (!staff.signedOffKey){
+      if (!staff.signedOffKey ){
         errList = { ...errList,  'signedOffKey':'Each staff must sign off' }
       }
 
@@ -90,14 +90,14 @@ export const validateStartEndTime = (startTime,endTime)  => {
   /**
    * Id starttime is not correct format DD-MM-YYY HH:MM
    */
-  if(!startTime.match(/^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d\d\d\d (0|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$/)){
+  if(!startTime.match(/^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d\d\d\d (0[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$/)){
     error = { ...error,  'startTime':'Start time should be on format DD-MM-YYYY HH:MM' }
   }
 
   /**
    * Id starttime is not correct format DD-MM-YYY HH:MM
    */
-  if(!endTime.match(/^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d\d\d\d (00|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$/)){
+  if(!endTime.match(/^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d\d\d\d (0[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$/)){
     error = { ...error,  'endTime':'End time should be on format DD-MM-YYYY HH:MM' }
   }
 
@@ -192,6 +192,28 @@ const validateTaskField = (task) => {
     error= { ...error,description:'Please add task description' }
   }
   return error
+
+
+}
+
+export const validateEmail = (email) => {
+
+  if(!email) {
+    return 'Email is required'
+  }
+  if(!email.match(/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/)){
+    return 'Incorrect email format'
+  }
+
+}
+
+
+export const validateName = (name) => {
+
+  if(!name || name.trim === '') return 'Full name is required'
+  if(name.length < 4){
+    return 'Name must be at least 4 character long'
+  }
 
 
 }

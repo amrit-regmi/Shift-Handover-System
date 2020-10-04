@@ -1,8 +1,8 @@
 const reducer = (state,action) => {
   switch(action.type) {
-  case 'ADD_TASKS':
+  case 'ADD_LASTSHIFTREPORT':
     return {
-      ...state, tasks: [...state.tasks,...action.payload]
+      ...state, lastShiftReport: action.payload
     }
   case 'INIT_STATION':
     return {

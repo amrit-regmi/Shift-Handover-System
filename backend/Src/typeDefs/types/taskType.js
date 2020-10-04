@@ -2,13 +2,18 @@ const taskType = `
   type Task {
     id:ID
     taskCategory: TaskCategory!
-    shiftReport: ShiftReport!
     aircraft: Aircraft
     description: String!
     status: TaskStatus
     createdAt: Date
     createdBy: Staff
-    updates: [JsonObject]
+    updates: [Update]
+  }
+
+  type Update {
+    handoverId: ShiftReport!
+    action: Action! 
+    note: String
 
   }
 `

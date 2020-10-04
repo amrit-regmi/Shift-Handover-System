@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { Formik, FieldArray } from 'formik'
 import Context from '../Context'
-import { Form, Header, Button, Icon } from 'semantic-ui-react'
+import { Form, Header, Button, Icon,Segment,Loader,Dimmer } from 'semantic-ui-react'
 import { DateInputField } from './FormFields'
 import { validateStaffsField, validateTasks } from './validator'
 import { formatDate, operateDate } from '../../../utils/DateHelper'
@@ -11,6 +11,8 @@ import AircraftSelectionForm from './AircraftSelectionForm'
 import TaskForm from './TaskForm'
 import TaskForms from './TaskForms'
 import StaffAddModel from './StaffAddModel'
+import { useMutation } from '@apollo/client'
+import { SUBMIT_REPORT } from '../../../mutations/submitShiftReport'
 
 
 
@@ -32,6 +34,12 @@ const NewReport = ({ reportData }) => {
   }
   const [initialFields,setInitialFields] = useState(init)
 
+  const [submitReport,{ loading, error, data }] = useMutation(SUBMIT_REPORT,{
+    onError: (error) => {
+      console.log(error)
+    }
+  })
+
 
   useEffect (() => {
     //initial aircraft list from last shift report
@@ -42,7 +50,7 @@ const NewReport = ({ reportData }) => {
 
     // eslint-disable-next-line array-callback-return
     reportData.tasks.map(task =>  {
-      if(task.id  && (task.status==='DEFERRED' || task.status==='OPEN') ){
+      if( (task.status==='DEFERRED' || task.status==='OPEN') ){
         // Initial field for deferred or open tasks
         const simplifiedTask = { id:task.id, description:task.description, status:task.status ,updates: task.updates ,action:'', newNote:'',taskCategory:task.taskCategory }
 
@@ -61,8 +69,10 @@ const NewReport = ({ reportData }) => {
         }else{
           if(taskList[task.taskCategory]){
             taskList[task.taskCategory].push(simplifiedTask)
+          }else{
+            taskList[task.taskCategory] = [simplifiedTask]
           }
-          taskList[task.taskCategory] = [simplifiedTask]
+
 
         }
 
@@ -91,21 +101,59 @@ const NewReport = ({ reportData }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ,[])
 
+  useEffect(() => {
+    if(data){
+      console.log(data.submitShiftReport)
+    }
+  })
 
-  const submitForm = (formdata) => {
+  /**Format submit data  before submit*/
+  const beforeSubmit = (formdata) => {
     let submitData = { station: station.id , staffs: formdata.staffs, startTime:formdata.startTime, endTime: formdata.endTime, tasks:{} }
 
-    const tasks =  _.reduce(formdata.tasks, (tasks,tasksIdentifier) => {
-      return [...tasks,...tasksIdentifier]
+    /**Reduce the tasks to be only array of tasks */
+    const tasks =  _.reduce(formdata.tasks, (tasks,tasksByIdentifier,identifier) => {
+      let taskList = _.map(tasksByIdentifier, (task,index) => {
+        let initialTask
+        /**Compare the task with the initial tasks, reduce to only include the changes */
+        if(initialFields.tasks[identifier] && initialFields.tasks[identifier][index]){
+          initialTask = initialFields.tasks[identifier] && initialFields.tasks[identifier][index]
+          const difference = Object.keys(initialTask).filter(k => initialTask[k] !== task[k])
+
+          /**If no changes return null */
+          if(!difference) return null
+          const reducedTask = difference.reduce((p,c) => p[c] = { ...p,[c]:task[c] },{})
+          task = { id: task.id, ...reducedTask }
+        }
+
+        return task
+      })
+
+      /**remove null tasks */
+      taskList = taskList.filter(task => task !== null)
+
+      return [...tasks,...taskList]
     },[])
 
-    const staffs = formdata.staffs.map((staff) => staff.signedOffKey)
 
-    submitData = { ...submitData,tasks: tasks, staffs: staffs }
+    /**Only include staff signoff Key and name */
+    const staffs = formdata.staffs.map((staff) => {return { signOffKey: staff.signOffKey, name:staff.name }})
+
+    submitData = { ...submitData,tasks: tasks, staffs: staffs ,shift: 'Day' }
 
     return submitData
 
   }
+
+  /*if(loading) {
+    return(
+      <Segment>
+        <Dimmer active inverted>
+          <Loader inverted>Submitting Data</Loader>
+        </Dimmer>
+      </Segment>
+    )
+  }*/
 
   return (
     <>
@@ -125,14 +173,15 @@ const NewReport = ({ reportData }) => {
 
         }}
         onSubmit={(values) => {
-          console.log('submit Clicked')
-          // console.log(values)
-          console.log(submitForm(values))
+
+          console.log('submit Clicked',values)
+          const submitData = beforeSubmit(values)
+          submitReport({ variables: submitData })
 
         }}
       >
 
-        {({ values,handleSubmit,errors,touched }) =>
+        {({ values,handleSubmit,errors,touched,dirty  }) =>
           <>
             <Form onSubmit = {handleSubmit}>
               {/*Shift start end times*/}
@@ -172,7 +221,7 @@ const NewReport = ({ reportData }) => {
 
 
 
-              <Button  primary type="submit"> Submit Report </Button>
+              <Button   primary type="submit"> Submit Report </Button>
             </Form>
 
 

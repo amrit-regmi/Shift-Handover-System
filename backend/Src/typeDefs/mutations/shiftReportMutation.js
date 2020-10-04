@@ -6,7 +6,7 @@ const shiftReportMutation = `
       startTime: String!
       endTime: String!
       tasks:[ShiftReportTask]!
-      staffs: [String!]!
+      staffs: [ShiftReportStaffs!]!
     ):ShiftReport
 
     startReporting(
@@ -18,26 +18,18 @@ const shiftReportMutation = `
   
   
   input ShiftReportTask{
-    taskId: String
+    id: String
     taskCategory: TaskCategory
     aircraft : String
     description: String
-    status: TaskStatus
-    action: String
+    status: String
+    action: String!
     createdBy: String
-    update: Update
   }
 
   input ShiftReportStaffs{
-    name: String!
+    name: String
     signOffKey: String!
-  }
-
-  input Update {
-    handoverId: String!
-    action: TaskStatus!
-    updateBy: String
-    notes: String
   }
 `
 module.exports = { shiftReportMutation }

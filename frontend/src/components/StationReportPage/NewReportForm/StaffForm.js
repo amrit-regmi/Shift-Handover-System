@@ -12,23 +12,23 @@ const StaffForm = ({ staff,fieldName,values,index,remove }) => {
   if(!staff) return null
   return(
     <Segment >
-      {staff.signedOffKey &&
+      {staff.signOffKey &&
       <Label attached='top left' size='mini' basic color="grey" >Signed Off </Label> }
       <Form.Group  >
-        <InputField  width= {4} readOnly = {staff.signedOffKey } name={`${fieldName}.name`}></InputField>
+        <InputField  width= {4} readOnly = {staff.signOffKey } name={`${fieldName}.name`}></InputField>
         < DateInputField
-          readOnly = {(staff.signedOffKey && !staff.changing) }
+          readOnly = {(staff.signOffKey && !staff.changing) }
           maxDate = {operateDate(Date.now(),30,'m','sub')}
           minDate= {operateDate(Date.now(),20,'h','sub')}
           name = {`${fieldName}.startTime`}/>
 
         < DateInputField
-          readOnly= {(staff.signedOffKey  && !staff.changing) }
+          readOnly= {(staff.signOffKey  && !staff.changing) }
           maxDate = {formatDate(Date.now())}
           minDate= {operateDate(values.startTime,20,'m','add')}
           name = {`${fieldName}.endTime`}/>
 
-        <Field type='hidden' value="" name={`${fieldName}.signedOffKey`}></Field>
+        <Field type='hidden' value="" name={`${fieldName}.signOffKey`}></Field>
 
         <Button
           style={{ height:'fit-content' }}

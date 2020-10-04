@@ -5,6 +5,7 @@ const taskSchema = new mongoose.Schema({
     type:String,
     required:true
   },
+
   aircraft:{
     type:mongoose.Schema.Types.ObjectId,
     ref:'Aircraft',
@@ -17,7 +18,6 @@ const taskSchema = new mongoose.Schema({
   status: {
     type:String,
     enum:['DEFERRED', 'CLOSED', 'OPEN'],
-    default: 'OPEN'
   },
   createdAt: {
     type:String,
@@ -25,9 +25,19 @@ const taskSchema = new mongoose.Schema({
   },
   createdBy: String,
   updates:[{
-    dateTime:String,
-    by: String,
-    update: String,
+    handoverId: {
+      type:mongoose.Schema.Types.ObjectId,
+      ref:'ShiftReport'
+    },
+    action:{
+      type:String,
+      enum:['DEFERRED', 'CLOSED', 'OPEN' ,'NOTES_ADDED', 'TASK_CREATED'],
+    },
+    note:{
+      type:String
+    }
+
+
   }]
 
 })

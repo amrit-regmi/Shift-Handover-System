@@ -15,7 +15,7 @@ export const TaskForm = ({ label,onRemove,disabled,children,name, ...props }) =>
 
   const [noteFieldVisibile, setNoteFieldVisibile] = useState(false)
 
-  const taskUpdateStatus = getFieldProps(`${name}.action`).value
+  const taskAction = getFieldProps(`${name}.action`).value
   const taskStatus = getFieldProps(`${name}.status`).value
   const taskNotes =  getFieldProps(`${name}.newNote`).value
 
@@ -42,6 +42,21 @@ export const TaskForm = ({ label,onRemove,disabled,children,name, ...props }) =>
     else{
       setFieldTouched(`${name}.description`)
     }
+  }
+
+  const actionCloseCheckBoxClick = (e,checked) => {
+    setFieldTouched(`${name}.description`,true)
+    if(!getFieldMeta(`${name}.description`).error){
+      if(checked){
+        setFieldValue(`${name}.action`,'CLOSED')
+      }else{
+        setFieldValue(`${name}.action`,'')
+      }
+    }
+    else{
+      setFieldTouched(`${name}.description`)
+    }
+
   }
 
   const actionDeferCheckBoxClick = (e,checked) => {
@@ -80,13 +95,13 @@ export const TaskForm = ({ label,onRemove,disabled,children,name, ...props }) =>
 
   const TaskStatusBar = () => {
 
-    if( taskUpdateStatus ){
+    if( taskAction && taskAction !== 'NOTES_ADDED'){
       return (
         <div style={{ padding:'0.3125em 1.5em' }}>
           <Label  size='mini' basic >Task from previous shifts </Label>
 
           {taskNotes && taskNotes.trim() && <Label size='mini' basic color="blue" as='a' onClick = {() => toggleNotes() }>Notes Added </Label>}
-          <Label size='mini' basic color="green" >{taskUpdateStatus} </Label>
+          <Label size='mini' basic color="green" >{taskAction} </Label>
 
           <Label as="a" size='mini' basic color='yellow'
             onClick = {(e) => undoButtonClick(e)}> <Icon name='undo'/> Undo Action </Label>
@@ -127,7 +142,7 @@ export const TaskForm = ({ label,onRemove,disabled,children,name, ...props }) =>
 
         <label style={{ display: 'inline-block', padding: '0.9375em 0px 0px 0.3125em', width:'1.5625em' }}>{label+1}</label>
 
-        <TextAreaField name= {`${name}.description`} disabled={disabled} rows ='1' width='16'></TextAreaField>
+        <TextAreaField  name= {`${name}.description`} readOnly={disabled} rows ='1' width='16'></TextAreaField>
 
 
 
@@ -145,19 +160,23 @@ export const TaskForm = ({ label,onRemove,disabled,children,name, ...props }) =>
 
       {!disabled &&
       <div style={{ padding:'0.5em 1.5em' }}>
+        <ErrorMessage name = {`${name}.action`} pointing='below' ></ErrorMessage>
         <Form.Group>
           <Form.Checkbox
-            checked ={ taskUpdateStatus === 'DEFERRED'  || taskUpdateStatus === 'OPEN'}
+            checked ={ taskAction === 'CLOSED' }
+            label="closed" onChange = {(e,{ checked }) => actionCloseCheckBoxClick(e,checked)}/>
+          <Form.Checkbox
+            checked ={ taskAction === 'DEFERRED'  || taskAction === 'OPEN'}
             label="Is Open Task" onChange = {(e,{ checked }) => actionOpenCheckBoxClick(e,checked)}/>
           <Form.Checkbox
             label="Action Required"
-            checked= {taskUpdateStatus === 'DEFERRED' }
+            checked= {taskAction === 'DEFERRED' }
             onChange = {(e,{ checked }) => actionDeferCheckBoxClick (e,checked) }/>
         </Form.Group>
 
       </div> }
 
-      {disabled && !taskUpdateStatus &&
+      {disabled &&  taskAction !== 'CLOSED' && taskAction !== 'DEFERRED' &&
 
 
       <div style={{ margin:'0px 3.125em 0.625em 1.5em' }}>
@@ -176,7 +195,7 @@ export const TaskForm = ({ label,onRemove,disabled,children,name, ...props }) =>
             <Button.Or size='mini' />
             <Button  type='button'
               size='mini' negative
-              value= 'Deferred'
+              value= 'DEFERRED'
               onClick = {(e,{ value }) => actionButtonClick(e,value)}> Defer Task to next Shift</Button>
           </Button.Group>
         </div>
@@ -184,7 +203,29 @@ export const TaskForm = ({ label,onRemove,disabled,children,name, ...props }) =>
 
 
       }
-      <TextAreaField rows='1' disabled = {!!taskUpdateStatus} hidden= {!noteFieldVisibile} style= {{ paddingBotton:'0.3125em',margin:'0px 3.125em 0.625em 1.5em'  }} name={`${name}.newNote`  }width='14'/>
+      <TextAreaField rows='1'
+        readOnly = {taskAction && taskAction !== 'NOTES_ADDED' ? true:false}
+        hidden= {!noteFieldVisibile}
+        style= {{ paddingBotton:'0.3125em',margin:'0px 3.125em 0.625em 1.5em'  }}
+        name={`${name}.newNote`  }
+        width='14'
+        onChange= {(e,{ value }) => {
+          if(value.trim() !== ''){
+            setFieldValue(`${name}.newNote`,value)
+            if (!taskAction){
+              setFieldValue(`${name}.action`,'NOTES_ADDED')
+            }
+
+          }else{
+            setFieldValue(`${name}.newNote`,'')
+            if (taskAction  === 'NOTES_ADDED'){
+              setFieldValue(`${name}.action`,'')
+
+            }
+
+          }
+
+        }}/>
 
 
     </>

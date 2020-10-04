@@ -53,6 +53,10 @@ const StationReportPage = () => {
     if(dataStation) dispatch({ type:'INIT_STATION',payload:dataStation.getStation })
   },[dataStation])
 
+  useEffect(() => {
+    if(dataReport) dispatch({ type:'',payload:dataReport.getShiftReport })
+  },[dataReport])
+
   //const { loading:loadingReport, error:errorReport, data: dataReport } = useQuery(GET_SHIFT_REPORT,{ variables:queryParams })
 
 
@@ -66,7 +70,7 @@ const StationReportPage = () => {
 
   if (errorReport) return `Error! ${errorReport}`
 
-
+  console.log(dataReport.getShiftReport.id)
 
   return (
     <>

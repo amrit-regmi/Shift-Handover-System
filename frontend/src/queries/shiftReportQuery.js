@@ -31,9 +31,19 @@ query fetchReport($id:String, $station: String, $flag: String){
         description
         id
         status
-        updates
+        updates {
+          action
+          handoverId {
+            id
+            shift
+          }
+          note
+        }
+        
       }
     } 
 }
 
 `
+
+/** */

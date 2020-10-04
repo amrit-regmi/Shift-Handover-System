@@ -60,7 +60,7 @@ const  StaffAddModel = ({ setOpen,open ,e }) => {
         setNotifyResult({ type: 'error', message: `${data.signOffTimeSheet.name} is already exist on report` } )
 
       }else {
-        const addedStaff = [...staffs,{ name:data.signOffTimeSheet.name, startTime:data.signOffTimeSheet.startTime, endTime: data.signOffTimeSheet.endTime ,signedOffKey:data.signOffTimeSheet.value ,id: data.signOffTimeSheet.id }]
+        const addedStaff = [...staffs,{ name:data.signOffTimeSheet.name, startTime:data.signOffTimeSheet.startTime, endTime: data.signOffTimeSheet.endTime ,signOffKey:data.signOffTimeSheet.value ,id: data.signOffTimeSheet.id }]
         setFieldValue('staffs', addedStaff)
 
         if(registerUserOpen){

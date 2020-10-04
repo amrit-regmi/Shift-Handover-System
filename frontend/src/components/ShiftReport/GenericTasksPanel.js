@@ -15,7 +15,7 @@ const GenericTaskPanel = ({ genericTasks }) => {
 
         <SegmentGroup >
           { _.map(genericTasks,task =>
-            <TaskInfo key={task.id} task ={task}/>
+            <TaskInfo key={task.id} task ={task} />
           )}
 
         </SegmentGroup>

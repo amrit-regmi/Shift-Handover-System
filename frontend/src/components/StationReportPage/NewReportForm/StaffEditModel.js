@@ -53,7 +53,7 @@ const  StaffEditModel = ({ setOpen,open, fieldName, removeClick ,removeStaff ,se
       }else {
         setFieldValue(`${fieldName}.startTime`,data.signOffTimeSheet.startTime)
         setFieldValue(`${fieldName}.endTime`,data.signOffTimeSheet.endTime)
-        setFieldValue(`${fieldName}.signedOffKey`,data.signOffTimeSheet.value)
+        setFieldValue(`${fieldName}.signOffKey`,data.signOffTimeSheet.value)
         setOpen(false)
 
       }

@@ -9,10 +9,12 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
     - Add Additional Tasks to shift
     - Set handover email receiving groups
 3. Handover Page
-    -  include Work perfomed per Customer/ EachAircraft  Staff (times)
-    -  shift must acknowledge the last Handover and action (Defer / Complete ) on pending tasks before submit
-    -  BarCode / Password  confirmation of worktime for Each User listed. 
-    -  New User can add themself to shift if they are not in the system.
+    -  include Work perfomed per Customer/ EachAircraft  Staff (times) - Implemented
+    -  shift must acknowledge the last Handover and action (Defer / Complete ) on pending tasks before submit - Implmented
+    -  BarCode / Password  confirmation of worktime for Each User listed. - Password Confirmation Implmented
+    -  New User can add themself to shift if they are not in the system. - Implemented 
+    -  Browse old Handovers per Station 
+    -  Browse all the open tasks
 6. After each Handover HTML formatted Email will be sent to all receving group set by station Manager
 7. Staff Panel 
     - Individual Staff can login  to view their working hours / Add clerification
@@ -44,4 +46,5 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |22.09.2020  | 3.5  | Date helper and new report front end validation partially complete | 
 |24.09.2020  | 5    | Input validations completed , Input Errors now displays nicely Restructring of Forms|
 |26.09.2020  | 6    | NewReport form restructering, checkbox behaviours fix, before submit data structuring , staffSignoff Backend, |
-|29.09.2020  | 6    | Staff Add/ Remove /Update on reports - verification on Frontend
+|29.09.2020  | 6    | Staff Add/ Remove /Update on reports - verification on Frontend |
+|04.10.2020  | 6    | New report submission and project restructering

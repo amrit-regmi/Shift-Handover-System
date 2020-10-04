@@ -28,7 +28,7 @@ const StaffForms = ({ values ,addStaffOpen }) => {
             <Button type='button' icon
               primary onClick={ () =>
                 addStaffOpen(true)
-                /*push({ name:'',startTime:'',endTime:'' ,signedOffKey:'' })*/}>< Icon name="plus circle"/> Add </Button>  <ErrorMessage name='staffs' pointing='left'/>
+                /*push({ name:'',startTime:'',endTime:'' ,signOffKey:'' })*/}>< Icon name="plus circle"/> Add </Button>  <ErrorMessage name='staffs' pointing='left'/>
           </Fragment>
         )}
 

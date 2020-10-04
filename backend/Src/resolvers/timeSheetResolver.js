@@ -71,7 +71,6 @@ const timeSheetResolver = {
           //console.log(staff)
           if(!staff ) throw new UserInputError('Cannot authenticate. check credentials')
           console.log(args)
-          console.log(staff.username)
           if(args.username && staff.username !== args.username && staff.passwordHash !== args.password) throw new UserInputError('Cannot authenticate. Check username and password')
           if(args.idCardCode && staff.idCardCode !== args.idCardCode ) throw new UserInputError('Cannot authenticate with this idcard ')
         }

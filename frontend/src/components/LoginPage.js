@@ -6,7 +6,7 @@ import { ALL_STATION } from '../queries/stationQuery'
 import { LOGIN_TO_STATION } from '../mutations/stationMutation'
 
 
-const LandingPage = () => {
+const LoginPage = () => {
   const history = useHistory()
   const [radioButton, setRadioButton] = useState({})
   const [stationKey,setStationKey]= useState('')
@@ -160,4 +160,4 @@ const LandingPage = () => {
 
 }
 
-export default LandingPage
+export default LoginPage

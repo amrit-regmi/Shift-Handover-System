@@ -21,7 +21,14 @@ const enumType =  `
     DEFERRED
     CLOSED
     OPEN
+  }
 
+  enum Action {
+    DEFERRED 
+    CLOSED 
+    OPEN 
+    NOTES_ADDED 
+    TASK_CREATED
   }
 `
 

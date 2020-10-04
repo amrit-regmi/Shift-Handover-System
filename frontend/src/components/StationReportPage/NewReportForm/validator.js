@@ -18,18 +18,18 @@ export const validateStaffsField= (value) => {
     error = _.mapValues(value, staff => {
       let errList = validateStaffInputField(staff)
       /**
-       * If the staff input fields have error other than signedOffkey
+       * If the staff input fields have error other than signOffKey
        */
       if(!_.isEmpty(errList)){
-        errList = { ...errList,  'signedOffKey':'Please fix staff inputs' }
+        errList = { ...errList,  'signOffKey':'Please fix staff inputs' }
         return errList
       }
 
       /**
        * If staff is not signed off
        */
-      if (!staff.signedOffKey ){
-        errList = { ...errList,  'signedOffKey':'Each staff must sign off' }
+      if (!staff.signOffKey ){
+        errList = { ...errList,  'signOffKey':'Each staff must sign off' }
       }
 
 
@@ -174,15 +174,19 @@ export const validateTasks = (tasks) => {
 const validateTaskField = (task) => {
   let error = null
   /**
-   * Id task status is open
+   * If task status is open
    */
-  if(task.status === 'OPEN') {
+  if(task.status === 'DEFERRED') {
     /**
      * Ir there is no action on open task
      */
-    if(!task.action ){
+    if(!task.action || task.action !== 'NOTES_ADDED'){
       error = { ...error, action:'Action was requested on this task. Please perform a action. ' }
     }
+  }
+
+  if(!task.status && !task.action){
+    error = { ...error, action: 'Task must have one of the following status' }
   }
 
   /**

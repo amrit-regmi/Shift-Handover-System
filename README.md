@@ -47,4 +47,5 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |24.09.2020  | 5    | Input validations completed , Input Errors now displays nicely Restructring of Forms|
 |26.09.2020  | 6    | NewReport form restructering, checkbox behaviours fix, before submit data structuring , staffSignoff Backend, |
 |29.09.2020  | 6    | Staff Add/ Remove /Update on reports - verification on Frontend |
-|04.10.2020  | 6    | New report submission and project restructering
+|04.10.2020  | 6    | New report submission and project restructering|
+|06.10.2020  | 4    | All report view implemented |

@@ -15,10 +15,10 @@ import { useMutation } from '@apollo/client'
 import { SUBMIT_REPORT } from '../../../mutations/submitShiftReport'
 
 
-
-const NewReport = ({ reportData }) => {
+const NewReport = () => {
   const context = useContext(Context)
   const station = context.state.station
+  const reportData = context.state.lastShiftReport
 
   const [openAddStaffModel,setOpenAddStaffModel] = useState (false)
 
@@ -49,7 +49,8 @@ const NewReport = ({ reportData }) => {
     let costumerList = []
 
     // eslint-disable-next-line array-callback-return
-    reportData.tasks.map(task =>  {
+
+    reportData && reportData.tasks && reportData.tasks.map(task =>  {
       if( (task.status==='DEFERRED' || task.status==='OPEN') ){
         // Initial field for deferred or open tasks
         const simplifiedTask = { id:task.id, description:task.description, status:task.status ,updates: task.updates ,action:'', newNote:'',taskCategory:task.taskCategory }
@@ -168,7 +169,7 @@ const NewReport = ({ reportData }) => {
 
           if(!_.isEmpty(taskErrors) ) errors.tasks = taskErrors
           // if(!_.isEmpty(staffErrors) ) errors.staffs = staffErrors
-          //console.log(errors)
+          console.log(errors)
           return errors
 
         }}

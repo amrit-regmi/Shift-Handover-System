@@ -36,12 +36,12 @@ const ShiftReport = ({ reportData }) => {
 
       {_.map(tasks, (tasksByType,key_taskType) => {
         if(key_taskType === 'AIRCRAFT') return (
-          <AircraftTaskPanel key={key_taskType} aircraftTasks={ tasksByType}/>
+          <AircraftTaskPanel key={key_taskType} aircraftTasks={ tasksByType} handoverId= {reportData.id}/>
 
         )
 
         return (
-          <GenericTaskPanel key = {key_taskType} genericTasks= {tasksByType}/>
+          <GenericTaskPanel key = {key_taskType} genericTasks= {tasksByType} handoverId= {reportData.id}/>
         )
       }
       )}

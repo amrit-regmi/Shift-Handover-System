@@ -3,7 +3,7 @@ import { Segment, Header, SegmentGroup ,Icon } from 'semantic-ui-react'
 import TaskInfo from './TaskInfo'
 import  _ from  'lodash'
 
-const AircraftTaskPanel = ({ aircraftTasks }) => {
+const AircraftTaskPanel = ({ aircraftTasks ,handoverId }) => {
   if(aircraftTasks.legth === 0){
     return null
   }
@@ -22,7 +22,7 @@ const AircraftTaskPanel = ({ aircraftTasks }) => {
                 {key_aircraft}
               </Segment>
               {_.map(tasks,task =>
-                <TaskInfo key={task.id} task ={task}/>
+                <TaskInfo key={task.id} task ={task} handoverId={handoverId}/>
               )}
 
             </SegmentGroup>))

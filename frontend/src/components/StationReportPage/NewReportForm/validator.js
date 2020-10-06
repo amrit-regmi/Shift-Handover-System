@@ -178,9 +178,10 @@ const validateTaskField = (task) => {
    */
   if(task.status === 'DEFERRED') {
     /**
-     * Ir there is no action on open task
+     * If there is no action on DEFERRED task
      */
-    if(!task.action || task.action !== 'NOTES_ADDED'){
+    if(!task.action || task.action === 'NOTES_ADDED'){
+      console.log(task)
       error = { ...error, action:'Action was requested on this task. Please perform a action. ' }
     }
   }

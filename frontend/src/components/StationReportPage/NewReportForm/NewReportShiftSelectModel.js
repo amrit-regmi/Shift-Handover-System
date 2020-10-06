@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { Modal,Header, Button ,Icon, Checkbox, Loader,Radio ,Form } from 'semantic-ui-react'
 import { useQuery } from '@apollo/client'
-import { GET_SHIFT_REPORT } from '../../queries/shiftReportQuery'
-import Context from './Context'
+import { GET_SHIFT_REPORT } from '../../../queries/shiftReportQuery'
+import Context from '../Context'
 
 const NewReportShiftSelectModel = ({ stationId  }) => {
   //const client = useApolloClient()

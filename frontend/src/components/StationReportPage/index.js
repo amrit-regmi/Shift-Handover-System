@@ -5,11 +5,12 @@ import { useParams, Redirect, useHistory } from 'react-router-dom'
 import { Loader,Image,Segment, Header } from 'semantic-ui-react'
 import MenuBar from './MenuBar'
 import ShiftReport from '../ShiftReport'
-import NewReportShiftSelectModel from './NewReportShiftSelectModel'
+import NewReportShiftSelectModel from './NewReportForm/NewReportShiftSelectModel'
 import Context from './Context'
 import reducer from './stationReducer'
 import { GET_STATION } from '../../queries/stationQuery'
 import NewReportForm from './NewReportForm'
+import AllReportsTable from './AllReportsTable'
 
 
 const StationReportPage = () => {
@@ -54,7 +55,7 @@ const StationReportPage = () => {
   },[dataStation])
 
   useEffect(() => {
-    if(dataReport) dispatch({ type:'',payload:dataReport.getShiftReport })
+    if(dataReport) dispatch({ type:'ADD_LASTSHIFTREPORT',payload:dataReport.getShiftReport })
   },[dataReport])
 
   //const { loading:loadingReport, error:errorReport, data: dataReport } = useQuery(GET_SHIFT_REPORT,{ variables:queryParams })
@@ -70,8 +71,6 @@ const StationReportPage = () => {
 
   if (errorReport) return `Error! ${errorReport}`
 
-  console.log(dataReport.getShiftReport.id)
-
   return (
     <>
       <Context.Provider value={{ state, dispatch }}>
@@ -84,6 +83,9 @@ const StationReportPage = () => {
 
         { activeItem === 'lastShiftReport' &&
           <ShiftReport reportData= {dataReport.getShiftReport} />
+        }
+        { activeItem === 'browseAllReports' &&
+          <AllReportsTable  />
         }
 
         {activeItem === 'startNewReport'&&

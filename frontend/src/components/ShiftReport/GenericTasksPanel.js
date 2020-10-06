@@ -3,7 +3,7 @@ import { Segment, Header, SegmentGroup } from 'semantic-ui-react'
 import TaskInfo from './TaskInfo'
 import  _ from  'lodash'
 
-const GenericTaskPanel = ({ genericTasks }) => {
+const GenericTaskPanel = ({ genericTasks,handoverId }) => {
   if(genericTasks.legth === 0){
     return null
   }
@@ -15,7 +15,7 @@ const GenericTaskPanel = ({ genericTasks }) => {
 
         <SegmentGroup >
           { _.map(genericTasks,task =>
-            <TaskInfo key={task.id} task ={task} />
+            <TaskInfo key={task.id} task ={task} handoverId = {handoverId}/>
           )}
 
         </SegmentGroup>

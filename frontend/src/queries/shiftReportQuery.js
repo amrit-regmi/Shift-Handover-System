@@ -46,4 +46,19 @@ query fetchReport($id:String, $station: String, $flag: String){
 
 `
 
+export const GET_REPORTLIST = gql ` 
+  query fetchReportList ( $stationId: String,  ){
+    getReportList (stationId: $stationId){
+      startTime,
+      endTime,
+      id,
+      shift
+      station{
+        location
+      }
+    }
+  }
+
+
+`
 /** */

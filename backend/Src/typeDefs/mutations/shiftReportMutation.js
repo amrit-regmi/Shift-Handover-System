@@ -23,8 +23,9 @@ const shiftReportMutation = `
     aircraft : String
     description: String
     status: String
-    action: String!
+    action: String
     createdBy: String
+    newNote:String
   }
 
   input ShiftReportStaffs{

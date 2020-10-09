@@ -6,7 +6,7 @@ import { ALL_STATION } from '../queries/stationQuery'
 import { LOGIN_TO_STATION } from '../mutations/stationMutation'
 
 
-const LoginPage = () => {
+const StationLoginPage = () => {
   const history = useHistory()
   const [radioButton, setRadioButton] = useState({})
   const [stationKey,setStationKey]= useState('')
@@ -147,7 +147,7 @@ const LoginPage = () => {
         </Form>
         <Divider horizontal>Or</Divider>
         <Segment clearing stacked>
-          <Button content='Log in to personal page' icon='user'  size='large' color="teal" fluid />
+          <Button content='Log in to personal page' icon='user'  size='large' color="teal" fluid onClick = {() => history.push('/staffLogin')} />
         </Segment>
 
       </Grid.Column>
@@ -160,4 +160,4 @@ const LoginPage = () => {
 
 }
 
-export default LoginPage
+export default StationLoginPage

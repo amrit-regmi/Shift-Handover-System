@@ -3,9 +3,10 @@ const Staff = require('../models/Staff')
 const { UserInputError, AuthenticationError } = require('apollo-server')
 const config = require('../../config')
 const jwt  = require('jsonwebtoken')
-const { sleep } = require('../utils/helper')
-
+const { sleep, getDatefromWeek ,getDateFromMonth } = require('../utils/helper')
 const { v4: uuidv4 } = require('uuid')
+
+
 
 const timeSheetResolver = {
   Mutation: {
@@ -103,6 +104,38 @@ const timeSheetResolver = {
 
     }
   },
+
+  Query: {
+    getTimeSheetByUser: async (root,args) => {
+      let startDate
+      let endDate
+
+      switch (args.filterDuration) {
+      case 'week':
+        startDate = getDatefromWeek(args.number,args.year)
+        endDate = new Date(Date.UTC( startDate.getFullYear(), startDate.getMonth(), startDate.getDate()+6))
+        break
+      case 'month':
+        endDate = getDateFromMonth (args.number,args.year)
+        startDate =  new Date( args.year, args.number, 1)
+        break
+      default:
+        break
+      }
+
+      const timesheets = await TimeSheet.find({
+        staff: args.staff,
+        date : {
+          $gte: startDate,
+          $lte: endDate
+        }
+
+      }
+      ).populate({ path:'shiftReport' , populate: { path: 'station' }})
+      return timesheets
+    }
+
+  }
 
 }
 

@@ -9,11 +9,21 @@ import { ApolloClient, HttpLink , InMemoryCache, ApolloProvider } from '@apollo/
 import { setContext } from 'apollo-link-context'
 
 const authLink = setContext((_, { headers }) => {
-  let verified =  JSON.parse(localStorage.getItem('stationKey'))
-  if(!verified) {
-    verified = JSON.parse(sessionStorage.getItem('stationKey'))
+  /**
+   * If the user is on staffs page session must have staffKey set , then set authorisation header to staffKey
+   */
+  let key = JSON.parse(sessionStorage.getItem('staffKey'))
+
+  /**If the staff page is not active then authorisation header is set to stationKey */
+  if(!key){
+    /**If the login info was saved preiously key will be set else retrive key from session*/
+    key =  JSON.parse(localStorage.getItem('stationKey'))
+    if(!key) {
+      key = JSON.parse(sessionStorage.getItem('stationKey'))
+    }
   }
-  const token = verified? verified.value:null
+
+  const token = key? key.value:null
   return {
     headers: {
       ...headers,

@@ -90,7 +90,7 @@ const StationReportPage = () => {
 
         {activeItem === 'startNewReport'&&
           //<NewReportShiftSelectModel  stationId={id} ></NewReportShiftSelectModel>
-          <NewReportForm reportData = {dataReport.getShiftReport}  ></NewReportForm>
+          <NewReportForm ></NewReportForm>
         }
       </Context.Provider>
     </>

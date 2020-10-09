@@ -1,12 +1,12 @@
 const  timeSheetQuery = `
   extend type Query {
-    getTimeSheetsByUser(
-      id:String!
-      filterDuration: FilterDuration!
-    )
-    : [TimeSheet]
-
-
+    getTimeSheetByUser(
+      staff:String!
+      filterDuration: String!
+      number: Int!
+      year: Int!
+      )
+      :[TimeSheet]
 
   } 
 
@@ -28,9 +28,11 @@ getTimeSheetsByHandover(
   )
   : [TimeSheet]
 
-getTimeSheetById(
-  id:String !
-  filterDuration: FilterDuration!
+  getTimeSheetByUser(
+  staff:String !
+  filterDuration: String
+  number: Int
+
   )
   :TimeSheet
 

@@ -45,7 +45,7 @@ const stationResolver = {
     loginToStation : async (root,args) => {
       const station = await Station.findById(args.id ).populate({ path:'costumers', populate:({ path:'aircrafts' }) })
 
-      if(!station || args.password !=='stationkey'){
+      if(!(station && args.password ==='stationkey')){
         throw new UserInputError('Wrong Credentials')
       }
 

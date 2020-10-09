@@ -6,8 +6,7 @@ const _ = require('lodash')
 const config = require('../../config')
 const jwt  = require('jsonwebtoken')
 const { Model } = require('mongoose')
-
-
+const { toDate } = require('../utils/helper')
 const shiftReportResolver = {
   Mutation: {
     submitShiftReport: async(root,args,context) => {
@@ -56,7 +55,10 @@ const shiftReportResolver = {
           try{
             //console.log(staff)
             const data = jwt.verify(staff.signOffKey, config.JWT_SECRET)
-            return { staff: data.id, startTime: data.startTime, endTime:data.endTime }
+            const reportDateSplit = args.startTime.split(' ')[0].split('-')
+            const date = new Date(Date.UTC(reportDateSplit[2],reportDateSplit[1]-1,reportDateSplit[0]))
+            console.log(date.toUTCString())
+            return { shiftReport:shiftReport, staff: data.id, startTime: data.startTime, endTime:data.endTime, date : date  }
           } catch (err){
             console.log('TimeSheet Verification error')
             throw new AuthenticationError(`${user} cannot be authenticated, please signoff again : ${err}`)

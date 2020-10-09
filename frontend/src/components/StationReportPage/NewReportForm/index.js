@@ -1,18 +1,18 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { Formik, FieldArray } from 'formik'
+import { Formik } from 'formik'
 import Context from '../Context'
-import { Form, Header, Button, Icon,Segment,Loader,Dimmer } from 'semantic-ui-react'
+import { Form, Header, Button, Icon } from 'semantic-ui-react'
 import { DateInputField } from './FormFields'
-import { validateStaffsField, validateTasks } from './validator'
+import { validateStaffsField, validateStartEndTime, validateTasks } from './validator'
 import { formatDate, operateDate } from '../../../utils/DateHelper'
 import _ from 'lodash'
 import StaffForms from './StaffForms'
 import AircraftSelectionForm from './AircraftSelectionForm'
-import TaskForm from './TaskForm'
 import TaskForms from './TaskForms'
 import StaffAddModel from './StaffAddModel'
 import { useMutation } from '@apollo/client'
 import { SUBMIT_REPORT } from '../../../mutations/submitShiftReport'
+
 
 
 const NewReport = () => {
@@ -163,13 +163,12 @@ const NewReport = () => {
         initialValues = {initialFields}
         validate = { values => {
           let errors = {}
-          //errors = { ...errors,...validateStartEndTime(values.startTime,values.endTime) }
-          //const staffErrors = validateStaffsField(values.staffs)
+          errors = { ...errors,...validateStartEndTime(values.startTime,values.endTime) }
+          const staffErrors = validateStaffsField(values.staffs)
           const taskErrors = validateTasks(values.tasks)
 
           if(!_.isEmpty(taskErrors) ) errors.tasks = taskErrors
-          // if(!_.isEmpty(staffErrors) ) errors.staffs = staffErrors
-          console.log(errors)
+          if(!_.isEmpty(staffErrors) ) errors.staffs = staffErrors
           return errors
 
         }}

@@ -57,7 +57,7 @@ export const operateDate = (date, duration, unit , operation) => {
 
 /**
  *
- * @param {String} stringDate format DD-MM-YYY
+ * @param {String} stringDate format DD-MM-YYYY HH:MM
  * @returns {Int} Javascript date int
  */
 export const toDate = (stringDate) => {
@@ -65,7 +65,7 @@ export const toDate = (stringDate) => {
   if(!isNumber(stringDate)){
     const splitDateTime = stringDate.split(' ')
     const splitDate = splitDateTime[0].split('-')
-    const newDate =`${splitDate[2]}-${splitDate[1]}-${splitDate[0]} ${splitDateTime[1]}`
+    const newDate =`${splitDate[2]}-${splitDate[1]}-${splitDate[0]} ${splitDateTime[1] || '00' }:${splitDateTime[2] | '00'}`
 
     ndate = Date.parse(newDate)
   }

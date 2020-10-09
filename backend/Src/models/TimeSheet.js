@@ -5,6 +5,12 @@ const timeSheetSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Staff'
   },
+
+  date: {
+    required:true,
+    type: Date,
+  },
+
   startTime: String,
   endTime: String,
   shiftReport: {

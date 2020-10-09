@@ -22,6 +22,11 @@ const staffMutation = `
       resetCode: String
       password: String
     ):ResponseMessage
+
+    staffLogin(
+      username: String!
+      password:String
+    ):JsonObject
     }
 
 

@@ -1,7 +1,10 @@
 const { isExpired } = require('../utils/helper')
 const Staff = require('../models/Staff')
-const { UserInputError,ApolloError } = require('apollo-server')
+const { UserInputError,ApolloError, AuthenticationError } = require('apollo-server')
 const { v4: uuidv4, validate: uuidValidate } = require('uuid')
+const jwt  = require('jsonwebtoken')
+const config = require('../../config')
+
 
 const staffResolver = {
   Query: {
@@ -124,6 +127,27 @@ const staffResolver = {
       }
 
 
+    },
+
+
+    staffLogin : async (root,args) => {
+      if(!(args.username && args.password)){
+        throw new UserInputError('Username and password is required')
+      }
+      const staff = await Staff.findOne({ username:args.username })
+      if(!staff)  throw new AuthenticationError ('Cannot find staff with provided credentials')
+
+      if(staff &&  staff.passwordHash !== args.password  ){
+
+        throw new AuthenticationError('Cannot find staff with provided credentials')
+      }
+
+      const staffToken = {
+        id: staff.id,
+        name: staff.name
+      }
+
+      return  { value: jwt.sign(staffToken, config.JWT_SECRET),name: staff.name, id:staff.id  }
     }
 
   }

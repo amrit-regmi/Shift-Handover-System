@@ -47,12 +47,23 @@ const staffSchema = new mongoose.Schema({
     enum: ['Contracter','Employee']
   },
 
+
   registerCode: String,
   resetCode: String,
   lastActive: String
   /* last active is based on handover not user login if the user is listed on handover then last active time is updted refernce to that handover*/
 })
 
+
+staffSchema.virtual('reqHours').get(() => {
+  if(this.contractType === 'Contractor') return 8
+  if(this.contractType === 'Employee') return 10
+  return 8
+
+})
+
+staffSchema.set('toJSON', { virtuals:true })
+staffSchema.set('toObject', { virtuals:true })
 staffSchema.plugin(uniqueValidator)
 
 module.exports =  mongoose.model('Staff', staffSchema)

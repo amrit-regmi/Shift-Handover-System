@@ -12,6 +12,7 @@ directive @dateTimeconstraint (
     status: Status!
     date: Date!
     shiftReport: ShiftReport
+    break: Int
   }  
     
 

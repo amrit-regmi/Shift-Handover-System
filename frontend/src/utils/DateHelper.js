@@ -76,3 +76,35 @@ export const toDate = (stringDate) => {
   return ndate
 
 }
+
+export const getWeekNumber= (dt) => {
+  var tdt = new Date(dt.valueOf())
+  var dayn = (dt.getDay() + 6) % 7
+  tdt.setDate(tdt.getDate() - dayn + 3)
+  var firstThursday = tdt.valueOf()
+  tdt.setMonth(0, 1)
+  if (tdt.getDay() !== 4)
+  {
+    tdt.setMonth(0, 1 + ((4 - tdt.getDay()) + 7) % 7)
+  }
+  return 1 + Math.ceil((firstThursday - tdt) / 604800000)
+}
+
+/**
+* Returns the week start date(Monday) for given year and weeknumber
+* @param {Int} w between 1-52/53
+* @param {Int} y year
+* @returns {Date}
+*/
+export const getDatefromWeek = (w,y) => {
+  const simpleStartDate = new Date(Date.UTC(y,0,1 + (w-1) *7))
+  const dayOfWeek = simpleStartDate.getDay()
+
+  let IsoWeekStart = simpleStartDate
+  if(dayOfWeek <=4) {
+    IsoWeekStart.setDate(simpleStartDate.getDate() - simpleStartDate.getDay()+1)
+  }else {
+    IsoWeekStart.setDate(simpleStartDate.getDate()+8 - simpleStartDate.getDay())
+  }
+  return IsoWeekStart
+}

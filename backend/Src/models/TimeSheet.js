@@ -13,6 +13,10 @@ const timeSheetSchema = new mongoose.Schema({
 
   startTime: String,
   endTime: String,
+  break: {
+    type: Number,
+    defaut: 30
+  },
   shiftReport: {
     type:mongoose.Schema.Types.ObjectId,
     ref:'ShiftReport'

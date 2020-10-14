@@ -116,8 +116,9 @@ const timeSheetResolver = {
         endDate = new Date(Date.UTC( startDate.getFullYear(), startDate.getMonth(), startDate.getDate()+6))
         break
       case 'month':
-        endDate = getDateFromMonth (args.number,args.year)
-        startDate =  new Date( args.year, args.number, 1)
+        endDate = getDateFromMonth (args.number+1,args.year)
+        startDate =  new Date(Date.UTC( args.year, args.number-1, 1))
+        console.log(startDate)
         break
       default:
         break
@@ -131,7 +132,7 @@ const timeSheetResolver = {
         }
 
       }
-      ).populate({ path:'shiftReport' , populate: { path: 'station' }})
+      ).populate({ path:'shiftReport staff' , populate: { path: 'station' } })
       return timesheets
     }
 

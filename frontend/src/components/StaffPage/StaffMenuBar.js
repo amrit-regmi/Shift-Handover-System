@@ -16,7 +16,7 @@ const StaffMenuBar = ({ activeItem, setActiveItem, staffName }) => {
     <Menu inverted color="blue" stackable >
       <Menu.Item header> Welcome {staffName} </Menu.Item>
 
-      <Menu.Item name= "Timesheet"
+      <Menu.Item name= "Timesheets"
         active = {activeItem === 'Timesheets'}
         onClick = {handleMenuClick}>
       </Menu.Item>

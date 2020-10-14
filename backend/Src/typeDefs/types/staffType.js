@@ -12,6 +12,8 @@ const staffType =  `
     passwordHash: String
     registerCode:String
     resetCode: String
+    reqHours:Int
+    
   }
 
 `

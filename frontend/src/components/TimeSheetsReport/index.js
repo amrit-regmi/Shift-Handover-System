@@ -3,9 +3,10 @@ import { Button, Table } from 'semantic-ui-react'
 import { toDate } from '../../utils/DateHelper'
 import _ from 'lodash'
 import ReportViewModal from '../ShiftReport/ReportViewModal'
+import TimeSheetRow from './TImeSheetRow'
 
 
-const TimeSheetsReport = ({ startDate,endDate,data })  => {
+const TimeSheetsReport = ({ startDate,endDate,data, setAllApproved })  => {
   const [openReport,setOpenReport]= useState({ id:'', open: false })
 
   /** sets the calender from start date and end dates so the empty dates will also be displayed on report*/
@@ -25,16 +26,6 @@ const TimeSheetsReport = ({ startDate,endDate,data })  => {
     shiftDate = _.groupBy(data.getTimeSheetByUser, 'date')
     shiftDate = ( { ...calenderObject,...shiftDate })
 
-  }
-
-  /** Calculate the overtime Hours for one shift report  */
-  const calculateOt = (startTime,endTime,breakTime) => {
-
-    if(!(endTime && startTime)) return null
-    const reqHours =  data && data.getTimeSheetByUser[0].staff.reqHours
-    const totHours =  calcTotal(startTime,endTime,breakTime)
-    const otHours =  totHours - reqHours
-    return otHours
   }
 
   /** Calculate total hours for one shft Report */
@@ -84,26 +75,7 @@ const TimeSheetsReport = ({ startDate,endDate,data })  => {
           {shiftDate && _.map(shiftDate,(timeSheets,date) =>
             <Fragment key = {date}>
               {timeSheets.map( (timeSheet,index) =>
-                <Table.Row  key = {timeSheet.id}>
-                  {index === 0 && <Table.Cell collapsing rowSpan={timeSheets.length}>{date.split('T')[0]}</Table.Cell>}
-                  <Table.Cell> {timeSheet.shiftReport && timeSheet.shiftReport.station.location} </Table.Cell>
-                  <Table.Cell selectable onClick= {() => setOpenReport({ id: timeSheet.shiftReport && timeSheet.shiftReport.id, open:true })}
-                  > {timeSheet.shiftReport && timeSheet.shiftReport.shift} </Table.Cell>
-                  <Table.Cell >{ timeSheet.startTime && timeSheet.startTime.split(' ')[1]}</Table.Cell>
-                  <Table.Cell> {timeSheet.endTime && timeSheet.endTime.split(' ')[1]} </Table.Cell>
-                  <Table.Cell> {timeSheet.break} </Table.Cell>
-                  <Table.Cell> {calcTotal(timeSheet.startTime, timeSheet.endTime,timeSheet.break)} </Table.Cell>
-                  <Table.Cell> {calculateOt(timeSheet.startTime, timeSheet.endTime,timeSheet.break)} </Table.Cell>
-                  <Table.Cell> {timeSheet.status === 'PENDING_APPROVAL'? 'No' : timeSheet.status === 'APPROVED'? 'Yes' : timeSheet.status  } </Table.Cell>
-                  <Table.Cell> {timeSheet.remarks}</Table.Cell>
-                  <Table.Cell>
-                    {!timeSheet.shiftReport ?
-                      <Button icon='add' size='mini' circular/>
-                      :
-                      <Button icon='edit' size='mini' circular/>}
-                  </Table.Cell>
-
-                </Table.Row>
+                <TimeSheetRow  date = {date} index = {index} key = {timeSheet.id} openReport= {setOpenReport} timeSheet={timeSheet} rowSpan={timeSheets.length} />
               )
               }</Fragment>
           )

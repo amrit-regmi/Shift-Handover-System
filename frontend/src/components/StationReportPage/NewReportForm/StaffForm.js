@@ -29,6 +29,7 @@ const StaffForm = ({ staff,fieldName,values,index,remove }) => {
           name = {`${fieldName}.endTime`}/>
 
         <Field type='hidden' value="" name={`${fieldName}.signOffKey`}></Field>
+        <Field type='hidden' value="" name={`${fieldName}.break`}></Field>
 
         <Button
           style={{ height:'fit-content' }}
@@ -63,6 +64,7 @@ const StaffForm = ({ staff,fieldName,values,index,remove }) => {
         open={open}
         startTime ={values.staffs[index].startTime}
         endTime ={values.staffs[index].endTime}
+        breakt = {values.staffs[index].break}
         fieldName = {fieldName}
         removeStaff = {removeStaff}
         setRemoveStaff= {setRemoveStaff}

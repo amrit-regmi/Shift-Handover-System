@@ -13,8 +13,17 @@ directive @dateTimeconstraint (
     date: Date!
     shiftReport: ShiftReport
     break: Int
+    remarks: [Remark]
   }  
-    
+  
+  type Remark {
+    title: String
+    date: String
+    text: String
+    edited: JsonObject
+    by: String
+
+  }
 
   enum Status {
     APPROVED
@@ -28,6 +37,7 @@ directive @dateTimeconstraint (
     name: String! 
     startTime:String
     endTime:String
+    break: Int
     id:String!
   }
 

@@ -13,6 +13,13 @@ gql `query fetchTimesheet($staff: String!, $filterDuration: String! ,$number: In
       date
       endTime
       break
+      remarks{
+        by
+        date
+        edited
+        text
+        title
+      }
       staff{
         id
         reqHours

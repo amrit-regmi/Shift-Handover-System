@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client'
 import React ,{ useState } from 'react'
-import { Loader, Header, Segment,Dropdown, Button ,Form } from 'semantic-ui-react'
+import { Loader, Header, Segment,Dropdown, Button ,Form, Popup } from 'semantic-ui-react'
 
 import _ from 'lodash'
 
@@ -19,7 +19,6 @@ const TimeSheet = () => {
 
   const queryParams = { staff: staff.id, filterDuration: selectBy  , number:number , year: year }
   const { error,loading,data } = useQuery(GET_TIMESHEETS, { variables:queryParams })
-
 
   /** Get Month name negative
   * Negative index gets month from end of array
@@ -76,6 +75,16 @@ const TimeSheet = () => {
       <Header as ='h5'>Something Went Wrong, Please try again</Header>
     )
   }
+
+  const isAllApproved = () => {
+    let approved = false
+    if(data && data.getTimeSheetByUser && data.getTimeSheetByUser.length > 0){
+      approved = !data.getTimeSheetByUser.some(timeSheet => timeSheet.status !== 'APPROVED')
+    }
+
+    return approved
+  }
+
 
   /**Retrive last four month including current month */
   const getMonthOptions = () => {
@@ -157,8 +166,12 @@ const TimeSheet = () => {
             </Form.Field>
           </Form.Group>
           <TimeSheetsReport startDate={start} endDate= {end} data={data}></TimeSheetsReport>
-          <Segment basic style= {{ marginBottom:'20em' }}floated='right'>
-            <Button floated='right'type='button' color='blue'> Save </Button><Button  floated='right' type='button' color='blue'> Submit to Payroll</Button><Button  floated='right' type='button' negative> Discard Changes</Button>
+          <Segment  basic style= {{ marginBottom:'20em' }}floated='right'>
+            <Popup
+              trigger = {<span  floated='right' ><Button  disabled ={!isAllApproved()} type='button' color='blue'> Submit to Payroll</Button></span>}
+              disabled= {isAllApproved()}
+              content= ' All records should be approved for submission'
+            />
           </Segment>
 
 

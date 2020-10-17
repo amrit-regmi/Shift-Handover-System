@@ -49,16 +49,19 @@ const shiftReportResolver = {
             endTime: args.endTime,
           })
         }
+
+        const reportDateSplit = args.startTime.split(' ')[0].split('-')
+        const date = new Date(Date.UTC(reportDateSplit[2],reportDateSplit[1]-1,reportDateSplit[0]))
+
         const staffAndTime = args.staffs.map( staff => {
           const user =  staff.name
           /**Verify the jwt token  return the decoded information */
           try{
             //console.log(staff)
             const data = jwt.verify(staff.signOffKey, config.JWT_SECRET)
-            const reportDateSplit = args.startTime.split(' ')[0].split('-')
-            const date = new Date(Date.UTC(reportDateSplit[2],reportDateSplit[1]-1,reportDateSplit[0]))
+
             console.log(date.toUTCString())
-            return { shiftReport:shiftReport, staff: data.id, startTime: data.startTime, endTime:data.endTime, date : date  }
+            return { shiftReport:shiftReport, staff: data.id, startTime: data.startTime, endTime:data.endTime, break:data.break, date : date  }
           } catch (err){
             console.log('TimeSheet Verification error')
             throw new AuthenticationError(`${user} cannot be authenticated, please signoff again : ${err}`)
@@ -143,6 +146,7 @@ const shiftReportResolver = {
           const insertedTask  =   await Task.insertMany( _.filter(tasks,task => !task.id))
           const taskIds = insertedTask.map(task => task._id)
           shiftReport.tasks = [...shiftReport.tasks,...taskIds]
+          shiftReport.date = date
           await shiftReport.save()
         }
 
@@ -269,8 +273,14 @@ const shiftReportResolver = {
       const shiftReports = await ShiftReport.find({ station:args.stationId }).populate('station')
       return shiftReports
 
+    },
+    getShiftReportByShift: async(root,args,context) => {
+      const report = await ShiftReport.findOne(args).populate('station')
+      return report
+
     }
-  }
+  },
+
 
 }
 

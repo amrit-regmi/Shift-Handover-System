@@ -23,11 +23,13 @@ const  StaffEditModel = ({ setOpen,open, fieldName, removeClick ,removeStaff ,se
 
   const shiftStartTime = getFieldMeta(`${fieldName}.startTime`).value
   const shiftEndTime = getFieldMeta(`${fieldName}.endTime`).value
+  const ibreakt = getFieldMeta(`${fieldName}.break`).value
   const [notifyResult,setNotifyResult] = useState('')
   const [username,setUsername] = useState('')
   const [password,setPassword] = useState('')
   const [startTime,setStartTime] = useState(shiftStartTime)
   const [endTime,setEndTime] = useState(shiftEndTime)
+  const [breakt,setBreakt] = useState(ibreakt)
 
   useEffect(() => {
     setStartTime(shiftStartTime)
@@ -70,7 +72,7 @@ const  StaffEditModel = ({ setOpen,open, fieldName, removeClick ,removeStaff ,se
 
   const submit = async (values) => {
     let signOffData
-    signOffData = { startTime:values.startTime ,endTime: values.endTime ,username: username, password: password, additionalAction: removeStaff?'remove':'update',id:getFieldMeta(`${fieldName}`).value.id }
+    signOffData = { startTime:values.startTime ,endTime: values.endTime ,break: values.breakt, username: username, password: password, additionalAction: removeStaff?'remove':'update',id:getFieldMeta(`${fieldName}`).value.id }
 
     console.log(signOffData)
     await signOff({ variables:signOffData })
@@ -118,6 +120,7 @@ const  StaffEditModel = ({ setOpen,open, fieldName, removeClick ,removeStaff ,se
           initialValues = {{
             startTime: startTime,
             endTime: endTime,
+            breakt: breakt,
             username:'',
             password:'',
             email:'',
@@ -167,6 +170,18 @@ const  StaffEditModel = ({ setOpen,open, fieldName, removeClick ,removeStaff ,se
                   onChange = {(e,{ value }) => {
                     setEndTime(value)}
                   }/>
+
+                <InputField
+                  inputlabel= 'Break'
+                  label = 'Minutes '
+                  labelPosition='right corner'
+                  name= 'breakt'
+                  type='number'
+                  min='0'
+                  onChange = {(e,{ value }) => {
+                    setBreakt(value)}
+                  }>
+                </InputField>
 
 
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useField, useFormikContext } from 'formik'
 import { DateTimeInput } from 'semantic-ui-calendar-react'
-import { Form, Label, Segment, Checkbox } from 'semantic-ui-react'
+import { Form, Label, Segment, Checkbox, Input } from 'semantic-ui-react'
 
 
 export const DateInputField = ({ label,...props }) => {
@@ -30,12 +30,16 @@ export const DateInputField = ({ label,...props }) => {
 }
 
 
-export const InputField = ({ label,...props }) => {
+export const InputField = ({ ...props }) => {
   const [field,meta] = useField(props)
   return (
     <>
-      <label>{label }</label>
-      <Form.Input  error= { props.type !== 'hidden' && meta.touched && meta.error} {...field} {...props} />
+
+      <Form.Field>
+        <label>{props.inputlabel?props.inputlabel:props.label }</label>
+        <Input   error= { props.type !== 'hidden' && meta.touched && meta.error} {...field} {...props} />
+      </Form.Field>
+
     </>
   )
 

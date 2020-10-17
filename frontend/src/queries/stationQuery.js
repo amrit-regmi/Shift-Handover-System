@@ -3,7 +3,7 @@ export const ALL_STATION = gql`
  query {
   allStations {
     location
-    shift {
+    shifts {
       name
       startTime
     }
@@ -22,7 +22,7 @@ export const GET_STATION = gql`
         name
         id
       }
-      shift {
+      shifts {
         name
         startTime
       }

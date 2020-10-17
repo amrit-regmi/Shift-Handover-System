@@ -6,6 +6,12 @@ const shiftReportQuery = `
       flag: String
     ):ShiftReport
 
+    getShiftReportByShift(
+      station: String!
+      shift: String!, 
+      date: Date!
+    ):ShiftReport
+
     getReportList(stationId:String):[ShiftReport]
   }
 

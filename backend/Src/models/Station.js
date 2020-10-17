@@ -19,7 +19,7 @@ const stationSchema = new mongoose.Schema({
     ref: 'Costumer'
   }],
 
-  shift:[
+  shifts:[
     {
       name:  {
         type:String,

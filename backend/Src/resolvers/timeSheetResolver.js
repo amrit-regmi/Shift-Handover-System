@@ -28,7 +28,8 @@ const timeSheetResolver = {
       //await sleep(5000)
       const signOffToken = {
         startTime: args.startTime,
-        endTime: args.endTime
+        endTime: args.endTime,
+        break: args.break
       }
 
       let staff
@@ -100,7 +101,7 @@ const timeSheetResolver = {
 
       signOffToken.id = staff._id
       console.log(signOffToken)
-      return  { value: jwt.sign(signOffToken,config.JWT_SECRET,{ expiresIn: '12h' }), name: staff.name ,startTime: args.startTime, endTime: args.endTime ,id: staff._id }
+      return  { value: jwt.sign(signOffToken,config.JWT_SECRET,{ expiresIn: '12h' }), name: staff.name ,startTime: args.startTime, endTime: args.endTime ,id: staff._id ,break:args.break }
 
     }
   },

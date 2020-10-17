@@ -61,4 +61,18 @@ export const GET_REPORTLIST = gql `
 
 
 `
+
+export const GET_SHIFTREPORT_ID = gql `
+  query fetchReportbyShift($station: String!, $shift: String!, $date: Date!){
+    getShiftReportByShift(station: $station, shift: $shift, date: $date) {
+      startTime,
+      endTime,
+      id,
+      shift,
+      station{
+        location
+      }
+    }
+  }
+`
 /** */

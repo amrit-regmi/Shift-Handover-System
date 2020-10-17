@@ -26,6 +26,7 @@ const  StaffAddModel = ({ setOpen,open ,e }) => {
   const [password,setPassword] = useState('')
   const [startTime,setStartTime] = useState(shiftStartTime)
   const [endTime,setEndTime] = useState(shiftEndTime)
+  const [breakt,setBreakt] = useState('30')
   const [registerUserOpen,setRegisterUserOpen]= useState(false)
   const [forgotPasswordOpen,setForgotPasswordOpen] = useState(false)
 
@@ -60,7 +61,7 @@ const  StaffAddModel = ({ setOpen,open ,e }) => {
         setNotifyResult({ type: 'error', message: `${data.signOffTimeSheet.name} is already exist on report` } )
 
       }else {
-        const addedStaff = [...staffs,{ name:data.signOffTimeSheet.name, startTime:data.signOffTimeSheet.startTime, endTime: data.signOffTimeSheet.endTime ,signOffKey:data.signOffTimeSheet.value ,id: data.signOffTimeSheet.id }]
+        const addedStaff = [...staffs,{ name:data.signOffTimeSheet.name, startTime:data.signOffTimeSheet.startTime, endTime: data.signOffTimeSheet.endTime ,signOffKey:data.signOffTimeSheet.value ,id: data.signOffTimeSheet.id, break: data.signOffTimeSheet.break }]
         setFieldValue('staffs', addedStaff)
 
         if(registerUserOpen){
@@ -90,12 +91,12 @@ const  StaffAddModel = ({ setOpen,open ,e }) => {
     let signOffData
 
     if(registerUserOpen){
-      signOffData = {  startTime:values.startTime ,endTime:values.endTime ,email: values.email, name: values.fullname ,additionalAction:'register' }
+      signOffData = {  startTime:values.startTime ,endTime:values.endTime , break:parseInt(breakt), email: values.email, name: values.fullname ,additionalAction:'register' }
     }
     else if(forgotPasswordOpen){
-      signOffData = { startTime:values.startTime ,endTime:values.endTime ,email:values.resetEmail,additionalAction:'reset' }
+      signOffData = { startTime:values.startTime ,endTime:values.endTime ,break:parseInt(breakt), email:values.resetEmail,additionalAction:'reset' }
     }else {
-      signOffData = { startTime:values.startTime ,endTime: values.endTime ,username: username, password: password }
+      signOffData = { startTime:values.startTime ,endTime: values.endTime ,break:parseInt(breakt), username: username, password: password }
     }
     console.log(signOffData)
     await signOff({ variables:signOffData })
@@ -198,6 +199,7 @@ const  StaffAddModel = ({ setOpen,open ,e }) => {
           initialValues = {{
             startTime: startTime,
             endTime: endTime,
+            breakt:breakt,
             username:'',
             password:'',
             email:'',
@@ -261,6 +263,18 @@ const  StaffAddModel = ({ setOpen,open ,e }) => {
                   onChange = {(e,{ value }) => {
                     setEndTime(value)}
                   }/>
+
+                <InputField
+                  inputlabel= 'Break'
+                  label = 'Minutes '
+                  labelPosition='right corner'
+                  name= 'breakt'
+                  type='number'
+                  min='0'
+                  onChange = {(e,{ value }) => {
+                    setBreakt(value)}
+                  }>
+                </InputField>
 
 
 

@@ -72,7 +72,8 @@ export const validateStaffInputField = (staff) => {
 }
 
 
-export const validateStartEndTime = (startTime,endTime)  => {
+export const validateStartEndTime = (startTime,endTime,startDate)  => {
+  console.log(new Date(startDate).getDate(),new Date(toDate(startTime)).getDate())
   let error
   /**
    * If start time is not set
@@ -104,9 +105,15 @@ export const validateStartEndTime = (startTime,endTime)  => {
   /**
    * If starttime is earlier than 24H
    */
-  if( toDate(startTime) + (24 *3600 * 1000) <= Date.now()){
+  if( !startDate && toDate(startTime) + (24 *3600 * 1000) <= Date.now()){
     error = { ...error,  'startTime':'Start time should be within last 24 hours' }
   }
+
+  if(startDate && new Date(startDate).getDate() !== new Date(toDate(startTime)).getDate()){
+
+    error = { ...error,  'startTime':`Start time should be on ${startDate.split('T')}` }
+  }
+
 
   /**
    * If starttime isgreater than end time

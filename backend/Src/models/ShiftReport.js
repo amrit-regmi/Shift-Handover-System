@@ -9,6 +9,12 @@ const shiftReportSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+
+  date: {
+    type:Date,
+    required:true
+
+  },
   startTime: {
     type: String,
     required: true

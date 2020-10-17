@@ -3,7 +3,7 @@ const stationType = `
     id: ID!
     location: String!
     costumers: [Costumer]
-    shift: [ShiftInfo]
+    shifts: [ShiftInfo]
   }
 
   type ShiftInfo {

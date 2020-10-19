@@ -20,5 +20,51 @@ export const SIGN_OFF_SHIFT = gql`
         endTime,
         id
       }
-  }
+  }`
+export const UPDATE_TIMESHEET = gql`
+ mutation updateTimeSheet($id: String, $startTime: String , $endTime: String, $station: String, $shift : String, $break: Int, $staff: String, $remarks: [RemarkInput], $handover: String){
+  addToTimeSheet(
+      id: $id
+      startTime: $startTime , 
+      endTime: $endTime,
+      station: $station, 
+      shift: $shift,  
+      staff: $staff
+      break: $break,
+      remarks:$remarks,
+      handover:$handover,
+  )
+    {
+      id
+      startTime
+      status
+      date
+      endTime
+      break
+      remarks{
+        by
+        date
+        edit
+        text
+        title
+      }
+      staff{
+        id
+        reqHours
+      }
+      shiftReport {
+        shift
+        id
+        station {
+          location
+        }
+      }
+
+      shift
+      station
+
+  } 
+  
+
+ }
 `

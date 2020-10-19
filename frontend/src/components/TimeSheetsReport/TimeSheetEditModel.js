@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Modal,Form, Button, Message, Segment, Header, Icon } from 'semantic-ui-react'
+import { Modal,Form, Button, Message, Segment, Header, Icon, Dimmer, Loader } from 'semantic-ui-react'
 import { DateInputField } from '../StationReportPage/NewReportForm/FormFields'
 import { operateDate, formatDate, toDate } from '../../utils/DateHelper'
 import { FieldArray, Formik } from 'formik'
@@ -7,22 +7,21 @@ import { validateStartEndTime } from '../StationReportPage/NewReportForm/validat
 import _ from 'lodash'
 import { ALL_STATION } from '../../queries/stationQuery'
 import { GET_SHIFTREPORT_ID } from '../../queries/shiftReportQuery'
-import { useLazyQuery, useQuery } from '@apollo/client'
+import { UPDATE_TIMESHEET } from '../../mutations/timeSheetMutation'
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
 import { DropDownField, InputField, RemarkField } from './TimeSheetEditFields'
-import ShiftReport from '../ShiftReport'
-import ReportViewModal from '../ShiftReport/ReportViewModal'
 
 const  TimeSheetEditModel = (props) => {
-
+  console.log(props.remarks)
   const { loading,data } = useQuery(ALL_STATION,{ skip: props.add === false  })
   const [getShiftReport,{ loading:shiftReportLoading, data:shiftReportData }] = useLazyQuery(GET_SHIFTREPORT_ID)
-
+  const [updateTimeSheet,{ loading: updateTimeSheetLoading, data: updateTimeSheetData }] = useMutation(UPDATE_TIMESHEET)
   const [stationOptions, setStationOptions] = useState([])
   const [newRemarkField,setNewRemarkField] = useState(false)
 
   useEffect (() => {
-    console.log(shiftReportData)
-  },[shiftReportData])
+    console.log(updateTimeSheetData)
+  },[updateTimeSheetData])
 
   useEffect(() => {
     if(data){
@@ -94,7 +93,21 @@ const  TimeSheetEditModel = (props) => {
   }
 
   const submit = async (values) => {
-    console.log(values)
+    const vars = { ...values,break: parseInt(values.break) }
+    if(shiftReportData && shiftReportData.getShiftReportByShift &&  shiftReportData.getShiftReportByShift.id){
+      vars.handover = shiftReportData.getShiftReportByShift.id
+    }
+
+    if(!props.add){
+      vars.id = props.id
+    }
+
+    /**If new remarks is added only update added remarks */
+    if(values.remarks.length >= props.remarks.length){
+      vars.remarks.splice(0,props.remarks.length)
+    }
+    console.log(vars)
+    updateTimeSheet({ variables: vars })
   }
 
   const closeModel = () => {
@@ -102,21 +115,23 @@ const  TimeSheetEditModel = (props) => {
     setNewRemarkField(false)
 
   }
-  const self=  JSON.parse( sessionStorage.getItem('staffKey')).name
+  const self=  JSON.parse( sessionStorage.getItem('staffKey'))
   const getInitValues = () => {
     const init = {
       startTime: props.startTime ,
       endTime: props.endTime ,
-      breakt: props.breakt || 30,
+      break: props.break || 30,
       remarks: props.remarks || [],
+
     }
 
     if(props.add){
+      init.staff = self.id
       init.startTime = formatDate((new Date(props.date).setHours(0)))
       init.endTime= (new Date(props.date).setHours(8)) > Date.now() ? toDate(Date.now()) : formatDate((new Date(props.date).setHours(8)))
       init.station = ''
       init.shift = ''
-      init.remarks = [{ title:'Manually Entered to TimeSheet' , date: formatDate(Date.now()), by: self }]
+      init.remarks = [{ title:'Manually Entered to TimeSheet' , date: formatDate(Date.now()), by: self.name }]
 
     }
     /**/
@@ -126,13 +141,13 @@ const  TimeSheetEditModel = (props) => {
   const autoAddRemarks = (values) => {
     /**If the user is not making a new entry */
     if (!props.add) {
-      const insertAt = props.remarks.length === 0 ? 0 : props.remarks.length -1
-      let newRemarks =[...values.remarks]
+      const insertAt = props.remarks.length === 0 ? 0 : props.remarks.length
+      let newRemarks = [...values.remarks]
       /**If start time and end time is modified from the original  */
       if((values.startTime !== props.startTime || values.endTime !== props.endTime)){
         /**Adding Filed Edited remarks to the last index of original remarks field, user entered remark should appear after this if there is any */
-        if(!newRemarks[insertAt] || (newRemarks[insertAt] && newRemarks[insertAt].title !== 'Edited')){
-          newRemarks.splice(insertAt,0,{ title:'Edited',date: formatDate(Date.now()),by:self, edit:{} })
+        if(!newRemarks[insertAt] || (newRemarks[insertAt] && newRemarks[insertAt].title!== 'Edited')){
+          newRemarks.splice(insertAt,0,{ title:'Edited',date: formatDate(Date.now()),by:self.name, edit:{} })
         }
 
         if(values.startTime !== props.startTime){
@@ -176,6 +191,14 @@ const  TimeSheetEditModel = (props) => {
     >
       <Modal.Header>{modalHeader} </Modal.Header>
       <Modal.Content>
+
+
+
+        {updateTimeSheetLoading &&
+            <Dimmer active>
+              <Loader />
+            </Dimmer>
+        }
         <Formik
 
           initialValues = {getInitValues()}
@@ -195,8 +218,8 @@ const  TimeSheetEditModel = (props) => {
           onSubmit = {(values) =>
           {
             /**If last added remark is empty remark then remove from values
-             * Retrived Remarks from database will have a title, new remark will always be at the end of array and may not have either title or text
-             */
+   * Retrived Remarks from database will have a title, new remark will always be at the end of array and may not have either title or text
+   */
             if(values.remarks.length &&  !values.remarks[values.remarks.length-1].title  &&  !values.remarks[values.remarks.length-1].text ){
 
               const newRemarks = [...values.remarks]
@@ -246,7 +269,7 @@ const  TimeSheetEditModel = (props) => {
                   inputlabel= 'Break'
                   label = 'Minutes '
                   labelPosition='right corner'
-                  name= 'breakt'
+                  name= 'break'
                   type='number'
                   min='0'>
                 </InputField>
@@ -255,74 +278,71 @@ const  TimeSheetEditModel = (props) => {
 
 
               {
-              /** If the user is inserting new timesheet  */
+                /** If the user is inserting new timesheet  */
                 props.add &&
-                <Form.Group>
+      <Form.Group>
 
-                  <DropDownField
-                    label =' Select Station'
-                    loading= {loading}
-                    name = 'station'
-                    placholder= 'Select Station'
-                    search
-                    selection
-                    options= {stationOptions}
-                    onChange = {  (e,{ value }) => {
-                      console.log(value)
-                      setFieldValue('station',value)
+        <DropDownField
+          label =' Select Station'
+          loading= {loading}
+          name = 'station'
+          placholder= 'Select Station'
+          search
+          selection
+          options= {stationOptions}
+          onChange = {  (e,{ value }) => {
+            console.log(value)
+            setFieldValue('station',value)
 
-                      const shift = getRecomendedShiftOption(values.startTime,value)
-                      setFieldValue('shift',shift)
-                      handleShiftChange(values.startTime,shift,value)
-                    // setSelectedStation(value)
-                    }}
-                  ></DropDownField>
+            const shift = getRecomendedShiftOption(values.startTime,value)
+            setFieldValue('shift',shift)
+            handleShiftChange(values.startTime,shift,value)
+          // setSelectedStation(value)
+          }}
+        ></DropDownField>
 
-                  <DropDownField
-                    label =' Select Shift'
+        <DropDownField
+          label =' Select Shift'
 
-                    disabled = {!values.station}
-                    name = 'shift'
-                    placholder= 'Select Shift'
-                    search
-                    selection
-                    options= {values.station? getShiftList(values.station):[]}
-                    onChange = {(e,{ value } ) => {
-                      setFieldValue('shift',value)
-                      handleShiftChange(values.startTime,value,values.station)
-                    }}
-                  ></DropDownField>
+          disabled = {!values.station}
+          name = 'shift'
+          placholder= 'Select Shift'
+          search
+          selection
+          options= {values.station? getShiftList(values.station):[]}
+          onChange = {(e,{ value } ) => {
+            setFieldValue('shift',value)
+            handleShiftChange(values.startTime,value,values.station)
+          }}
+        ></DropDownField>
 
 
-                </Form.Group>
+      </Form.Group>
               }
 
               {shiftReportLoading &&
-                <Segment secondary loading>
-                  Verifying {values.shift} Shift
-                </Segment>
+      <Segment secondary loading>
+        Verifying {values.shift} Shift
+      </Segment>
               }
 
               {values.shift && shiftReportData && shiftReportData.getShiftReportByShift &&
-                <Segment clearing secondary>
-                  <Header as='h3'><Icon name='check circle' color='green'></Icon> Verified</Header>
-                  <Header floated='left' as='h5'>{shiftReportData.getShiftReportByShift.station.location} {values.shift} Shift {shiftReportData.getShiftReportByShift.startTime.split(' ')[0]}
-                    <Header.Subheader><strong> Shift Start : </strong> {shiftReportData.getShiftReportByShift.startTime}<strong> Shift End : </strong> {shiftReportData.getShiftReportByShift.endTime} </Header.Subheader>
-                  </Header>
-                  <Button floated='right' onClick={() => props.openReport({ id: shiftReportData.getShiftReportByShift.id, open:true })} > View Shift Report</Button>
-                 
+      <Segment clearing secondary>
+        <Header as='h3'><Icon name='check circle' color='green'></Icon> Verified</Header>
+        <Header floated='left' as='h5'>{shiftReportData.getShiftReportByShift.station.location} {values.shift} Shift {shiftReportData.getShiftReportByShift.startTime.split(' ')[0]}
+          <Header.Subheader><strong> Shift Start : </strong> {shiftReportData.getShiftReportByShift.startTime}<strong> Shift End : </strong> {shiftReportData.getShiftReportByShift.endTime} </Header.Subheader>
+        </Header>
+        <Button floated='right' onClick={() => props.openReport({ id: shiftReportData.getShiftReportByShift.id, open:true })} > View Shift Report</Button>
 
-
-
-                </Segment>
+      </Segment>
               }
 
               { /**If the shift is set and the shift report doesnot exist for corresponding shift */
                 values.shift && shiftReportData && !shiftReportData.getShiftReportByShift &&
-                <Message warning visible
-                  header='Selected shift is not reported'
-                  content='Adding to record to unreported shift will not be reflected on any shift reports thus cannot be verified. This may result on work time not being approved'
-                />
+      <Message warning visible
+        header='Selected shift is not reported'
+        content='Adding to record to unreported shift will not be reflected on any shift reports thus cannot be verified. This may result on work time not being approved'
+      />
               }
 
               <label ><strong>Remarks</strong></label>
@@ -341,9 +361,9 @@ const  TimeSheetEditModel = (props) => {
                         setNewRemarkField(false)
                       } else{
                         if(values.remarks.length > 0 && values.remarks[values.remarks.length-1].title === 'Clearification Requested'){
-                          push({ title:'Add Clearification',date: formatDate(Date.now()),by:self,text:'' })
+                          push({ title:'Add Clearification',date: formatDate(Date.now()),by:self.name,text:'' })
                         } else {
-                          push({ title:'',date: formatDate(Date.now()),by:self,text:'' })
+                          push({ title:'',date: formatDate(Date.now()),by:self.name,text:'' })
                         }
                         setNewRemarkField(true)
                       }
@@ -363,6 +383,9 @@ const  TimeSheetEditModel = (props) => {
               <Button type='button' floated='right' negative onClick={() => closeModel()}>Cancel</Button>
             </Form>}
         </Formik>
+
+
+
       </Modal.Content>
 
     </Modal>

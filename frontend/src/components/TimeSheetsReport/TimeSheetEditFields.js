@@ -38,7 +38,7 @@ export const RemarkField = ({ name }) => {
   }
 
   return (
-    <Segment attached='bottom'>
+    <Segment>
       <Header as ='h5'>
         {remarkTitle}
         <Header.Subheader>by {remarkBy} on {remarkDate}</Header.Subheader>

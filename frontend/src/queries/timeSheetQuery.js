@@ -16,13 +16,14 @@ gql `query fetchTimesheet($staff: String!, $filterDuration: String! ,$number: In
       remarks{
         by
         date
-        edited
+        edit
         text
         title
       }
       staff{
         id
         reqHours
+        contractType
       }
       shiftReport {
         shift
@@ -31,6 +32,9 @@ gql `query fetchTimesheet($staff: String!, $filterDuration: String! ,$number: In
           location
         }
       }
+
+      shift
+      station
 
   }
 

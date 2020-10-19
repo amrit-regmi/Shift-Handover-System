@@ -57,6 +57,9 @@ const TimeSheet = () => {
       const sd  = getDatefromWeek(number,year)
       ed = new Date(Date.UTC( sd.getFullYear(), sd.getMonth(), sd.getDate()+6))
     }
+    if(ed >= today ){
+      ed = new Date(Date.UTC(today.getFullYear(),today.getMonth(),today.getDate()))
+    }
     return (ed )
   }
 

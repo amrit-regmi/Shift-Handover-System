@@ -17,8 +17,9 @@ const staffResolver = {
     /*Returns staff by ID or registraion Code*/
     getStaff: async(root,args) => {
       /*If Id is set then returns staff values except username / password / registercode and resetcode */
+      console.log(args)
       if (args.id && args.id !== null  && args.id !== undefined){
-        return  await Staff.findById(args.id,{ username:0,passwordHash:0,registerCode:0,resetCode:0 } )
+        return  await Staff.findById(args.id,{ passwordHash:0,registerCode:0,resetCode:0 } )
       }
 
       /* If registrCode is set then checks the validity code and returns existing details */

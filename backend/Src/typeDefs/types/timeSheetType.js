@@ -14,13 +14,15 @@ directive @dateTimeconstraint (
     shiftReport: ShiftReport
     break: Int
     remarks: [Remark]
+    shift: String
+    station: String
   }  
   
   type Remark {
     title: String
     date: String
     text: String
-    edited: JsonObject
+    edit: JsonObject
     by: String
 
   }

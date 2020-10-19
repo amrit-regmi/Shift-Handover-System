@@ -18,35 +18,60 @@ const TimeSheetsReport = ({ startDate,endDate,data, setAllApproved })  => {
 
   /**Converting calender array to object */
   const calenderObject = _.zipObject(calenderArray,calenderArray.map((val,index) => [{ id:index }]))
+  let netTotal =0
+  let netOt = 0
 
   let shiftDate
   if(data) {
 
     /**There is chance that the staff might be on 2 shifts on the day so grouping by date */
     shiftDate = _.groupBy(data.getTimeSheetByUser, 'date')
-    shiftDate = ( { ...calenderObject,...shiftDate })
+
+    const formatData = shiftDate && _.mapValues(shiftDate,(timeSheets,date) => {
+      let totalDaily = 0
+      let ot = 0
+      timeSheets = timeSheets.map((timesheet,index) => {
+        const breakt = (timesheet.break*60*1000)
+        const total =  ((toDate(timesheet.endTime) - toDate(timesheet.startTime) - breakt)/ (60*1000*60)).toFixed(1)
+
+        timesheet = { ...timesheet,total:parseFloat(total) }
+
+        totalDaily = totalDaily + parseFloat(total)
+
+        /**Overtime rules can be imlemented here
+         * For now for simplicity for Employee sundays is 100% saturday is 50%  and 8 hrs(specified by contractType) + is overtime, for contractor 10hrs + is overtime
+         */
+
+        /**If staff is a employee
+        const today = new Date(toDate(timesheet.startTime)).getDay()
+        if( timesheet.staff.contractType === 'Employee') {
+          /**If sunday */
+        /*if(today === 0 ){
+            ot = (totalDaily+parseFloat(total) - timesheet.staff.reqHours).toFixed(1)
+          }
+          /**If saturday */
+        /* else if(today === 6 ){
+            ot = (totalDaily + 0.5 * parseFloat(total) - timesheet.staff.reqHours).toFixed(1)
+          }
+          else{
+            ot = (totalDaily - timesheet.staff.reqHours).toFixed(1)
+          }
+        }
+        else{
+          ot =  (totalDaily - timesheet.staff.reqHours).toFixed(1)
+        }*/
+        ot =  (totalDaily - timesheet.staff.reqHours).toFixed(1)
+        return timesheet
+      })
+      timeSheets[0] = { ...timeSheets[0],overTime:ot }
+      netOt = netOt + parseFloat(ot)
+      netTotal = netTotal + totalDaily
+      return timeSheets
+    } )
+
+    shiftDate = ( { ...calenderObject,...formatData })
 
   }
-
-  /** Calculate total hours for one shft Report */
-  const calcTotal = (startTime,endTime,breakTime) => {
-    if(!(endTime && startTime)) return null
-    const totHours = ((toDate(endTime) - toDate(startTime) - (breakTime*60*1000))/ (60*1000*60)).toFixed(1)
-    return totHours
-  }
-
-  /** Calculate net hours and net ot hours */
-  const [totalHours,totalOtHours] = data && data.getTimeSheetByUser.reduce((p,c) => {
-
-    if(!(c.startTime && c.endTime)) return p
-    const totalPerShift = calcTotal(c.startTime,c.endTime,c.break)
-    const totalH = p[0]+parseFloat(totalPerShift)
-    const totalOtPerShift =  totalPerShift - c.staff.reqHours
-    const totalOT = p[1] + totalOtPerShift
-
-    return [totalH,totalOT]
-
-  },[0,0])
 
   const stickyTh = {
     position: 'sticky',
@@ -85,8 +110,8 @@ const TimeSheetsReport = ({ startDate,endDate,data, setAllApproved })  => {
         <Table.Footer>
           <Table.Row >
             <Table.HeaderCell  colSpan='6'>Total</Table.HeaderCell>
-            <Table.HeaderCell> {totalHours} </Table.HeaderCell>
-            <Table.HeaderCell> {totalOtHours} </Table.HeaderCell>
+            <Table.HeaderCell> {netTotal} </Table.HeaderCell>
+            <Table.HeaderCell> {netOt.toFixed(1)} </Table.HeaderCell>
             <Table.HeaderCell colSpan='2' />
           </Table.Row>
         </Table.Footer>

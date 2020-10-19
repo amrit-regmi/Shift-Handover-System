@@ -11,14 +11,14 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 3. Handover Page
     -  include Work perfomed per Customer/ EachAircraft  Staff (times) - Implemented
     -  shift must acknowledge the last Handover and action (Defer / Complete ) on pending tasks before submit - Implmented
-    -  BarCode / Password  confirmation of worktime for Each User listed. - Password Confirmation Implmented
+    -  BarCode / Password  confirmation of worktime for Each User listed. - Password Confirmation Implmented -Barcode Implementetion Skipped for now
     -  New User can add themself to shift if they are not in the system. - Implemented 
     -  Browse old Handovers per Station - Implemented
     -  Station Info Page (Staffs,costumer,contacts,procedures)
     -  Browse all the open tasks - SKIPPED FOR NOW
 6. After each Handover HTML formatted Email will be sent to all receving group set by station Manager
 7. Staff Panel 
-    - Individual Staff can login  to view their working hours / Add clerification
+    - Individual Staff can login  to view/ Edit their working hours / Add clerification
     - Request for Approval of time sheet Per Week  or Month
     
 # Work Time Accounting
@@ -53,3 +53,4 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |10.10.2020  | 4    | Staff Login Page and Timesheets backend |
 |14.10.2020  | 6    | Staff TimeSheet view |
 |18.10.2020  | 8    | Staff TimeSheet Add/ Edit Model ClientSide|
+|19.10.2020  | 6    | Staff TImeSheet Backend / User Profile View |

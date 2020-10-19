@@ -33,6 +33,14 @@ const timeSheetSchema = new mongoose.Schema({
   remarks: {
     type: Array,
     default:[]
+  },
+  station : {
+    type: String,
+
+  },
+  shift:{
+    type: String,
+
   }
 })
 

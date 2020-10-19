@@ -1,4 +1,4 @@
-import { toDate } from '../../../utils/DateHelper'
+import { formatDate, toDate } from '../../../utils/DateHelper'
 import _ from 'lodash'
 
 
@@ -73,7 +73,7 @@ export const validateStaffInputField = (staff) => {
 
 
 export const validateStartEndTime = (startTime,endTime,startDate)  => {
-  console.log(new Date(startDate).getDate(),new Date(toDate(startTime)).getDate())
+  console.log(startDate ,'=>', startTime, endTime)
   let error
   /**
    * If start time is not set
@@ -110,8 +110,7 @@ export const validateStartEndTime = (startTime,endTime,startDate)  => {
   }
 
   if(startDate && new Date(startDate).getDate() !== new Date(toDate(startTime)).getDate()){
-
-    error = { ...error,  'startTime':`Start time should be on ${startDate.split('T')}` }
+    error = { ...error,  'startTime':`Start time should be on ${formatDate(new Date(startDate)).split(' ')[0]}` }
   }
 
 

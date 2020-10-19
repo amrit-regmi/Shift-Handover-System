@@ -1,10 +1,11 @@
 import React,{ useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import Profile from './Profile'
 import StaffMenuBar from './StaffMenuBar'
 import TimeSheet from './TimeSheet'
 
 const StaffPage = () => {
-  const [activeItem, setActiveItem] = useState('Timesheets')
+  const [activeItem, setActiveItem] = useState('Profile')
   const history = useHistory()
 
   const staff = JSON.parse( sessionStorage.getItem('staffKey'))
@@ -18,6 +19,9 @@ const StaffPage = () => {
       <StaffMenuBar staffName = {staff && staff.name} activeItem= {activeItem} setActiveItem={setActiveItem}></StaffMenuBar>
       { activeItem === 'Timesheets' &&
       <TimeSheet/>
+      }
+      { activeItem === 'Profile' &&
+      <Profile/>
       }
     </>
   )

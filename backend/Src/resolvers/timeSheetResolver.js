@@ -5,15 +5,87 @@ const config = require('../../config')
 const jwt  = require('jsonwebtoken')
 const { sleep, getDatefromWeek ,getDateFromMonth } = require('../utils/helper')
 const { v4: uuidv4 } = require('uuid')
+const Station = require('../models/Station')
 
 
 
 const timeSheetResolver = {
   Mutation: {
-    addToTimeSheet: async (root,args) => {
-      const timeSheet = new TimeSheet({ ...args })
+    addToTimeSheet: async (root,args,context) => {
+
+      console.log(args)
+
+      const staff = context.currentUser
+      let timeSheet
+      /**If args.id is set  then it is treated as update request*/
+      if(args.id){
+        timeSheet = await TimeSheet.findById(args.id)
+        if(!timeSheet){
+          throw new UserInputError('Cannot find timesheet')
+        }
+        /**If the user updating the timesheet is different then the logged in user check for permission */
+        console.log(timeSheet.staff,staff.id)
+        if( !timeSheet.staff.equals(staff.id)){
+
+          /**TODO : verify permission */
+          throw new AuthenticationError('Permission denied')
+        }
+
+        if(args.startTime) timeSheet.startTime = args.startTime
+        if(args.endTime) timeSheet.endTime = args.endTime
+        if(args.break) timeSheet.break = args.break
+        if(args.remarks) timeSheet.remarks = [...timeSheet.remarks,...args.remarks]
+      }
+      /**If args.id is not set  then it is treated as add request*/
+      if(!args.id){
+        /**If not start Time and endtime */
+        if(!(args.startTime && args.endTime )){
+          throw new UserInputError('Required fields are missing')
+        }
+        /**If handoverId is not set then must provide shift name and station */
+        if(!args.handover && !(args.shift && args.station)){
+          throw new UserInputError('Required fields are missing')
+        }
+        const reportDateSplit = args.startTime.split(' ')[0].split('-')
+        const date = new Date(Date.UTC(reportDateSplit[2],reportDateSplit[1]-1,reportDateSplit[0]))
+        const tsArgs = {
+          startTime: args.startTime ,
+          endTime: args.endTime,
+          break:args.break,
+          date: date,
+          remarks: args.remarks
+        }
+        if(!args.handover){
+          const station = await Station.findById(args.station)
+          tsArgs.station =  station.location
+          tsArgs.shift =  args.shift
+        }else{
+          tsArgs.handover = args.handover
+        }
+
+        /**If staff field is set then check add permission for logged in staff */
+        if(args.staff){
+          if(args.staff !==  staff.id){
+            /**TODO : verify permission */
+            throw new AuthenticationError('Permission denied')
+          }
+          tsArgs.staff= args.staff
+        }else{
+          tsArgs.saff = staff.id
+        }
+
+
+        timeSheet = new TimeSheet(tsArgs)
+      }
+
+
+
+
+
+      //const timeSheet = new TimeSheet({ ...args })
       try{
         await timeSheet.save()
+        await TimeSheet.populate(timeSheet, [ { path:'shiftReport staff' , populate: { path: 'station' } }] )
         return timeSheet
       }catch(err){
         throw new UserInputError(err.message)

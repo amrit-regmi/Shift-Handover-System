@@ -18,7 +18,7 @@ const shiftReportResolver = {
       //console.log(currentStation)
       try{
         let shiftReport
-        /**If submitting the save shift report then report will have Id */
+        /**If submitting the saved shift report then report will have Id */
         shiftReport = await ShiftReport.findById(args.id)
 
         /**If shift report doesnot already have the required fileds and the required fields are not provided  while submit throws error */
@@ -60,7 +60,7 @@ const shiftReportResolver = {
             //console.log(staff)
             const data = jwt.verify(staff.signOffKey, config.JWT_SECRET)
 
-            console.log(date.toUTCString())
+            //console.log(date.toUTCString())
             return { shiftReport:shiftReport, staff: data.id, startTime: data.startTime, endTime:data.endTime, break:data.break, date : date  }
           } catch (err){
             console.log('TimeSheet Verification error')
@@ -81,7 +81,7 @@ const shiftReportResolver = {
 
             /**If task has id field means task already exists on db */
             if(task.id){
-              console.log(task)
+              //console.log(task)
               const existingTask = await Task.findById(task.id).exec()
 
               /** If task is from the current handover - task will have one update with current handoverId and taskcreated action*/

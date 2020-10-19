@@ -56,8 +56,7 @@ const staffSchema = new mongoose.Schema({
 
 
 staffSchema.virtual('reqHours').get(() => {
-  if(this.contractType === 'Contractor') return 8
-  if(this.contractType === 'Employee') return 10
+  if(this.contractType === 'Contractor') return 10
   return 8
 
 })

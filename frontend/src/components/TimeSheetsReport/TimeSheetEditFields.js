@@ -61,12 +61,32 @@ export const RemarkField = ({ name }) => {
 }
 
 export const DropDownField = ({ label,...props }) => {
+  const{ setFieldValue }= useFormikContext()
   const [field,meta] = useField(props)
-  return (
+  return (<>
+    {props.labeled &&
+     <div className="ui label label" style= {{ margin: 0,
+       borderTopRightRadius: 0,
+       borderBottomRightRadius: 0 ,
+       fontSize: '1em' ,
+       display: 'flex',
+       alignItems:'center' }}>
+       {label }
+     </div>}
     <Form.Field error= { meta.touched && meta.error}>
-      <label>{label }</label>
-      <Dropdown {...field} {...props} ></Dropdown>
-    </Form.Field>
+      {!props.labeled && <label>{label }</label>}
+      <Dropdown {...field} {...props}
+        style= {
+          props.labeled? { margin: 0,
+            borderTopLeftRadius: 0,
+            borderBottomLeftRadius: 0 }:{}
+        }
+
+        onChange = {props.onChange? props.onChange: (e,{ value }) => {
+          setFieldValue(props.name,value)
+        }}
+      ></Dropdown>
+    </Form.Field></>
   )
 
 }

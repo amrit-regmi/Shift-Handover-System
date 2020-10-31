@@ -7,6 +7,7 @@ const timeSheetType  = require('./timeSheetType')
 const scalarType  = require('./scalerType')
 const taskType  = require('./taskType')
 const shiftReportType = require('./shiftReportType')
+const permissionType = require('./permissionType')
 
 const types = [
   stationType,
@@ -17,7 +18,8 @@ const types = [
   timeSheetType,
   taskType,
   scalarType,
-  shiftReportType
+  shiftReportType,
+  permissionType
 ]
 
 module.exports = { types }

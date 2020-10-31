@@ -12,7 +12,6 @@ import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
 import { DropDownField, InputField, RemarkField } from './TimeSheetEditFields'
 
 const  TimeSheetEditModel = (props) => {
-  console.log(props.remarks)
   const { loading,data } = useQuery(ALL_STATION,{ skip: props.add === false  })
   const [getShiftReport,{ loading:shiftReportLoading, data:shiftReportData }] = useLazyQuery(GET_SHIFTREPORT_ID)
   const [updateTimeSheet,{ loading: updateTimeSheetLoading, data: updateTimeSheetData }] = useMutation(UPDATE_TIMESHEET)

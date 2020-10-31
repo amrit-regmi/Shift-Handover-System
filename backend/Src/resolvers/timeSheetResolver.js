@@ -13,7 +13,6 @@ const timeSheetResolver = {
   Mutation: {
     addToTimeSheet: async (root,args,context) => {
 
-      console.log(args)
 
       const staff = context.currentUser
       let timeSheet

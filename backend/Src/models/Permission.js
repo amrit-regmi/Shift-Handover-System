@@ -1,0 +1,53 @@
+const mongoose = require('mongoose')
+
+const permissionSchema = mongoose.Schema({
+  staffId:
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Staff'
+    }
+  ,
+
+  staff: {
+    edit: {
+      type: Boolean,
+      default: false
+    },
+    add: {
+      type: Boolean,
+      default: false
+    },
+    view:{
+      type: Boolean,
+      default: false
+    },
+  },
+
+  station: {
+    edit:[{
+      type: String
+    }],
+    add:Boolean,
+  },
+
+  timesheet:{
+    edit:[{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Station'
+    }] ,
+
+    view: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Station'
+    }],
+
+    sign:[{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Station'
+    }]
+  },
+
+  super: Boolean
+
+})
+module.exports = mongoose.model('Permission',permissionSchema)

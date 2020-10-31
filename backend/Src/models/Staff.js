@@ -27,6 +27,11 @@ const staffSchema = new mongoose.Schema({
     minlength: 9
   },
 
+  phone:{
+    type: String,
+    minlength: 8
+  },
+
   username: {
     type:String,
     unique: true,
@@ -44,7 +49,12 @@ const staffSchema = new mongoose.Schema({
 
   contractType: {
     type:String,
-    enum: ['Contracter','Employee']
+    enum: ['Contractor','Employee']
+  },
+
+  permission:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Permission'
   },
 
 

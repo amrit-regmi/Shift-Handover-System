@@ -4,6 +4,7 @@ const { UserInputError,ApolloError, AuthenticationError } = require('apollo-serv
 const { v4: uuidv4, validate: uuidValidate } = require('uuid')
 const jwt  = require('jsonwebtoken')
 const config = require('../../config')
+const Permission = require('../models/Permission')
 
 
 const staffResolver = {
@@ -15,11 +16,24 @@ const staffResolver = {
     },
 
     /*Returns staff by ID or registraion Code*/
-    getStaff: async(root,args) => {
-      /*If Id is set then returns staff values except username / password / registercode and resetcode */
-      console.log(args)
+    getStaff: async(root,args, context) => {
+
+      const loggedInStaff = context.currentUser
+
+      /*If Id is set then returns staff values except password / registercode and resetcode */
       if (args.id && args.id !== null  && args.id !== undefined){
-        return  await Staff.findById(args.id,{ passwordHash:0,registerCode:0,resetCode:0 } )
+
+        /**If staff has permission to edit staff then send permission info */
+        if(loggedInStaff.permission && loggedInStaff.permission.staff.edit) {
+          return  await Staff.findById(args.id,{ passwordHash:0,registerCode:0,resetCode:0 } ).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' }   })
+        }
+
+        else{
+          const t = await Staff.findById(args.id,{ passwordHash:0,registerCode:0,resetCode:0 } ).populate({ path:'permission' ,select:'' })
+          console.log(t)
+          return t
+        }
+
       }
 
       /* If registrCode is set then checks the validity code and returns existing details */
@@ -33,6 +47,7 @@ const staffResolver = {
 
         }
 
+
         return await Staff.findOne({ ...args })
       }
 
@@ -43,18 +58,46 @@ const staffResolver = {
     /*Create staff with initial information and send the register code to staff to complete registration*/
     addStaff : async (root,args) => {
       const registerCode = uuidv4()
-      const staff = new Staff({ ...args,registerCode:registerCode })
+      const tempUserName = uuidv4()
+      const staff = new Staff({ ...args,registerCode:registerCode, username: tempUserName })
       try {
         await staff.save()
         /*
           To DO:
           Send Email to Staff to set Username/Password with register link
         */
+        console.log(registerCode)
         return ({ registerCode:registerCode })
       }
       catch (error){
         throw new UserInputError(error.message)
       }
+    },
+
+    resetRegisterCode: async (root,args,context) => {
+      const loggedInStaff = context.currentUser
+      if(loggedInStaff.permission && loggedInStaff.permission.staff.edit && args.id) {
+        const registerCode = uuidv4()
+        try {
+          await Staff.findByIdAndUpdate(args.id,{ registerCode:registerCode } )
+          /*
+            To DO:
+            Send Email to Staff  with new register link
+          */
+          console.log(registerCode)
+          return({ status:'SUCCESS', message: 'Register Code  reset'  })
+        }
+        catch (error){
+          throw new UserInputError(error.message)
+        }
+
+      }
+      else{
+        throw new AuthenticationError('User do not have permission for this action')
+      }
+
+
+
     },
 
     /*
@@ -72,23 +115,43 @@ const staffResolver = {
 
       try {
         /*Update and reset the registration code to null*/
-        const staff = await Staff.findOneAndUpdate({ registerCode: args.registerCode },{ ...args,registerCode: null,password: 'passwordHash' })
+        const staff = await Staff.findOneAndUpdate({ registerCode: args.registerCode },{ ...args,password: 'passwordHash' }, { new: true, runValidators: true })
+
         if(!staff){
           throw new UserInputError('Incorrect Registration Code ')
         }
-        console.log(staff.registerCode)
+        staff.registerCode = undefined
+        staff.save()
+
         return staff
       }catch (error){
         throw new UserInputError(error.message)
       }
 
     },
-    /*Reset the password, if args.id is set sends reset link , if resetCode is set then checks and update the password*/
 
-    resetPassword: async (root,args) => {
+    /**Edit Staff Informatiion  */
+    staffEdit : async (root,args,context) => {
+
+      const loggedInStaff = context.currentUser
+      if(loggedInStaff.permission && loggedInStaff.permission.staff.edit) {
+        const { id, ...toUpdate } = { ...args }
+        const staff = await Staff.findByIdAndUpdate(id,{ ...toUpdate }, { new: true, runValidators: true }).select('-permission')
+        console.log(staff)
+        return staff
+
+      }else{
+        throw new AuthenticationError('User do not have permission for this action')
+      }
+
+    },
+    /**
+     * Generate the password reset link and send email to linked email address
+    */
+
+    resetPasswordReq: async (root,args) => {
       if(args.id && args.id!== null && args.id !== undefined){
         const resetCode = uuidv4()
-        console.log(args.id)
         const staffById = await Staff.findByIdAndUpdate(args.id,{ resetCode:resetCode })
         /*
         To DO:
@@ -97,7 +160,14 @@ const staffResolver = {
         console.log(resetCode)
         return({ status:'SUCCESS', message: `Password resetlink  sent to ${staffById.name}`  })
       }
+    },
 
+    /**
+     * If resetCode is set then checks and update the password
+     * if password is set and user is verified sets new password
+    */
+
+    resetPassword: async (root,args) => {
       if(args.resetCode && args.password){
 
         if(!uuidValidate(args.resetCode)){
@@ -112,7 +182,7 @@ const staffResolver = {
         if (staff){
           staff.passwordHash = 'passwordReset'
           /*set reset code to null*/
-          staff.resetCode = null
+          staff.resetCode = undefined
           try {
             await staff.save()
             return({ status:'SUCCESS', message: 'Password reset, login now'  })
@@ -130,12 +200,30 @@ const staffResolver = {
 
     },
 
+    changePassword: async (root,args) => {
+      if(!(args.password && args.newPassword && args.id)){
+        throw new UserInputError('Missing required Fields')
+      }
+      const staff = await Staff.findById(args.id)
+
+      if( !staff || (staff && staff.passwordHash !== args.password)){
+        throw new AuthenticationError('Cannot find staff with provided credentials')
+      }
+
+      staff.passwordHash = args.newPassword
+      await staff.save()
+      return({ status:'SUCCESS', message: 'Password reset'  })
+
+    },
 
     staffLogin : async (root,args) => {
       if(!(args.username && args.password)){
         throw new UserInputError('Username and password is required')
       }
-      const staff = await Staff.findOne({ username:args.username })
+      const staff = await Staff.findOne({ username:args.username }).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' } , select:'staff station timesheet'   })
+
+      console.log(staff.permission)
+
       if(!staff)  throw new AuthenticationError ('Cannot find staff with provided credentials')
 
       if(staff &&  staff.passwordHash !== args.password  ){
@@ -143,12 +231,14 @@ const staffResolver = {
         throw new AuthenticationError('Cannot find staff with provided credentials')
       }
 
+
+
       const staffToken = {
         id: staff.id,
         name: staff.name
       }
 
-      return  { value: jwt.sign(staffToken, config.JWT_SECRET),name: staff.name, id:staff.id  }
+      return  { value: jwt.sign(staffToken, config.JWT_SECRET),name: staff.name, id:staff.id , permission:staff.permission }
     }
 
   }

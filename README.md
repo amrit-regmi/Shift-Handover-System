@@ -18,7 +18,7 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
     -  Browse all the open tasks - SKIPPED FOR NOW
 6. After each Handover HTML formatted Email will be sent to all receving group set by station Manager
 7. Staff Panel 
-    - Individual Staff can login  to view/ Edit their working hours / Add clerification
+    - Individual Staff can login  to view/ Edit their working hours / Add clerification - Implemented
     - Request for Approval of time sheet Per Week  or Month
     
 # Work Time Accounting
@@ -54,3 +54,4 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |14.10.2020  | 6    | Staff TimeSheet view |
 |18.10.2020  | 8    | Staff TimeSheet Add/ Edit Model ClientSide|
 |19.10.2020  | 6    | Staff TImeSheet Backend / User Profile View |
+|30/31.10.2020  | 10   | Staff Profile View / Edit / Permissions(Partial implemented) / Password Change / Reset

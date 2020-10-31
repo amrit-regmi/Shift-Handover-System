@@ -12,7 +12,9 @@ const staffType =  `
     passwordHash: String
     registerCode:String
     resetCode: String
+    permission:Permission
     reqHours:Int
+    phone: String
     
   }
 

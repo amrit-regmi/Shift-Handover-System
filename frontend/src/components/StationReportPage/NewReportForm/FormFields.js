@@ -30,14 +30,19 @@ export const DateInputField = ({ label,...props }) => {
 }
 
 
-export const InputField = ({ ...props }) => {
+export const InputField = ({ width,...props }) => {
   const [field,meta] = useField(props)
   return (
     <>
+      <Form.Field error= { meta.touched && meta.error ? true: false} width={width} >
+        <label>{props.inputlabel?props.inputlabel:'' }</label>
+        <Input   {...field} {...props} />
+        { props.type !== 'hidden' && meta.touched && meta.error &&
+        <Label pointing prompt>
+          {meta.error}
+        </Label>
+        }
 
-      <Form.Field>
-        <label>{props.inputlabel?props.inputlabel:props.label }</label>
-        <Input   error= { props.type !== 'hidden' && meta.touched && meta.error} {...field} {...props} />
       </Form.Field>
 
     </>

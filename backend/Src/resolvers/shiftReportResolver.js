@@ -5,8 +5,7 @@ const { UserInputError,AuthenticationError } = require('apollo-server')
 const _ = require('lodash')
 const config = require('../../config')
 const jwt  = require('jsonwebtoken')
-const { Model } = require('mongoose')
-const { toDate } = require('../utils/helper')
+
 const shiftReportResolver = {
   Mutation: {
     submitShiftReport: async(root,args,context) => {

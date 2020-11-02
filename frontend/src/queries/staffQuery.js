@@ -21,9 +21,11 @@ query fetchStaff($id:String,$registerCode:String, $withPermission: Boolean!){
     reqHours
     registerCode
     permission  @include(if: $withPermission ) {
+      id
       station
       timesheet
       staff
+      admin
     }
     }
   }

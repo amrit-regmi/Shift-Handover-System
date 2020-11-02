@@ -2,10 +2,8 @@ import { useQuery } from '@apollo/client'
 import React ,{ useState } from 'react'
 import { Loader, Header, Segment,Dropdown, Button ,Form, Popup } from 'semantic-ui-react'
 
-import _ from 'lodash'
-
 import { GET_TIMESHEETS } from '../../queries/timeSheetQuery'
-import { getWeekNumber, toDate,getDatefromWeek  } from '../../utils/DateHelper'
+import { getWeekNumber, getDatefromWeek  } from '../../utils/DateHelper'
 import TimeSheetsReport from '../TimeSheetsReport'
 
 

@@ -2,28 +2,39 @@ import { useMutation, useQuery } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
 import { Button, Confirm, Grid,Header,Icon,Loader, Table, TableBody } from 'semantic-ui-react'
 import { GET_STAFF } from '../../queries/staffQuery'
-import _ from 'lodash'
 import PermissionManager from './PermissionManager'
 import StaffEditModel from './StaffEditModel'
 import {  RESET_PASSWORD_REQ, RESET_REGISTER_CODE } from '../../mutations/staffMutation'
 import PasswordChangeModel from './PasswordChangeModel'
+import { useParams } from 'react-router-dom'
 
 
-const Profile = ({ id }) => {
+const Profile = (props) => {
+  const params = useParams()
+  const id =params.id
 
   const [confirm,setConfirm] = useState({ open:false, handleCancel:() => {}, handleConfirm:() => {} })
 
   const [editModelOpen,setEditModelOpen] = useState(false)
   const [passwordChangeOpen,setPasswordChangeOpen] = useState(false)
   const staff =  JSON.parse(sessionStorage.getItem('staffKey'))
-  const staffCanEdit  = (staff.permission && staff.permission.staff.edit) || false
+
+  /**Staff can edit if staff has edit or admin  permission nad not own profile */
+  const staffCanEdit  = staff.id !== id && ((staff.permission && staff.permission.staff.edit) ||  staff.permission.admin || false)
   let staffId = staff.id
+
+  console.log(staff, staffCanEdit)
 
   if(id){
     staffId= id
+  } else if(params.id) {
+    staffId= params.id
   }
 
   const { loading,error,data } = useQuery(GET_STAFF,{ variables:{ id:staffId ,withPermission: staffCanEdit  } })
+
+
+  //console.log(data)
 
   const [resetPassword,{ loading: rpLoading,error:rpError,data:rpData }] = useMutation(RESET_PASSWORD_REQ)
   const [resetRegisterCode,{ loading: rcLoading,error:rcError,data:rcData }] = useMutation(RESET_REGISTER_CODE)

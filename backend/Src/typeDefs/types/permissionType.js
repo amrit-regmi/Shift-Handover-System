@@ -5,7 +5,7 @@ const permissionType = `
     staff: JsonObject!
     station: JsonObject!
     timesheet: JsonObject!
-    super: Boolean
+    admin: Boolean
   }
 `
 module.exports = permissionType

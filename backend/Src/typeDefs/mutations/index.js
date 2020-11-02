@@ -4,5 +4,6 @@ const { aircraftMutation } = require('./aircraftMutation')
 const { staffMutation } = require('./staffMutation')
 const { timeSheetMutation } = require('./timeSheetMutation')
 const { shiftReportMutation } = require('./shiftReportMutation')
-const mutations = [stationMutation,costumerMutation,aircraftMutation,staffMutation,timeSheetMutation,shiftReportMutation]
+const { permissionMutation } = require('./permissionMutation')
+const mutations = [stationMutation,costumerMutation,aircraftMutation,staffMutation,timeSheetMutation,shiftReportMutation,permissionMutation]
 module.exports = { mutations }

@@ -23,17 +23,22 @@ const staffResolver = {
       /*If Id is set then returns staff values except password / registercode and resetcode */
       if (args.id && args.id !== null  && args.id !== undefined){
 
-        /**If staff has permission to edit staff then send permission info */
-        if(loggedInStaff.permission && loggedInStaff.permission.staff.edit) {
-          return  await Staff.findById(args.id,{ passwordHash:0,registerCode:0,resetCode:0 } ).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' }   })
-        }
+        /** If staff has permission to view staff information */
+        if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin || loggedInStaff.permission.staff.view || args.id === loggedInStaff.id)) {
 
-        else{
-          const t = await Staff.findById(args.id,{ passwordHash:0,registerCode:0,resetCode:0 } ).populate({ path:'permission' ,select:'' })
-          console.log(t)
-          return t
-        }
+          /**If staff has permission to edit staff then send permission info */
+          if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
+            return  await Staff.findById(args.id,{ passwordHash:0,registerCode:0,resetCode:0 } ).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' }   })
+          }
 
+          else{
+            const t = await Staff.findById(args.id,{ passwordHash:0,registerCode:0,resetCode:0 } ).select('-permission')
+            return t
+          }
+
+        }else{
+          throw new AuthenticationError('User do not have rights to view staff information')
+        }
       }
 
       /* If registrCode is set then checks the validity code and returns existing details */
@@ -76,7 +81,7 @@ const staffResolver = {
 
     resetRegisterCode: async (root,args,context) => {
       const loggedInStaff = context.currentUser
-      if(loggedInStaff.permission && loggedInStaff.permission.staff.edit && args.id) {
+      if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin) && args.id) {
         const registerCode = uuidv4()
         try {
           await Staff.findByIdAndUpdate(args.id,{ registerCode:registerCode } )
@@ -134,7 +139,7 @@ const staffResolver = {
     staffEdit : async (root,args,context) => {
 
       const loggedInStaff = context.currentUser
-      if(loggedInStaff.permission && loggedInStaff.permission.staff.edit) {
+      if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
         const { id, ...toUpdate } = { ...args }
         const staff = await Staff.findByIdAndUpdate(id,{ ...toUpdate }, { new: true, runValidators: true }).select('-permission')
         console.log(staff)
@@ -200,9 +205,14 @@ const staffResolver = {
 
     },
 
-    changePassword: async (root,args) => {
-      if(!(args.password && args.newPassword && args.id)){
+    changePassword: async (root,args, context ) => {
+      const loggedInStaff = context.currentUser
+      if(!(args.password && args.newPassword && args.id )){
         throw new UserInputError('Missing required Fields')
+      }
+
+      if( loggedInStaff.id !== args.id) {
+        throw new AuthenticationError ('Invalid Authentication')
       }
       const staff = await Staff.findById(args.id)
 
@@ -220,7 +230,7 @@ const staffResolver = {
       if(!(args.username && args.password)){
         throw new UserInputError('Username and password is required')
       }
-      const staff = await Staff.findOne({ username:args.username }).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' } , select:'staff station timesheet'   })
+      const staff = await Staff.findOne({ username:args.username }).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' } , select:'id staff station timesheet admin'   })
 
       console.log(staff.permission)
 

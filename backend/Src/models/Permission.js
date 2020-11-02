@@ -47,7 +47,10 @@ const permissionSchema = mongoose.Schema({
     }]
   },
 
-  super: Boolean
+  admin: {
+    type: Boolean,
+    default: false
+  },
 
 })
 module.exports = mongoose.model('Permission',permissionSchema)

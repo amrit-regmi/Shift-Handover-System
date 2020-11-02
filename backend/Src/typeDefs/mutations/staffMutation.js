@@ -49,6 +49,7 @@ const staffMutation = `
       reqHours: Float
       position: String
     ): Staff
+
     }
 
 

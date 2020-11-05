@@ -7,7 +7,6 @@ const permissionResolver = {
     changePermission: async (root,args,context) => {
       const { id,...update }= { ...args }
 
-      console.log(id ,args)
       const loggedInStaff = context.currentUser
       let permission
 
@@ -20,7 +19,7 @@ const permissionResolver = {
       if(id === loggedInStaff.id){
         throw new AuthenticationError('User cannot  assign permission to himself')
       }
-      /**Only user with sdmin permession can set admin permsission*/
+      /**Only user with admin permession can set admin permsission*/
       if(update.admin){
         if(loggedInStaff.permission && loggedInStaff.permission.admin){
           permission = await Permission.findByIdAndUpdate(id,update, { new:true }). populate( { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' })
@@ -29,6 +28,13 @@ const permissionResolver = {
           throw new AuthenticationError('User do not have permission for this action')
         }
       }
+
+      /**User with admin permession can change any permsission*/
+      if(loggedInStaff.permission && loggedInStaff.permission.admin){
+        permission = await Permission.findByIdAndUpdate(id,update, { new:true }). populate( { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' })
+        return permission
+      }
+
 
 
       /**Only user with staff edit permission can modify permission
@@ -55,6 +61,8 @@ const permissionResolver = {
           if(update.timesheet.view && !_.difference(update.timesheet.view,loggedInStaff.permission.timesheet.view).length){
             throw new AuthenticationError('User do not have right to assign timesheet view permission for provided station')
           }
+
+          console.log(update)
           if(update.station.sign && !_.difference(update.timesheet.sign,loggedInStaff.permission.timesheet.sign).length){
             throw new AuthenticationError('User do not have right to assign timesheet view permission for provided station')
           }

@@ -35,7 +35,8 @@ const timeSheetSchema = new mongoose.Schema({
     default:[]
   },
   station : {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'Station'
 
   },
   shift:{

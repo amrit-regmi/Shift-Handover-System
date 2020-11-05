@@ -19,7 +19,7 @@ const server = new ApolloServer({ schema ,
     if (auth && auth.toLocaleLowerCase().startsWith('bearer')){
       const token = jwt.verify(auth.substring(7), config.JWT_SECRET)
       const currentStation = await Station.findById(token.stationId)
-      const currentUser = await Staff.findById(token.id).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' }   })
+      const currentUser = await Staff.findById(token.id).populate({ path:'permission' })
       return {currentStation,currentUser,}
     }
   }})

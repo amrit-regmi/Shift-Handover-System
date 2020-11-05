@@ -27,10 +27,7 @@ const PermissionManager = ({ permissions }) => {
    * User can only assign permsission if the user have rights for the station
    */
 
-  console.log(staff)
-
   const hasPermission = (permissions) => {
-    console.log(staff.permission['timesheet'].sign)
     if(hasSuperPermission){
       return true
     }

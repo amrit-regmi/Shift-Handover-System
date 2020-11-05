@@ -12,15 +12,15 @@ import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
 import { DropDownField, InputField, RemarkField } from './TimeSheetEditFields'
 
 const  TimeSheetEditModel = (props) => {
-  const { loading,data } = useQuery(ALL_STATION,{ skip: props.add === false  })
+
+  const self=  JSON.parse( sessionStorage.getItem('staffKey'))
+  const { loading,data } = useQuery(ALL_STATION,{ skip: props.add === false  || self.id !== props.staffId })
+
+
   const [getShiftReport,{ loading:shiftReportLoading, data:shiftReportData }] = useLazyQuery(GET_SHIFTREPORT_ID)
-  const [updateTimeSheet,{ loading: updateTimeSheetLoading, data: updateTimeSheetData }] = useMutation(UPDATE_TIMESHEET)
+  const [updateTimeSheet,{ loading: updateTimeSheetLoading }] = useMutation(UPDATE_TIMESHEET)
   const [stationOptions, setStationOptions] = useState([])
   const [newRemarkField,setNewRemarkField] = useState(false)
-
-  useEffect (() => {
-    console.log(updateTimeSheetData)
-  },[updateTimeSheetData])
 
   useEffect(() => {
     if(data){
@@ -87,7 +87,6 @@ const  TimeSheetEditModel = (props) => {
     const st = new Date(toDate(startTime))
     const ISODate = new Date ( Date.UTC(st.getFullYear() , st.getMonth() , st.getDate())).toISOString()
     const vars = { date:ISODate ,shift: shift, station:station }
-    console.log(vars)
     getShiftReport({ variables: vars })
   }
 
@@ -105,7 +104,6 @@ const  TimeSheetEditModel = (props) => {
     if(values.remarks.length >= props.remarks.length){
       vars.remarks.splice(0,props.remarks.length)
     }
-    console.log(vars)
     updateTimeSheet({ variables: vars })
   }
 
@@ -114,7 +112,7 @@ const  TimeSheetEditModel = (props) => {
     setNewRemarkField(false)
 
   }
-  const self=  JSON.parse( sessionStorage.getItem('staffKey'))
+
   const getInitValues = () => {
     const init = {
       startTime: props.startTime ,
@@ -125,7 +123,7 @@ const  TimeSheetEditModel = (props) => {
     }
 
     if(props.add){
-      init.staff = self.id
+      init.staff = props.staffId
       init.startTime = formatDate((new Date(props.date).setHours(0)))
       init.endTime= (new Date(props.date).setHours(8)) > Date.now() ? toDate(Date.now()) : formatDate((new Date(props.date).setHours(8)))
       init.station = ''
@@ -137,6 +135,7 @@ const  TimeSheetEditModel = (props) => {
     return init
   }
 
+  /**Function to auto generate remarks field based on user actions */
   const autoAddRemarks = (values) => {
     /**If the user is not making a new entry */
     if (!props.add) {

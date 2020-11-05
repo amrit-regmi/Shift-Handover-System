@@ -21,7 +21,7 @@ gql `query fetchTimesheet($staff: String!, $filterDuration: String! ,$number: In
         title
       }
       staff{
-        id
+        name
         reqHours
         contractType
       }
@@ -29,13 +29,22 @@ gql `query fetchTimesheet($staff: String!, $filterDuration: String! ,$number: In
         shift
         id
         station {
+          id
           location
         }
       }
 
       shift
-      station
+      station{
+        id
+        location
+      }
 
-  }
+  },
+
+  getStaff(
+    id: $staff
+    ){    
+  name}
 
 }`

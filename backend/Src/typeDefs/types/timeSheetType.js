@@ -15,7 +15,7 @@ directive @dateTimeconstraint (
     break: Int
     remarks: [Remark]
     shift: String
-    station: String
+    station: Station
   }  
   
   type Remark {

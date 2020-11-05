@@ -8,11 +8,7 @@ import { InputField } from '../StationReportPage/NewReportForm/FormFields'
 import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
 const StaffEditModel = (props) => {
 
-  const [updateStaff,{ loading: updateStaffLoading, data: updateStaffData }] = useMutation(STAFF_EDIT)
-
-  useEffect(() => {
-    console.log(updateStaffData)
-  },[updateStaffData])
+  const [updateStaff,{ loading: updateStaffLoading }] = useMutation(STAFF_EDIT)
 
 
   const initVal = { email: props.email,

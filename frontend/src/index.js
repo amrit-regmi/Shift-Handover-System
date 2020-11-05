@@ -24,7 +24,7 @@ const authLink = setContext((_, { headers }) => {
   }
 
   const token = key? key.value:null
-  console.log(token)
+
   return {
     headers: {
       ...headers,

@@ -6,7 +6,7 @@ import ReportViewModal from '../ShiftReport/ReportViewModal'
 import TimeSheetRow from './TImeSheetRow'
 
 
-const TimeSheetsReport = ({ startDate,endDate,data, setAllApproved })  => {
+const TimeSheetsReport = ({ startDate,endDate,data, staffId, setAllApproved })  => {
   const [openReport,setOpenReport]= useState({ id:'', open: false })
 
   /** sets the calender from start date and end dates so the empty dates will also be displayed on report*/
@@ -100,7 +100,7 @@ const TimeSheetsReport = ({ startDate,endDate,data, setAllApproved })  => {
           {shiftDate && _.map(shiftDate,(timeSheets,date) =>
             <Fragment key = {date}>
               {timeSheets.map( (timeSheet,index) =>
-                <TimeSheetRow  date = {date} index = {index} key = {timeSheet.id} openReport= {setOpenReport} timeSheet={timeSheet} rowSpan={timeSheets.length} />
+                <TimeSheetRow  staffId= {staffId} date = {date} index = {index} key = {timeSheet.id} openReport= {setOpenReport} timeSheet={timeSheet} rowSpan={timeSheets.length} />
               )
               }</Fragment>
           )

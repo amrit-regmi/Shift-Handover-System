@@ -55,4 +55,5 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |18.10.2020  | 8    | Staff TimeSheet Add/ Edit Model ClientSide|
 |19.10.2020  | 6    | Staff TImeSheet Backend / User Profile View |
 |30/31.10.2020  | 10   | Staff Profile View / Edit / Permissions(Partial implemented) / Password Change / Reset
-|02.11.2020  | 4    | Permissions backend implemented
+|02.11.2020  | 4    | Permissions backend implemented |
+|05.11.202   | 6    | StaffAdmin View/ Navigation / Url Routing / Bug Fixes |

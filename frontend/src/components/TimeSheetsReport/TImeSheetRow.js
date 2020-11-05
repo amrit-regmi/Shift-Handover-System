@@ -3,11 +3,11 @@ import { Table,Button } from 'semantic-ui-react'
 import { toDate } from '../../utils/DateHelper'
 import TimeSheetEditModel from './TimeSheetEditModel'
 
-const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date }) => {
+const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) => {
 
   const startTime = timeSheet.startTime
   const endTime = timeSheet.endTime
-  const station = (timeSheet.shiftReport && timeSheet.shiftReport.station.location) || timeSheet.station
+  const station = timeSheet.station && timeSheet.station.location
   const shift = (timeSheet.shiftReport && timeSheet.shiftReport.shift) || timeSheet.shift
   const  breakt = timeSheet.break
   const totalHours = timeSheet.total
@@ -18,7 +18,6 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date }) => {
 
   const isWeekDay = ()  => {
     const today = new Date(date).getDay()
-    console.log(today)
     if( today === 0 || today ===6){
       return false
     }
@@ -76,6 +75,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date }) => {
       </Table.Cell>
 
       <TimeSheetEditModel
+        staffId = {staffId}
         id= {timeSheet.id}
         openReport={openReport}
         date = {date}

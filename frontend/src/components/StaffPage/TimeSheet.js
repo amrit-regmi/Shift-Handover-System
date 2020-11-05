@@ -1,5 +1,5 @@
 import { useQuery } from '@apollo/client'
-import React ,{ useState } from 'react'
+import React ,{ useEffect, useState } from 'react'
 import { Loader, Header, Segment,Dropdown, Button ,Form, Popup } from 'semantic-ui-react'
 
 import { GET_TIMESHEETS } from '../../queries/timeSheetQuery'
@@ -7,16 +7,21 @@ import { getWeekNumber, getDatefromWeek  } from '../../utils/DateHelper'
 import TimeSheetsReport from '../TimeSheetsReport'
 
 
-const TimeSheet = () => {
+const TimeSheet = ({ staffId,setStaffName }) => {
   const [selectBy,setSelectBy] = useState ('week')
   const today = new Date()
   const [number,setNumber] = useState (getWeekNumber(today))
   const [year,setYear] = useState(today.getFullYear())
 
-  const staff =  JSON.parse(sessionStorage.getItem('staffKey'))
-
-  const queryParams = { staff: staff.id, filterDuration: selectBy  , number:number , year: year }
+  const queryParams = { staff: staffId, filterDuration: selectBy  , number:number, year: year }
   const { error,loading,data } = useQuery(GET_TIMESHEETS, { variables:queryParams })
+
+  console.log(data)
+  useEffect(() => {
+    if (data && data.getStaff )
+      setStaffName(data.getStaff.name)
+
+  },[data, setStaffName])
 
   /** Get Month name negative
   * Negative index gets month from end of array
@@ -166,7 +171,7 @@ const TimeSheet = () => {
                 value = {number}/>
             </Form.Field>
           </Form.Group>
-          <TimeSheetsReport startDate={start} endDate= {end} data={data}></TimeSheetsReport>
+          <TimeSheetsReport staffId={staffId} startDate={start} endDate= {end} data={data}></TimeSheetsReport>
           <Segment  basic style= {{ marginBottom:'20em' }}floated='right'>
             <Popup
               trigger = {<span  floated='right' ><Button  disabled ={!isAllApproved()} type='button' color='blue'> Submit to Payroll</Button></span>}

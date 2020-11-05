@@ -56,12 +56,16 @@ export const UPDATE_TIMESHEET = gql`
         shift
         id
         station {
+          id
           location
         }
       }
 
       shift
-      station
+      station{
+        id
+        location
+      }
 
   } 
   

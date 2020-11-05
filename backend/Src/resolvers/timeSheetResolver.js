@@ -1,19 +1,18 @@
 const TimeSheet =  require('../models/TimeSheet')
+const ShiftReport=  require('../models/ShiftReport')
 const Staff = require('../models/Staff')
 const { UserInputError, AuthenticationError } = require('apollo-server')
 const config = require('../../config')
 const jwt  = require('jsonwebtoken')
 const { sleep, getDatefromWeek ,getDateFromMonth } = require('../utils/helper')
 const { v4: uuidv4 } = require('uuid')
-const Station = require('../models/Station')
+
 
 
 
 const timeSheetResolver = {
   Mutation: {
     addToTimeSheet: async (root,args,context) => {
-
-
       const staff = context.currentUser
       let timeSheet
       /**If args.id is set  then it is treated as update request*/
@@ -23,10 +22,7 @@ const timeSheetResolver = {
           throw new UserInputError('Cannot find timesheet')
         }
         /**If the user updating the timesheet is different then the logged in user check for permission */
-        console.log(timeSheet.staff,staff.id)
-        if( !timeSheet.staff.equals(staff.id)){
-
-          /**TODO : verify permission */
+        if( !timeSheet.staff.equals(staff.id) && !staff.permission.timeSheet.edit){
           throw new AuthenticationError('Permission denied')
         }
 
@@ -38,13 +34,28 @@ const timeSheetResolver = {
       /**If args.id is not set  then it is treated as add request*/
       if(!args.id){
         /**If not start Time and endtime */
-        if(!(args.startTime && args.endTime )){
+        if(!(args.startTime && args.endTime && args.shift && args.station)){
           throw new UserInputError('Required fields are missing')
         }
-        /**If handoverId is not set then must provide shift name and station */
-        if(!args.handover && !(args.shift && args.station)){
-          throw new UserInputError('Required fields are missing')
+        /**If handoverId is  set then it must match with station and shift */
+        if(args.handover )
+        {
+          const handover = await ShiftReport.findById(args.handover)
+
+          if(!handover.station.equals(args.station) || handover.shift !== args.shift ){
+            throw new UserInputError('Provided station/shift does not match with shift report ')
+          }
+
         }
+        /**If the user adding to the timesheet is different then the logged in user check for permission  */
+        if( !args.staff === staff.id){
+          if(!staff.permission.timesheet.edit.includes(args.station)){
+            throw new AuthenticationError( 'User doesnot have rights to add timesheet to specified station')
+          }
+
+
+        }
+
         const reportDateSplit = args.startTime.split(' ')[0].split('-')
         const date = new Date(Date.UTC(reportDateSplit[2],reportDateSplit[1]-1,reportDateSplit[0]))
         const tsArgs = {
@@ -52,39 +63,21 @@ const timeSheetResolver = {
           endTime: args.endTime,
           break:args.break,
           date: date,
-          remarks: args.remarks
+          remarks: args.remarks,
+          station: args.station,
+          shift: args.shift,
+          staff: args.staff
         }
-        if(!args.handover){
-          const station = await Station.findById(args.station)
-          tsArgs.station =  station.location
-          tsArgs.shift =  args.shift
-        }else{
-          tsArgs.handover = args.handover
+        if(args.handover){
+          tsArgs.shiftReport = args.handover
         }
-
-        /**If staff field is set then check add permission for logged in staff */
-        if(args.staff){
-          if(args.staff !==  staff.id){
-            /**TODO : verify permission */
-            throw new AuthenticationError('Permission denied')
-          }
-          tsArgs.staff= args.staff
-        }else{
-          tsArgs.saff = staff.id
-        }
-
 
         timeSheet = new TimeSheet(tsArgs)
       }
 
-
-
-
-
-      //const timeSheet = new TimeSheet({ ...args })
       try{
         await timeSheet.save()
-        await TimeSheet.populate(timeSheet, [ { path:'shiftReport staff' , populate: { path: 'station' } }] )
+        await TimeSheet.populate(timeSheet, [ { path:'shiftReport staff station' , populate: { path: 'station' } }] )
         return timeSheet
       }catch(err){
         throw new UserInputError(err.message)
@@ -182,6 +175,7 @@ const timeSheetResolver = {
       let startDate
       let endDate
 
+      console.log(args)
       switch (args.filterDuration) {
       case 'week':
         startDate = getDatefromWeek(args.number,args.year)
@@ -189,13 +183,13 @@ const timeSheetResolver = {
         break
       case 'month':
         endDate = getDateFromMonth (args.number+1,args.year)
-        startDate =  new Date(Date.UTC( args.year, args.number-1, 1))
-        console.log(startDate)
+        startDate =  new Date(Date.UTC( args.year, args.number, 1))
+
         break
       default:
         break
       }
-
+      console.log(startDate,endDate)
       const timesheets = await TimeSheet.find({
         staff: args.staff,
         date : {
@@ -204,7 +198,7 @@ const timeSheetResolver = {
         }
 
       }
-      ).populate({ path:'shiftReport staff' , populate: { path: 'station' } })
+      ).populate({ path:'shiftReport staff station' , populate: { path: 'station' } })
       return timesheets
     }
 

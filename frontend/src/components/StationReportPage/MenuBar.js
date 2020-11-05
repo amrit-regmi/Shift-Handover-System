@@ -4,7 +4,6 @@ import { useHistory } from 'react-router-dom'
 
 
 const MenuBar = ({ activeItem, setActiveItem }) => {
-
   const history = useHistory()
   const handleMenuClick = (e, { name }) => setActiveItem( name )
   const switchStation = () => {

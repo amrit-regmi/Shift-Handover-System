@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
-import { Button, Confirm, Grid,Header,Icon,Loader, Table, TableBody } from 'semantic-ui-react'
+import { Button, Confirm, Divider, Grid,Header,Icon,Loader, Menu, Table, TableBody } from 'semantic-ui-react'
 import { GET_STAFF } from '../../queries/staffQuery'
 import PermissionManager from './PermissionManager'
 import StaffEditModel from './StaffEditModel'
@@ -11,30 +11,26 @@ import { useParams } from 'react-router-dom'
 
 const Profile = (props) => {
   const params = useParams()
-  const id =params.id
 
   const [confirm,setConfirm] = useState({ open:false, handleCancel:() => {}, handleConfirm:() => {} })
 
-  const [editModelOpen,setEditModelOpen] = useState(false)
   const [passwordChangeOpen,setPasswordChangeOpen] = useState(false)
   const staff =  JSON.parse(sessionStorage.getItem('staffKey'))
 
-  /**Staff can edit if staff has edit or admin  permission nad not own profile */
-  const staffCanEdit  = staff.id !== id && ((staff.permission && staff.permission.staff.edit) ||  staff.permission.admin || false)
+  /**Staff can edit if staff has edit or admin  permission and not own profile */
   let staffId = staff.id
 
-  console.log(staff, staffCanEdit)
-
-  if(id){
-    staffId= id
+  if(props.id){
+    staffId= props.id
   } else if(params.id) {
     staffId= params.id
+  }else {
+    staffId= staff.id
   }
 
-  const { loading,error,data } = useQuery(GET_STAFF,{ variables:{ id:staffId ,withPermission: staffCanEdit  } })
+  const { loading,error,data } = useQuery(GET_STAFF,{ variables:{ id:staffId ,withPermission: props.staffCanEdit  } })
 
 
-  //console.log(data)
 
   const [resetPassword,{ loading: rpLoading,error:rpError,data:rpData }] = useMutation(RESET_PASSWORD_REQ)
   const [resetRegisterCode,{ loading: rcLoading,error:rcError,data:rcData }] = useMutation(RESET_REGISTER_CODE)
@@ -45,9 +41,10 @@ const Profile = (props) => {
   }
 
   useEffect(() => {
-    console.log(rpData,rcData)
+    if(data)
+      props.setStaffName(data.getStaff.name)
 
-  },[rpData,rcData])
+  },[data, props])
 
   if ( rpError || rcError) {
     console.log( rpError, rcError)
@@ -72,21 +69,8 @@ const Profile = (props) => {
   */
   const registered = data.getStaff.registerLink ? false: true
 
-  return (
-    <Grid  columns='3' >
-      <Grid.Row centered textAlign='center'> <Header as='h3'> {data && data.getStaff.name }  </Header>
-        {staffCanEdit &&
-       // eslint-disable-next-line jsx-a11y/anchor-is-valid
-       <a style= {{ marginLeft:'3rem' }} href='#'
-         onClick= {
-           (e) => {
-             e.preventDefault()
-             setEditModelOpen(true)
-           }
-         }
-       >  Edit profile  <Icon name='edit'> </Icon> </a>}
-
-      </Grid.Row>
+  return (<>
+    <Grid columns='3' style={{ marginTop:'1rem' }}>
       <Grid.Row centered  textAlign='center'>
         <Grid.Column>
           <Header as ='h4'>Basic Info</Header>
@@ -116,7 +100,7 @@ const Profile = (props) => {
               </Table.Row>
             </TableBody>
             <Table.Footer>
-              {(staffCanEdit || staff.id === data.getStaff.id) &&
+              {(props.staffCanEdit || staff.id === data.getStaff.id) &&
               <Table.Row>
                 <Table.HeaderCell >
                   <Button
@@ -176,7 +160,7 @@ const Profile = (props) => {
                     {registered
                       ?staff.id === data.getStaff.id
                         ? 'Change Password'
-                        : staffCanEdit?  'Reset Password':''
+                        : props.staffCanEdit?  'Reset Password':''
                       :'Resend Register Link'}
                   </Button>
                 </Table.HeaderCell>
@@ -224,12 +208,12 @@ const Profile = (props) => {
         </Grid.Column>
 
       </Grid.Row>
-      {staffCanEdit &&
+      {props.staffCanEdit &&
       <Grid.Row > <Grid.Column><PermissionManager permissions= {data.getStaff.permission}></PermissionManager> </Grid.Column>  </Grid.Row>}
 
       <StaffEditModel
-        open={editModelOpen}
-        setOpen= {setEditModelOpen}
+        open={props.editModelOpen}
+        setOpen= {props.setEditModelOpen}
         email = {data.getStaff.email}
         phone =  {data.getStaff.phone}
         contractType ={data.getStaff.contractType}
@@ -254,6 +238,7 @@ const Profile = (props) => {
       />
 
     </Grid>
+  </>
 
 
 

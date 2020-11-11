@@ -7,16 +7,16 @@ import { getWeekNumber, getDatefromWeek  } from '../../utils/DateHelper'
 import TimeSheetsReport from '../TimeSheetsReport'
 
 
-const TimeSheet = ({ staffId,setStaffName }) => {
-  const [selectBy,setSelectBy] = useState ('week')
+const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,timesheetOnly }) => {
+  const [selectBy,setSelectBy] = useState (period || 'week')
   const today = new Date()
-  const [number,setNumber] = useState (getWeekNumber(today))
-  const [year,setYear] = useState(today.getFullYear())
+  const [number,setNumber] = useState (selected || getWeekNumber(today))
+  const [year,setYear] = useState(selectedYear || today.getFullYear())
+
 
   const queryParams = { staff: staffId, filterDuration: selectBy  , number:number, year: year }
   const { error,loading,data } = useQuery(GET_TIMESHEETS, { variables:queryParams })
 
-  console.log(data)
   useEffect(() => {
     if (data && data.getStaff )
       setStaffName(data.getStaff.name)
@@ -132,53 +132,56 @@ const TimeSheet = ({ staffId,setStaffName }) => {
 
   return (
     <>
-      <Segment basic >
-        <Header as = 'h5' floated='right'>Timesheet {selectBy === 'month'? months[number]: ` Week ${number}` } {year} </Header>
+      <Segment basic style= {{ marginBottom:'20em' }} >
         <Form>
-          <label> Select by: </label>
-          <Form.Group>
-            <Form.Field>
-              <Dropdown
-                selection
-                options = {[ { key:1 ,text: 'Month' , value: 'month' }, { key:2 ,text: 'Week' , value: 'week' }]}
-                onChange = {(e,{ value }) => {
-                  setSelectBy(value)
-                  if(value==='month') {
-                    setNumber (today.getMonth())
-                  }else {
-                    setNumber (getWeekNumber(today))
-                  }
+          {!timesheetOnly &&
+            <><label> Select by: </label>
+              <Form.Group>
+                <Form.Field>
+                  <Dropdown
+                    selection
+                    options = {[ { key:1 ,text: 'Month' , value: 'month' }, { key:2 ,text: 'Week' , value: 'week' }]}
+                    onChange = {(e,{ value }) => {
+                      setSelectBy(value)
+                      if(value==='month') {
+                        setNumber (today.getMonth())
+                      }else {
+                        setNumber (getWeekNumber(today))
+                      }
 
-                }
-                }
-                value = {selectBy}/>
-            </Form.Field>
-            <Form.Field>
-              <Dropdown
-                compact = { selectBy === 'month'? false:true }
-                selection
-                options = { selectBy === 'month'?getMonthOptions():getWeekOptions()}
-                onChange ={(e,{ value }) => {
-                  setNumber(value)
-                  if( selectBy === 'week' && value > getWeekNumber(today)) {
-                    setYear(today.getFullYear -1)
-                  }
-                  if(selectBy === 'month' && value > today.getMonth()) {
-                    setYear(today.getFullYear -1)
-                  }
+                    }
+                    }
+                    value = {selectBy}/>
+                </Form.Field>
+                <Form.Field>
+                  <Dropdown
+                    compact = { selectBy === 'month'? false:true }
+                    selection
+                    options = { selectBy === 'month'?getMonthOptions():getWeekOptions()}
+                    onChange ={(e,{ value }) => {
+                      setNumber(value)
+                      if( selectBy === 'week' && value > getWeekNumber(today)) {
+                        setYear(today.getFullYear -1)
+                      }
+                      if(selectBy === 'month' && value > today.getMonth()) {
+                        setYear(today.getFullYear -1)
+                      }
 
-                }}
-                value = {number}/>
-            </Form.Field>
-          </Form.Group>
-          <TimeSheetsReport staffId={staffId} startDate={start} endDate= {end} data={data}></TimeSheetsReport>
-          <Segment  basic style= {{ marginBottom:'20em' }}floated='right'>
+                    }}
+                    value = {number}/>
+                </Form.Field>
+              </Form.Group>
+            </> }
+          <TimeSheetsReport staffId={staffId} startDate={start} endDate= {end} data={data} title = {`Timesheet ${selectBy === 'month'? months[number]:  `Week ${number},` } ${year} `}></TimeSheetsReport>
+
+          <Segment  basic clearing>
             <Popup
-              trigger = {<span  floated='right' ><Button  disabled ={!isAllApproved()} type='button' color='blue'> Submit to Payroll</Button></span>}
+              trigger = {<span  floated='right' ><Button  floated='right' disabled ={!isAllApproved()} type='button' color='blue'> Submit to Payroll</Button></span>}
               disabled= {isAllApproved()}
               content= ' All records should be approved for submission'
             />
           </Segment>
+
 
 
         </Form>

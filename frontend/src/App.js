@@ -5,7 +5,6 @@ import './App.css'
 import StationReportPage from './components/StationReportPage'
 import StaffLoginPage from './components/StaffLoginPage'
 import StaffPage from './components/StaffPage'
-import Profile from './components/StaffPage/Profile'
 
 
 const  App = () =>   {
@@ -28,16 +27,31 @@ const  App = () =>   {
           <StaffPage></StaffPage>
         </Route>
         <Redirect from="/staff/:id" to="/staff/:id/Profile"/>
+        <Route path = "/staff">
+          <StaffPage></StaffPage>
+        </Route>
+
+        {/** Routing for AllStaffs (Admin ) Page*/}
         <Route path = "/AllStaffs/:id/:page">
           <StaffPage></StaffPage>
         </Route>
         <Redirect from="/AllStaffs/:id" to="/AllStaffs/:id/Profile"/>
-        <Route path = "/staff">
-          <StaffPage></StaffPage>
-        </Route>
+
         <Route path = "/AllStaffs/:id">
           <StaffPage></StaffPage>
         </Route>
+
+        {/** Routing for ManageTimeSheets (Admin ) Page*/}
+        <Route path = "/ManageTimeSheets/:staffId/:period">
+          <StaffPage></StaffPage>
+        </Route>
+        <Route path = "/ManageTimeSheets/:staffId">
+          <StaffPage></StaffPage>
+        </Route>
+        <Route path = "/ManageTimeSheets">
+          <StaffPage></StaffPage>
+        </Route>
+
         <Route path = "/">
           <StationLoginPage ></StationLoginPage>
         </Route>

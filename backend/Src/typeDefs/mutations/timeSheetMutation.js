@@ -29,6 +29,20 @@ directive @dateTimeconstraintin (
       id:String
       
     ): SignOffToken
+
+    approveTimeSheet(
+      id: String!
+      status: String!
+    ): TimeSheet
+
+    deleteTimeSheet(
+      id:String!
+    ): ResponseMessage
+
+    requestClarification(
+      id:String
+      clearify: String
+    ): TimeSheet
   }
 
   input RemarkInput{

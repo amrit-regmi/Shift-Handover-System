@@ -1,6 +1,7 @@
 import React,{ useEffect, useState } from 'react'
 import { Link, useHistory, useLocation, useParams } from 'react-router-dom'
 import { Breadcrumb, BreadcrumbDivider, BreadcrumbSection, Menu } from 'semantic-ui-react'
+import ManageTimeSheets from './AdminPages/ManageTimeSheets'
 import Profile from './Profile'
 import StaffMenuBar from './StaffMenuBar'
 import TimeSheet from './TimeSheet'
@@ -12,7 +13,8 @@ import TimeSheet from './TimeSheet'
 const StaffPage = ({ name ,id }) => {
   const params = useParams()
   let staffId = params && params.id
-  const page = params && params.page
+  let page = params && params.page
+  const location = useLocation()
   const history = useHistory()
   const [staffName, setStaffName] = useState(name)
   const [editModelOpen,setEditModelOpen] = useState(false)
@@ -20,19 +22,23 @@ const StaffPage = ({ name ,id }) => {
 
   const staff = JSON.parse( sessionStorage.getItem('staffKey'))
 
-  const staffCanEdit  = (staff.id !== staffId && staffId !== undefined)  && ((staff.permission && staff.permission.staff.edit) ||  staff.permission.admin || false)
+
+  if(location.pathname.split('/')[1] === 'ManageTimesheets'){
+    page = 'ManageTimesheets'
+  }
 
   useEffect(() => {
     setActiveItem(page)
   },[page])
 
-  const location = useLocation()
+
 
   /**If user is not logged in */
   if(!staff){
     history.push('/staffLogin')
     return null
   }
+  const staffCanEdit  = (staff.id !== staffId && staffId !== undefined)  && ((staff.permission && staff.permission.staff.edit) ||  staff.permission.admin || false)
 
   /**If id is passed as props */
   if(id){
@@ -57,10 +63,59 @@ const StaffPage = ({ name ,id }) => {
     staffId = id
   }
 
-
   if(staff.id !== staffId){
     if(location.pathname.split('/')[1] !== 'AllStaffs')
       history.push(`/AllStaffs/${staffId}/${activeItem}`)
+
+  }
+
+  const getBreadCrumb = () => {
+    const basePage =  location.pathname.split('/')[1].toLocaleLowerCase()
+    return(
+      /**
+         * If the staff page is page of browsing user then reflect that info on breadcrumb
+         */
+      basePage === 'staff' && staff.id === staffId ?
+        <Breadcrumb>
+          <BreadcrumbSection> My Page </BreadcrumbSection>
+          <BreadcrumbDivider/>
+          <BreadcrumbSection> {page} </BreadcrumbSection>
+
+        </Breadcrumb> :
+
+        basePage === 'allstaffs' ?
+          <>
+            { params.id &&
+            <>
+              <Breadcrumb>
+                <BreadcrumbSection link as = {Link} to = {'/AllStaffs'}> All Staffs </BreadcrumbSection>
+                <BreadcrumbDivider/>
+                <BreadcrumbSection link as={Link} to={`/AllStaffs/${staffId}/Profile`}> {staffName || staffId} </BreadcrumbSection>
+                <BreadcrumbDivider/>
+                <BreadcrumbSection active> {page} </BreadcrumbSection>
+              </Breadcrumb>
+            </>
+            }
+
+
+          </> :
+
+          basePage === 'managetimesheets' ?
+            <>
+              { params.staffId &&
+              <Breadcrumb>
+                <BreadcrumbSection link as = {Link} to = {'/ManageTimesheets'}> Manage Timesheets </BreadcrumbSection>
+                <BreadcrumbDivider/>
+                <BreadcrumbSection active = {params.period? false: true}  as={params.period?  Link: ''} to={`/ManageTimesheets/${params.staffId}`}> {staffName || params.staffId} </BreadcrumbSection>
+                {params.period && <>
+                  <BreadcrumbDivider icon='right chevron'/>
+                  <BreadcrumbSection active>{params.period.replace('_',' ')}</BreadcrumbSection>
+                </>}
+              </Breadcrumb> }
+            </> :''
+
+
+    )
 
   }
 
@@ -68,19 +123,9 @@ const StaffPage = ({ name ,id }) => {
   return (
     <>
       <StaffMenuBar staffName = {staff && staff.name} activeItem= {activeItem} setActiveItem={setActiveItem}></StaffMenuBar>
-      <Breadcrumb size='mini'>
-        {location.pathname.split('/')[1].toLocaleLowerCase() !== 'AllStaffs'.toLowerCase() ?<>
-          <BreadcrumbSection> My Page </BreadcrumbSection>
-          <BreadcrumbDivider/></>
-          :
-          <><BreadcrumbSection link> All Staffs </BreadcrumbSection>
-            <BreadcrumbDivider/>
-            <BreadcrumbSection link as={Link} to={`/AllStaffs/${staffName || staffId}/Profile`}> {staffName || staffId} </BreadcrumbSection>
-            <BreadcrumbDivider/>
-          </>
-        }
-        <BreadcrumbSection> {page} </BreadcrumbSection>
-      </Breadcrumb>
+
+      {getBreadCrumb()}
+
       {staffId !== staff.id &&
 
 <Menu pointing secondary >
@@ -124,13 +169,18 @@ const StaffPage = ({ name ,id }) => {
 
 </Menu>
       }
-      { activeItem === 'Timesheets' && <>
+      { activeItem && activeItem.toLowerCase() === 'timesheets' && <>
         <TimeSheet staffId ={staffId} setStaffName={setStaffName} />
       </>
       }
-      { activeItem === 'Profile' &&
+      { activeItem && activeItem.toLowerCase() === 'profile' &&
         <>
           <Profile id={staffId} staffCanEdit={staffCanEdit} setEditModelOpen={setEditModelOpen} editModelOpen={editModelOpen} setStaffName={setStaffName}/>
+        </>
+      }
+      { activeItem && activeItem.toLowerCase() === 'managetimesheets' &&
+        <>
+          <ManageTimeSheets setStaffName={setStaffName}></ManageTimeSheets>
         </>
       }
     </>

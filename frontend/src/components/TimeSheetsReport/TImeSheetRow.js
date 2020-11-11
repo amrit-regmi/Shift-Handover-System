@@ -1,9 +1,20 @@
+import {  gql, useApolloClient, useMutation } from '@apollo/client'
 import React, { useState } from 'react'
-import { Table,Button } from 'semantic-ui-react'
-import { toDate } from '../../utils/DateHelper'
+import { useParams } from 'react-router-dom'
+import { Table,Button, Popup, Header, Message,  Segment,Form } from 'semantic-ui-react'
+import { APPROVE_TIMESHEET, DELETE_TIMESHEET, REQUEST_CLARIFICATION } from '../../mutations/timeSheetMutation'
 import TimeSheetEditModel from './TimeSheetEditModel'
+import _ from 'lodash'
 
 const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) => {
+  const client = useApolloClient()
+  const staff = JSON.parse( sessionStorage.getItem('staffKey'))
+
+  const params= useParams()
+
+  const permission = staff.permission.timesheet
+
+  //console.log(permission)
 
   const startTime = timeSheet.startTime
   const endTime = timeSheet.endTime
@@ -15,7 +26,100 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
   const remarks = timeSheet.remarks || []
   const [open,setOpen] = useState(false)
   const [add,setAdd] = useState(false)
+  const [deleteOpen,setDeleteOpen]=  useState(false)
+  const [clarifyOpen,setClarifyOpen]=  useState(false)
 
+  const [clarifyText,setClarifyText] = useState('')
+
+  const [approveTimesheet,{ loading:timesheetSignLoading,error:timesignError, data:timesheetSignData }] = useMutation(APPROVE_TIMESHEET)
+  const [mutatedeleteTimesheet,{ loading:deleteLoading,error:deleteError, data:deleteData }] = useMutation(DELETE_TIMESHEET)
+  const [requestClarification,{ loading:clarifyLoading,error:clarifyError, data:clarifyData }] = useMutation(REQUEST_CLARIFICATION)
+
+  const deleteTimeSheet = () => {
+    mutatedeleteTimesheet(
+      { variables:{ id: timeSheet.id },
+        update: (store,response) => {
+          if(response.data.deleteTimeSheet && response.data.deleteTimeSheet.status === 'SUCCESS') {
+            store.modify({
+              fields:{
+                getTimeSheetByUser(existingTimeSheetRefs, { DELETE }){
+                  return DELETE
+                },
+
+                getAllTimeSheets(existingTimeSheetRefs, { readField }){
+                  const period = params.period
+                  if(!period){
+                    return existingTimeSheetRefs
+                  }
+
+                  const modify = _.cloneDeep(existingTimeSheetRefs)
+
+
+                  const totHours = modify[period][timeSheet.staff.name].totHours-totalHours
+                  if (totHours === 0){
+                    delete (modify[period])
+                    return modify
+                  }
+
+                  const stations = modify[period][timeSheet.staff.name].station
+                  modify[period][timeSheet.staff.name] = {
+                    ...modify[period][timeSheet.staff.name],
+                    itemsPending:modify[period][timeSheet.staff.name].itemsPending-1,
+                    totHours: totHours,
+                    station:  { ...stations,[timeSheet.station.location]: stations[timeSheet.station.location]-1 }
+
+                  }
+
+                  return modify
+                }
+              },
+
+              broadcast: false
+
+            })
+
+          }
+
+        }
+      })
+
+  }
+
+  const askToclarify = () => {
+    const vars = {
+      id: timeSheet.id,
+      clearify: clarifyText
+    }
+
+    requestClarification({ variables: vars ,
+      update:(store,response) => {
+        store.writeFragment({
+          id: `TimeSheet:${timeSheet.id}`,
+          fragment: gql `fragment AddRemarks on TimeSheet {
+            remarks
+          }`,
+          data: {
+            remarks : response.data.requestClarification.remarks
+          }
+        },
+        )
+
+        const test = store.readFragment({
+          id: `TimeSheet:${timeSheet.id}`,
+          fragment: gql ` fragment ReadRemarks on TimeSheet {
+            remarks
+          }`
+        })
+
+        console.log(test)
+
+
+      } }
+
+
+    )
+
+  }
   const isWeekDay = ()  => {
     const today = new Date(date).getDay()
     if( today === 0 || today ===6){
@@ -57,23 +161,147 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
 
         </>
         }</Table.Cell>
-      <Table.Cell>
+      <Table.Cell  >
 
-        {
-          isEmptyRow ?
-            <Button icon='add' size='mini' circular onClick = {() => {
-              setAdd(true)
-              setOpen(true)
+        <Segment loading={timesheetSignLoading || deleteLoading || clarifyLoading} disabled={timesheetSignLoading || deleteLoading || clarifyLoading} size='tiny' basic  style={{ width:'max-content', display:'inline-block' }} >
 
-            }}/>
-            :
-            <Button icon='edit' size='mini' circular onClick = {() => {
-              setAdd(false)
-              setOpen(true)
 
-            }}/>}
+          {
+            /**
+               * Add Button,
+               * visible only if data staff is loggedin Staff or  logged in staff has permission and no record exists for  that day
+               */
+            isEmptyRow  && (permission.edit.length >0 || staff.id === staffId ) &&
+              <Button icon='add' size='mini' circular onClick = {() => {
+                setAdd(true)
+                setOpen(true)
+
+              }}/>
+
+          }
+          {
+          /**
+           * If the record exist for that day
+           */
+            !isEmptyRow &&
+            <>
+              {
+                /**
+                 * Edit Button,
+                 * visible only
+                 *    if data staff is loggedin Staff
+                 *    or
+                 *    logged in staff has permission to edit timesheet for that station
+                 *    and
+                 *    record exists for that day
+                 *    and
+                 *    record is not already approved
+                 *
+                 */
+                timeSheet.status !== 'APPROVED' && ((permission.edit.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0 )) &&
+                  <Popup
+                    trigger=  {<Button icon='edit' size='mini' circular onClick = {() => {
+                      setAdd(false)
+                      setOpen(true)
+                    }}/>}
+                    content='Edit Timesheet'
+                    position='bottom center'
+                  />}
+
+
+              { /**
+                   * Approve Button,
+                   * visible only
+                   *    if data staff is not loggedin Staff
+                   *    or
+                   *    logged in staff has permission to sign timesheet for that station
+                   *    and
+                   *    record is not already approved
+                   */
+                permission.sign.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0  &&  staff.id !== staffId &&
+                  <>
+                    <Popup
+                      trigger=  { <Button  color ={timeSheet.status === 'APPROVED'?'green':'grey'} icon='check' size='mini' circular onClick = {() => {
+                        //console.log(timeSheet.id)
+                        approveTimesheet({ variables:{ id:timeSheet.id , status:timeSheet.status==='APPROVED'?'':'APPROVED' } })
+                      }}/>}
+                      content={timeSheet.status === 'APPROVED'? 'Undo Approve': 'Approve'}
+                      position='bottom center'
+                    />
+
+                    {
+                      /**
+                      * Request Clarification button,
+                      * visible only
+                      *    record is not already approved
+                      */
+
+                      timeSheet.status !== 'APPROVED' &&
+                      <Popup size='huge' wide='very' style={{ width:'100%' }}
+                        trigger=  { <Button color='blue' icon='talk' size='mini' circular />}
+                        onOpen= {() => setClarifyOpen(true)}
+                        onClose= {() => setClarifyOpen(false)}
+                        open = {clarifyOpen}
+                        content={
+                          <Form onSubmit = {() => {
+                            askToclarify()
+                            setClarifyOpen(false)
+                          }}>
+                            <Header as ='h5'>Request Clearification </Header>
+                            <Form.TextArea
+                              value= {clarifyText}
+                              onChange= {
+                                (e,{ value }) => setClarifyText(value)
+                              }>
+
+                            </Form.TextArea>
+                            <Form.Button floated='right' type= 'submit' primary> Send</Form.Button>
+                          </Form>
+                        }
+                        on='click'
+                        position='bottom right'
+                      />
+                    }
+                  </>
+              }
+
+              {
+                /**
+                * Delete Button,
+                * visible only
+                *    if data staff is  loggedin Staff
+                *    or
+                *    logged in staff has permission to edit timesheet for that station
+                *    and
+                *    record is not already approved
+                */
+
+                timeSheet.status !== 'APPROVED' &&((permission.edit.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0)   || staff.id === staffId  ) &&
+                <Popup as={Message} warning
+                  trigger=  { <Button  color = 'red' icon='trash' size='mini' circular />}
+                  content={
+                    <>
+
+                      <Message.Header>Are you sure, you want to remove this record?</Message.Header>
+                      <p> Action is non reversible and will remove all the instances of this record from the system.</p>
+
+                      <Button fluid color='red' icon='trash' content='Confirm' onClick = {() => {
+                        deleteTimeSheet(timeSheet.id)
+                        setDeleteOpen(false)
+
+                      }} /></>}
+                  on='click'
+                  onOpen= {() => setDeleteOpen(true)}
+                  onClose= {() => setDeleteOpen(false)}
+                  open={deleteOpen}
+                  position='bottom center'
+                />}
+            </>}
+        </Segment>
+
+
+
       </Table.Cell>
-
       <TimeSheetEditModel
         staffId = {staffId}
         id= {timeSheet.id}

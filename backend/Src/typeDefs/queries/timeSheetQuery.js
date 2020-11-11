@@ -3,10 +3,25 @@ const  timeSheetQuery = `
     getTimeSheetByUser(
       staff:String!
       filterDuration: String!
+      stations: [String]
       number: Int!
       year: Int!
       )
       :[TimeSheet]
+
+    
+    getAllTimeSheets(
+      staff:[String]
+      period: String
+      from: String
+      to: String
+      number: Int
+      groupBy: String 
+      year:Int
+      stations:[String]
+      filterStatus: String
+
+    ): JsonObject
 
   } 
 

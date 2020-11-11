@@ -30,6 +30,7 @@ export const RemarkField = ({ name }) => {
       <Segment basic>
         {remarkTitle &&
         <Header as ='h5'>
+          {remarkTitle === 'Add Clearification'&& 'Clearification Added' }
           <Header.Subheader>by {remarkBy} on {remarkDate}</Header.Subheader>
         </Header>
         }

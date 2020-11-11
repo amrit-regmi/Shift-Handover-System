@@ -73,7 +73,7 @@ export const validateStaffInputField = (staff) => {
 
 
 export const validateStartEndTime = (startTime,endTime,startDate)  => {
-  console.log(startDate ,'=>', startTime, endTime)
+
   let error
   /**
    * If start time is not set

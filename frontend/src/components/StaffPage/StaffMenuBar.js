@@ -9,7 +9,7 @@ const StaffMenuBar = ({ activeItem, setActiveItem }) => {
 
   const handleMenuClick = (e, { name }) => {
     setActiveItem( name )
-    if( ['Profile','Timesheets','SubmittedTimesheets'].includes(name) ){
+    if( ['Profile','Timesheets','TimesheetsOverview'].includes(name) ){
       history.push(`/staff/${staff.id}/${name}`)
     }else{
       history.push(`/${name}`)
@@ -33,7 +33,7 @@ const StaffMenuBar = ({ activeItem, setActiveItem }) => {
   }
 
   if(staff.permission.timesheet.view.length > 0){
-    menuItems.push ('ManageTimeSheets')
+    menuItems.push ('ManageTimesheets')
   }
 
   const cornerButton = () => {
@@ -44,7 +44,7 @@ const StaffMenuBar = ({ activeItem, setActiveItem }) => {
             <Dropdown.Item disabled text='My Pages'  onClick = { handleMenuClick }/>
             <Dropdown.Item name= 'Profile' text='Profile'  onClick = { handleMenuClick }/>
             <Dropdown.Item name ='Timesheets' text='Timesheets'  onClick = { handleMenuClick }/>
-            <Dropdown.Item name = 'SubmittedTimesheets' text='Submitted Timesheets'  onClick = { handleMenuClick }/>
+            <Dropdown.Item name = 'TimesheetsOverview' text='TimesheetsOverview'  onClick = { handleMenuClick }/>
             <Dropdown.Divider/>
 
           </>

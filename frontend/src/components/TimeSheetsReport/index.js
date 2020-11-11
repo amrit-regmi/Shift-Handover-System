@@ -1,12 +1,12 @@
 import React,{ Fragment, useState } from 'react'
-import { Button, Table } from 'semantic-ui-react'
+import { Button, Header, Table } from 'semantic-ui-react'
 import { toDate } from '../../utils/DateHelper'
 import _ from 'lodash'
 import ReportViewModal from '../ShiftReport/ReportViewModal'
 import TimeSheetRow from './TImeSheetRow'
 
 
-const TimeSheetsReport = ({ startDate,endDate,data, staffId, setAllApproved })  => {
+const TimeSheetsReport = ({ startDate,endDate,data, staffId, setAllApproved ,title })  => {
   const [openReport,setOpenReport]= useState({ id:'', open: false })
 
   /** sets the calender from start date and end dates so the empty dates will also be displayed on report*/
@@ -75,12 +75,17 @@ const TimeSheetsReport = ({ startDate,endDate,data, staffId, setAllApproved })  
 
   const stickyTh = {
     position: 'sticky',
-    top : '0'
+    top : '0',
+    zIndex: 1
+
 
   }
 
   return (
     <>
+      {title &&
+     <Header as = 'h5' floated='right'>{title}</Header>
+      }
       <Table celled striped structured textAlign='center'>
         <Table.Header>
           <Table.Row>
@@ -94,6 +99,7 @@ const TimeSheetsReport = ({ startDate,endDate,data, staffId, setAllApproved })  
             <Table.HeaderCell style= {stickyTh}> OverTime </Table.HeaderCell>
             <Table.HeaderCell style= {stickyTh}> Approved </Table.HeaderCell>
             <Table.HeaderCell style= {stickyTh}> Remarks </Table.HeaderCell>
+            <Table.HeaderCell style= {stickyTh}> Actions</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -110,9 +116,9 @@ const TimeSheetsReport = ({ startDate,endDate,data, staffId, setAllApproved })  
         <Table.Footer>
           <Table.Row >
             <Table.HeaderCell  colSpan='6'>Total</Table.HeaderCell>
-            <Table.HeaderCell> {netTotal} </Table.HeaderCell>
+            <Table.HeaderCell> {netTotal.toFixed(1)} </Table.HeaderCell>
             <Table.HeaderCell> {netOt.toFixed(1)} </Table.HeaderCell>
-            <Table.HeaderCell colSpan='2' />
+            <Table.HeaderCell colSpan='3' />
           </Table.Row>
         </Table.Footer>
       </Table>

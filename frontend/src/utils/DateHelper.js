@@ -108,3 +108,74 @@ export const getDatefromWeek = (w,y) => {
   }
   return IsoWeekStart
 }
+
+export const getMonthInt= (name) => {
+  const months = ['january','february','march','april','may','june','july','august','september','october','november','december']
+  const ind = months.findIndex((month) => {
+    return month === name.toLowerCase()
+  })
+  return ind
+}
+
+/** Get Month name negative
+  * Negative index gets month from end of array
+  */
+const months = new Proxy(['January','February','March','April','May','June','July','August','September','October','November','December'], {
+  get(target, prop) {
+    if (!isNaN(prop)) {
+      prop = parseInt(prop, 10)
+      if (prop < 0) {
+        prop += target.length
+      }
+    }
+    return target[prop]
+  }
+})
+/**
+ * Retrive months form given month duration including current month
+ *
+ *  */
+export const getMonthOptions = (duration) => {
+  /**Default Duration is 4 months */
+  if(!duration ){
+    duration = 4
+  }
+
+  const today = new Date()
+  const currentMonth = today.getMonth()
+
+  const options = [...new Array(duration)].map((v,i) => {
+    return (
+      { key:i ,
+        text: months[currentMonth - i ] , value: currentMonth -1 < 0 ? months.length + currentMonth -i  : currentMonth -i }
+    ) })
+  return options
+}
+
+/**Retrieve all weeks that falls within given month duration including current month*/
+export const getWeekOptions = (duration) => {
+  /**Default Duration is 4 months */
+  if(!duration ){
+    duration = 4
+  }
+  const today = new Date()
+  const currentMonth = today.getMonth()
+  let dYear = today.getFullYear()
+  const lastYearWeekNum = getWeekNumber( new Date(dYear-1,11,28))
+  const lastRetriveable  = getWeekNumber(new Date(dYear, currentMonth - duration ,1))
+  let currentWeek = getWeekNumber(today)
+  let options = []
+
+  let week = currentWeek
+  while ( week !== lastRetriveable-1  ){
+    const option = { key: week, text: week, value: week }
+    options.push (option )
+    week = week -1
+    if(week === 0) {
+      week = lastYearWeekNum
+    }
+  }
+  return options
+
+}
+

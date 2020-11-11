@@ -30,3 +30,10 @@ query fetchStaff($id:String,$registerCode:String, $withPermission: Boolean!){
     }
   }
 `
+
+export const GET_ALL_STAFF_MINIMAL = gql`
+  query{ allStaff {
+    id
+    name
+  }}
+`

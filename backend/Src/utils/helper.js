@@ -1,3 +1,4 @@
+const { isNumber } = require('lodash')
 /**
  * Returns the expiry status of uuid codes.
  *
@@ -58,13 +59,19 @@ const getDatefromWeek = (w,y) => {
 
 /**
 * Returns the last day of the month for given year
-* @param {Int} w between 1-52/53
+* @param {Int} m month
 * @param {Int} y year
 * @return {Date}
 */
-const getDateFromMonth = (m,y) => {
-  let d = new Date(y,m,0)
+const getLastDateFromMonth = (m,y) => {
+  let d = new Date(y,m+1,0)
   return d
+}
+
+const getMonthName = (m) => {
+  const month = ['January','February','March','April','May','June','July','August','September','October','November','December']
+  return month[m]
+
 }
 
 /**
@@ -74,5 +81,53 @@ const sleep = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+/**
+ *
+ * @param {String} stringDate format DD-MM-YYYY HH:MM
+ * @returns {Int} Javascript date int
+ */
 
-module.exports = { isExpired,generateShiftReportId,sleep, getDateFromMonth, getDatefromWeek  }
+const toDate = (stringDate) => {
+  let ndate
+  if(!isNumber(stringDate)){
+    const splitDateTime = stringDate.split(' ')
+    const splitDate = splitDateTime[0].split('-')
+    const newDate =`${splitDate[2]}-${splitDate[1]}-${splitDate[0]} ${splitDateTime[1] || '00' }:${splitDateTime[2] | '00'}`
+
+    ndate = Date.parse(newDate)
+  }
+  else{
+
+    ndate = new Date(stringDate)
+  }
+
+  return ndate
+
+}
+
+const getWeek= (dt) => {
+  var tdt = new Date(dt.valueOf())
+  var dayn = (dt.getDay() + 6) % 7
+  tdt.setDate(tdt.getDate() - dayn + 3)
+  var firstThursday = tdt.valueOf()
+  tdt.setMonth(0, 1)
+  if (tdt.getDay() !== 4)
+  {
+    tdt.setMonth(0, 1 + ((4 - tdt.getDay()) + 7) % 7)
+  }
+  return 1 + Math.ceil((firstThursday - tdt) / 604800000)
+}
+
+/**
+ *
+ * @param {int javascript date} dateToFormat
+ */
+const formatDate = (dateToFormat) => {
+
+  const date = new Date(dateToFormat)
+
+  return (`${(date.getDate()).toString().padStart(2,0)}-${(date.getMonth()+1).toString().padStart(2,0)}-${date.getFullYear()} ${(date.getHours()).toString().padStart(2,0)}:${(date.getMinutes()).toString().padStart(2,0)}`)
+
+}
+
+module.exports = { isExpired,generateShiftReportId,sleep, getLastDateFromMonth, getDatefromWeek ,getMonthName ,toDate ,getWeek,formatDate }

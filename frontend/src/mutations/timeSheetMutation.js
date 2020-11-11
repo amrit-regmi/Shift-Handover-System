@@ -50,6 +50,7 @@ export const UPDATE_TIMESHEET = gql`
       }
       staff{
         id
+        name
         reqHours
       }
       shiftReport {
@@ -70,5 +71,49 @@ export const UPDATE_TIMESHEET = gql`
   } 
   
 
+ }
+`
+export const APPROVE_TIMESHEET = gql`
+ mutation approveTimeSheet($id: String!, $status: String!){
+   approveTimeSheet(
+     id: $id,
+     status: $status
+   ){
+     id 
+     status 
+     remarks{
+      by
+      date
+      edit
+      text
+      title
+    }
+   }
+ }
+`
+export const DELETE_TIMESHEET = gql`
+ mutation deleteTimeSheet($id: String!){
+   deleteTimeSheet(
+     id: $id,    
+   ){
+     status
+     message
+   }
+ }
+`
+export const REQUEST_CLARIFICATION = gql`
+ mutation requestClarification($id: String!, $clearify: String){
+  requestClarification(
+     id: $id,
+     clearify:$clearify,    
+   ){
+    remarks{
+      by
+      date
+      edit
+      text
+      title
+    }
+   }
  }
 `

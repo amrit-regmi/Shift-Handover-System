@@ -44,7 +44,7 @@ const staffSchema = new mongoose.Schema({
   passwordHash: String,
   position:  {
     type:String,
-    enum: ['Station Supervisor','Base Maintenance Manager', 'Station Manger', 'Engineer','Mechanic', 'Administrator'] ,
+    //enum: ['Station Supervisor','Base Maintenance Manager', 'Station Manger', 'Engineer','Mechanic', 'Administrator'] ,
   },
 
   contractType: {
@@ -52,20 +52,26 @@ const staffSchema = new mongoose.Schema({
     enum: ['Contractor','Employee']
   },
 
+  contractHours:{
+    type:Number
+
+  },
+
   permission:{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Permission'
   },
-
-
   registerCode: String,
   resetCode: String,
   lastActive: String
   /* last active is based on handover not user login if the user is listed on handover then last active time is updted refernce to that handover*/
 })
 
+staffSchema.virtual('reqHours').get(function() {
+  if(this.contractHours){
+    return this.contractHours
+  }
 
-staffSchema.virtual('reqHours').get(() => {
   if(this.contractType === 'Contractor') return 10
   return 8
 

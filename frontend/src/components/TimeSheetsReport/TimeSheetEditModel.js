@@ -119,7 +119,6 @@ const  TimeSheetEditModel = (props) => {
                     return existingTimeSheetRefs
                   }
 
-                  console.log(existingTimeSheetRefs)
                   return [...existingTimeSheetRefs,newTimeSheet]
 
                 },
@@ -183,7 +182,7 @@ const  TimeSheetEditModel = (props) => {
     if(props.add){
       init.staff = props.staffId
       init.startTime = formatDate((new Date(props.date).setHours(0)))
-      init.endTime= (new Date(props.date).setHours(8)) > Date.now() ? toDate(Date.now()) : formatDate((new Date(props.date).setHours(8)))
+      init.endTime= (new Date(props.date).setHours(8)) > Date.now() ? formatDate(toDate(Date.now())) : formatDate((new Date(props.date).setHours(8)))
       init.station = ''
       init.shift = ''
       init.remarks = [{ title:'Manually Entered to TimeSheet' , date: formatDate(Date.now()), by: self.name }]
@@ -351,7 +350,7 @@ const  TimeSheetEditModel = (props) => {
             const shift = getRecomendedShiftOption(values.startTime,value)
             setFieldValue('shift',shift)
             handleShiftChange(values.startTime,shift,value)
-          // setSelectedStation(value)
+
           }}
         ></DropDownField>
 

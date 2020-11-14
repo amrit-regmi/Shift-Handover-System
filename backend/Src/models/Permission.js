@@ -25,9 +25,12 @@ const permissionSchema = mongoose.Schema({
 
   station: {
     edit:[{
-      type: String
+      type: String,
     }],
-    add:Boolean,
+    add:{
+      type: Boolean,
+      default: false
+    },
   },
 
   timesheet:{

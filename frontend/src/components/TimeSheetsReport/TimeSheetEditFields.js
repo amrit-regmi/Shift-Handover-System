@@ -1,5 +1,5 @@
 import React from 'react'
-import { Form, Input, Dropdown, Segment, Header, List } from 'semantic-ui-react'
+import { Form, Input, Dropdown, Segment, Header, List, Label } from 'semantic-ui-react'
 import { TextAreaField } from '../StationReportPage/NewReportForm/FormFields'
 import { useField, useFormikContext } from 'formik'
 import _ from 'lodash'
@@ -65,30 +65,26 @@ export const RemarkField = ({ name }) => {
 export const DropDownField = ({ label,...props }) => {
   const{ setFieldValue }= useFormikContext()
   const [field,meta] = useField(props)
-  return (<>
-    {props.labeled &&
-     <div className="ui label label" style= {{ margin: 0,
-       borderTopRightRadius: 0,
-       borderBottomRightRadius: 0 ,
-       fontSize: '1em' ,
-       display: 'flex',
-       alignItems:'center' }}>
-       {label }
-     </div>}
-    <Form.Field error= { meta.touched && meta.error}>
+  return (
+    <Form.Field error= { meta.touched && meta.error?true:false}>
       {!props.labeled && <label>{label }</label>}
-      <Dropdown {...field} {...props}
-        style= {
-          props.labeled? { margin: 0,
-            borderTopLeftRadius: 0,
-            borderBottomLeftRadius: 0 }:{}
-        }
-
-        onChange = {props.onChange? props.onChange: (e,{ value }) => {
-          setFieldValue(props.name,value)
-        }}
-      ></Dropdown>
-    </Form.Field></>
+      <Input
+        label= {props.labeled? label :false}
+        input = {<Dropdown {...field} {...props}
+          style= {
+            props.labeled? { margin: 0,
+              borderTopLeftRadius: 0,
+              borderBottomLeftRadius: 0 }:{}
+          }
+          onChange = {props.onChange? props.onChange: (e,{ value }) => {
+            setFieldValue(props.name,value)
+          }}
+        ></Dropdown>}></Input>
+      {meta.touched && meta.error &&
+      <Label pointing prompt>
+        {meta.error}
+      </Label>}
+    </Form.Field>
   )
 
 }

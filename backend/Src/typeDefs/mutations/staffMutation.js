@@ -5,22 +5,21 @@ const staffMutation = `
       idCardCode: String
       email: String!
       position:String
-      contractType:String
+      contractType:String!
+      contractHours: Int!
       ):Staff
+
     
     resetRegisterCode(
       id: String!
     ):ResponseMessage
 
     registerStaff(
-      idCardCode: String
-      position:String!
-      contractType:String!
       username:String!
-      passwordHash: String!
+      password: String!
       registerCode:String!
-    ):Staff
-
+    ):ResponseMessage
+    
     resetPassword(
       resetCode: String
       password: String
@@ -49,6 +48,7 @@ const staffMutation = `
       reqHours: Float
       position: String
     ): Staff
+
 
     }
 

@@ -6,14 +6,12 @@ import { GET_TIMESHEETS } from '../../queries/timeSheetQuery'
 import { getWeekNumber, getDatefromWeek  } from '../../utils/DateHelper'
 import TimeSheetsReport from '../TimeSheetsReport'
 
-
 const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,timesheetOnly }) => {
+  const staff = JSON.parse( sessionStorage.getItem('staffKey'))
   const [selectBy,setSelectBy] = useState (period || 'week')
   const today = new Date()
   const [number,setNumber] = useState (selected || getWeekNumber(today))
   const [year,setYear] = useState(selectedYear || today.getFullYear())
-
-
   const queryParams = { staff: staffId, filterDuration: selectBy  , number:number, year: year }
   const { error,loading,data } = useQuery(GET_TIMESHEETS, { variables:queryParams })
 
@@ -23,7 +21,7 @@ const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,times
 
   },[data, setStaffName])
 
-  /** Get Month name negative
+  /** Get Month name from index
   * Negative index gets month from end of array
   */
   const months = new Proxy(['January','February','March','April','May','June','July','August','September','October','November','December'], {
@@ -174,13 +172,16 @@ const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,times
             </> }
           <TimeSheetsReport staffId={staffId} startDate={start} endDate= {end} data={data} title = {`Timesheet ${selectBy === 'month'? months[number]:  `Week ${number},` } ${year} `}></TimeSheetsReport>
 
-          <Segment  basic clearing>
-            <Popup
-              trigger = {<span  floated='right' ><Button  floated='right' disabled ={!isAllApproved()} type='button' color='blue'> Submit to Payroll</Button></span>}
-              disabled= {isAllApproved()}
-              content= ' All records should be approved for submission'
-            />
-          </Segment>
+
+          { staffId === staff.id &&
+            <Segment  basic clearing>
+              <Popup
+                trigger = {<span  floated='right' ><Button  floated='right' disabled ={!isAllApproved()} type='button' color='blue'> Submit to Payroll</Button></span>}
+                disabled= {isAllApproved()}
+                content= ' All records should be approved for submission'
+              />
+            </Segment>
+          }
 
 
 

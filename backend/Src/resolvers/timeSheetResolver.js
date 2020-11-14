@@ -396,10 +396,7 @@ const timeSheetResolver = {
         mod1 = _.mapValues(mod1,(staffs) => {
           return _.pickBy(staffs, staff => {
             if(args.filterStatus ==='approved') {
-              if( staff.itemsPending === 0) {
-                console.log(staff)
-                return true
-              }
+              return staff.itemsPending === 0
             }
             return staff.itemsPending > 0}
           )
@@ -411,8 +408,12 @@ const timeSheetResolver = {
       const orderedTimeSheets = {}
       _(mod1).keys().sort().reverse().each((key) => orderedTimeSheets[key] = mod1[key])
 
+      console.log(orderedTimeSheets)
+
       return orderedTimeSheets
     }
+
+    
 
 
 

@@ -14,7 +14,7 @@ const StaffEditModel = (props) => {
   const initVal = { email: props.email,
     phone: props.phone || '',
     contractType: props.contractType,
-    reqHours: props.reqHours,
+    contractHours: props.reqHours,
     position: props.position || '',
   }
   return(
@@ -63,7 +63,7 @@ const StaffEditModel = (props) => {
 
               </Grid.Row>
               <Grid.Row>
-                <InputField name='reqHours' label='Required Hours per day'/>
+                <InputField name='contractHours' label='Required Hours per day'/>
 
               </Grid.Row>
               <Grid.Row>

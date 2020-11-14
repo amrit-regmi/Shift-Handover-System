@@ -66,3 +66,34 @@ mutation staffEdit($id:String! $email:String, $phone: String , $contractType: St
     position
   }
 }`
+
+export const STAFF_ADD = gql`
+  mutation addStaff( $name: String!, $email: String!, $contractType: String! , $ contractHours: Int!, $position: String, $idCardCode: String){
+    addStaff(
+      name: $name,
+      email:$email,
+      contractType: $contractType,
+      contractHours: $contractHours,
+      position: $position
+      idCardCode: $idCardCode
+    ){
+      id,
+      name,
+      email,
+      phone
+    }
+  }
+`
+
+export const COMPLETE_REGISTRATION = gql`
+  mutation registerStaff( $registerCode:String!, $username: String!, $password: String!){
+    registerStaff(
+      registerCode: $registerCode
+      username: $username,
+      password:$password,
+    ){
+      status,
+      message
+
+    }
+  }`

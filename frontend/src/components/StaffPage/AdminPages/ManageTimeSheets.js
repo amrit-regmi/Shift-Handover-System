@@ -1,9 +1,9 @@
 import { useLazyQuery, useQuery } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
-import { Link, useHistory, useParams } from 'react-router-dom'
+import { Link, useHistory, useLocation, useParams } from 'react-router-dom'
 import  _  from 'lodash'
 import { DateInput } from 'semantic-ui-calendar-react'
-import { Dropdown, Form, FormGroup, Header, Select ,Segment,Button, Label, Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell } from 'semantic-ui-react'
+import { Dropdown, Form, FormGroup, Header, Select ,Segment,Button, Label, Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, Loader } from 'semantic-ui-react'
 import { GET_ALL_STAFF_MINIMAL } from '../../../queries/staffQuery'
 import { GET_ALL_TIMESHEETS } from '../../../queries/timeSheetQuery'
 import { formatDate, getMonthOptions, getWeekOptions,getWeekNumber,getMonthInt } from '../../../utils/DateHelper'
@@ -13,6 +13,7 @@ import TimeSheetsReport from '../../TimeSheetsReport'
 const ManageTimeSheets = ({ setStaffName }) => {
   const loggedInStaff = JSON.parse( sessionStorage.getItem('staffKey'))
   const params = useParams()
+  const location = useLocation()
   const today = new Date()
   const [staff,setStaff] = useState([])
   const [period,setPeriod] = useState('date')
@@ -46,6 +47,8 @@ const ManageTimeSheets = ({ setStaffName }) => {
       setStaff([])
     }
   },[params])
+
+
 
   const variables  = {
     staff:staff,
@@ -97,7 +100,10 @@ const ManageTimeSheets = ({ setStaffName }) => {
   const stationOptions = loggedInStaff.permission.timesheet.view.map((station,index ) => {
     return { key: index, value:station._id, text: station.location }})
 
+
+
   return (
+
     <>
 
       <Segment size='tiny' clearing>
@@ -105,7 +111,8 @@ const ManageTimeSheets = ({ setStaffName }) => {
         <Form size='mini'>
           <FormGroup widths='equal' >
             {
-              !params.staffId &&<Form.Dropdown
+              !params.staffId &&
+              <Form.Dropdown
                 label='Staff'
                 value= {staff}
                 loading={staffLoading}
@@ -192,7 +199,11 @@ const ManageTimeSheets = ({ setStaffName }) => {
         </Form>
       </Segment>
 
-      <Table>
+
+
+      <Loader active={loading}> Loading TimeSheet Overview</Loader>
+
+      <Table >
         <TableHeader>
           <TableRow>
             {!params.staffId &&
@@ -223,7 +234,7 @@ const ManageTimeSheets = ({ setStaffName }) => {
                   },'')}
                 </TableCell>
                 <TableCell>{staff.totHours}</TableCell>
-                <TableCell><Link to={`/ManageTimesheets/${staff.id}/${period}`}
+                <TableCell><Link to={`${location.pathname}/${params.staffId?'':`${staff.id}/`}${period}`}
                   onClick={() => {
                     setStaffName(name)
                   }}>{staff.itemsPending ?  `${staff.itemsPending}  Items Pending`: 'All Approved' } </Link></TableCell>

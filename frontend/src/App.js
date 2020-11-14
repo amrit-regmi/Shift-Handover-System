@@ -23,21 +23,26 @@ const  App = () =>   {
         <Route path = "/staffLogin">
           <StaffLoginPage />
         </Route>
-        <Route path = "/staff/:id/:page">
+        <Route path = "/staff/:staffId/:page/:period">
           <StaffPage></StaffPage>
         </Route>
-        <Redirect from="/staff/:id" to="/staff/:id/Profile"/>
+        <Route path = "/staff/:staffId/:page">
+          <StaffPage></StaffPage>
+        </Route>
+        <Redirect from="/staff/:staffId" to="/staff/:staffId/Profile"/>
         <Route path = "/staff">
           <StaffPage></StaffPage>
         </Route>
 
         {/** Routing for AllStaffs (Admin ) Page*/}
-        <Route path = "/AllStaffs/:id/:page">
+        <Route path = "/AllStaffs/:staffId/:page/:period">
           <StaffPage></StaffPage>
         </Route>
-        <Redirect from="/AllStaffs/:id" to="/AllStaffs/:id/Profile"/>
-
-        <Route path = "/AllStaffs/:id">
+        <Route path = "/AllStaffs/:staffId/:page/">
+          <StaffPage></StaffPage>
+        </Route>
+        <Redirect from="/AllStaffs/:staffId" to="/AllStaffs/:staffId/Profile"/>
+        <Route path = "/AllStaffs">
           <StaffPage></StaffPage>
         </Route>
 
@@ -49,6 +54,10 @@ const  App = () =>   {
           <StaffPage></StaffPage>
         </Route>
         <Route path = "/ManageTimeSheets">
+          <StaffPage></StaffPage>
+        </Route>
+
+        <Route path = "/Register/:registerCode">
           <StaffPage></StaffPage>
         </Route>
 

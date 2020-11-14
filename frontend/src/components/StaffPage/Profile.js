@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
-import { Button, Confirm, Divider, Grid,Header,Icon,Loader, Menu, Table, TableBody } from 'semantic-ui-react'
+import { Button, Confirm, Divider, Grid,Header,Icon,Loader, Menu, MenuItem, Table, TableBody } from 'semantic-ui-react'
 import { GET_STAFF } from '../../queries/staffQuery'
 import PermissionManager from './PermissionManager'
 import StaffEditModel from './StaffEditModel'
@@ -22,11 +22,12 @@ const Profile = (props) => {
 
   if(props.id){
     staffId= props.id
-  } else if(params.id) {
-    staffId= params.id
+  } else if(params.staffId) {
+    staffId= params.staffId
   }else {
     staffId= staff.id
   }
+
 
   const { loading,error,data } = useQuery(GET_STAFF,{ variables:{ id:staffId ,withPermission: props.staffCanEdit  } })
 
@@ -65,11 +66,13 @@ const Profile = (props) => {
   }
 
   /**If the user has completed registration
-   * Registered user should have regiserLink empty
+   * Registered user should have regiserCode empty
   */
-  const registered = data.getStaff.registerLink ? false: true
+
+  const registered =  data && data.getStaff.registerCode ? false: true
 
   return (<>
+
     <Grid columns='3' style={{ marginTop:'1rem' }}>
       <Grid.Row centered  textAlign='center'>
         <Grid.Column>
@@ -94,10 +97,11 @@ const Profile = (props) => {
                 <Table.Cell> <strong> Phone </strong> </Table.Cell>
                 <Table.Cell > {data.getStaff.phone}</Table.Cell>
               </Table.Row>
+              { registered &&
               <Table.Row>
                 <Table.Cell> <strong> Username </strong> </Table.Cell>
                 <Table.Cell> {data.getStaff.username}</Table.Cell>
-              </Table.Row>
+              </Table.Row>}
             </TableBody>
             <Table.Footer>
               {(props.staffCanEdit || staff.id === data.getStaff.id) &&

@@ -1,8 +1,10 @@
 import React,{ useEffect, useState } from 'react'
 import { Link, useHistory, useLocation, useParams } from 'react-router-dom'
 import { Breadcrumb, BreadcrumbDivider, BreadcrumbSection, Menu } from 'semantic-ui-react'
+import AllStaffs from './AdminPages/AllStaffs'
 import ManageTimeSheets from './AdminPages/ManageTimeSheets'
 import Profile from './Profile'
+import RegisterPage from './RegisterPage'
 import StaffMenuBar from './StaffMenuBar'
 import TimeSheet from './TimeSheet'
 /**
@@ -11,30 +13,48 @@ import TimeSheet from './TimeSheet'
  * @param {staffName,id}
  */
 const StaffPage = ({ name ,id }) => {
+
   const params = useParams()
-  let staffId = params && params.id
+
+  let staffId = params && params.staffId
   let page = params && params.page
   const location = useLocation()
   const history = useHistory()
   const [staffName, setStaffName] = useState(name)
+
   const [editModelOpen,setEditModelOpen] = useState(false)
-  const [activeItem, setActiveItem] = useState(page || 'Profile')
+  const [activeItem, setActiveItem] = useState(page )
 
   const staff = JSON.parse( sessionStorage.getItem('staffKey'))
 
+  const [loggedInStaffName, setLoggedInStaffName] = useState(staff && staff.name)
 
-  if(location.pathname.split('/')[1] === 'ManageTimesheets'){
+  const locationPaths = location.pathname.split('/')
+
+  if(locationPaths[1].toLowerCase() === 'managetimesheets' ){
     page = 'ManageTimesheets'
   }
+
+  if(locationPaths[1].toLowerCase() === 'allstaffs' && locationPaths.length <= 2 ){
+    page = 'AllStaffs'
+  }
+
+
 
   useEffect(() => {
     setActiveItem(page)
   },[page])
 
+  if(locationPaths[1].toLowerCase() === 'register'){
+    page = 'register'
+    return<>
+      <StaffMenuBar staffName = {loggedInStaffName} activeItem= {activeItem} setActiveItem={setActiveItem}></StaffMenuBar>
+      <RegisterPage setName={setLoggedInStaffName}></RegisterPage></>
+  }
 
 
   /**If user is not logged in */
-  if(!staff){
+  if(!staff && page !== 'register'){
     history.push('/staffLogin')
     return null
   }
@@ -45,8 +65,8 @@ const StaffPage = ({ name ,id }) => {
     staffId= id
   }
   /**If the url have staff Id */
-  else if(params.id) {
-    staffId= params.id
+  else if(params.staffId) {
+    staffId= params.staffId
   }
   /**staff is loggedIn user */
   else {
@@ -63,14 +83,15 @@ const StaffPage = ({ name ,id }) => {
     staffId = id
   }
 
-  if(staff.id !== staffId){
+  const basePage =  location.pathname.split('/')[1].toLocaleLowerCase()
+  if(staff.id !== staffId && basePage === 'staff' ){
     if(location.pathname.split('/')[1] !== 'AllStaffs')
       history.push(`/AllStaffs/${staffId}/${activeItem}`)
 
   }
 
   const getBreadCrumb = () => {
-    const basePage =  location.pathname.split('/')[1].toLocaleLowerCase()
+
     return(
       /**
          * If the staff page is page of browsing user then reflect that info on breadcrumb
@@ -79,13 +100,17 @@ const StaffPage = ({ name ,id }) => {
         <Breadcrumb>
           <BreadcrumbSection> My Page </BreadcrumbSection>
           <BreadcrumbDivider/>
-          <BreadcrumbSection> {page} </BreadcrumbSection>
+          <BreadcrumbSection active> {page} </BreadcrumbSection>
+          {page=== 'Timesheets' && params.period && <>
+            <BreadcrumbDivider icon='right chevron'/>
+            <BreadcrumbSection active>{params.period.replace('_',' ')}</BreadcrumbSection>
+          </>}
 
         </Breadcrumb> :
 
         basePage === 'allstaffs' ?
           <>
-            { params.id &&
+            { params.staffId &&
             <>
               <Breadcrumb>
                 <BreadcrumbSection link as = {Link} to = {'/AllStaffs'}> All Staffs </BreadcrumbSection>
@@ -93,6 +118,11 @@ const StaffPage = ({ name ,id }) => {
                 <BreadcrumbSection link as={Link} to={`/AllStaffs/${staffId}/Profile`}> {staffName || staffId} </BreadcrumbSection>
                 <BreadcrumbDivider/>
                 <BreadcrumbSection active> {page} </BreadcrumbSection>
+                {page=== 'Timesheets'  && params.period && <>
+                  <BreadcrumbDivider icon='right chevron'/>
+                  <BreadcrumbSection active>{params.period.replace('_',' ')}</BreadcrumbSection>
+                </>}
+
               </Breadcrumb>
             </>
             }
@@ -122,11 +152,11 @@ const StaffPage = ({ name ,id }) => {
 
   return (
     <>
-      <StaffMenuBar staffName = {staff && staff.name} activeItem= {activeItem} setActiveItem={setActiveItem}></StaffMenuBar>
+      <StaffMenuBar staffName = {loggedInStaffName} activeItem= {activeItem} setActiveItem={setActiveItem}></StaffMenuBar>
 
       {getBreadCrumb()}
 
-      {staffId !== staff.id &&
+      {staffId !== staff.id && basePage === 'allstaffs' &&
 
 <Menu pointing secondary >
   <Menu.Item header>{staffName}</Menu.Item>
@@ -136,7 +166,7 @@ const StaffPage = ({ name ,id }) => {
     active = {activeItem === 'Profile'}
     onClick={() => {
       setActiveItem('Profile')
-      history.push('Profile')
+      history.push(`/allStaffs/${staffId}/Profile`)
     }}
   />
 
@@ -145,16 +175,18 @@ const StaffPage = ({ name ,id }) => {
     active = {activeItem === 'Timesheets'}
     onClick={() => {
       setActiveItem('Timesheets')
-      history.push('Timesheets')
+      history.push(`/allStaffs/${staffId}/Timesheets`)
     }}
   />
 
   <Menu.Item
-    name='SubmittedTimesheets'
-    active = {activeItem === 'SubmittedTimesheets'}
+    name='TimesheetsOverview'
+    active = {activeItem === 'TimesheetsOverview'}
     onClick={() => {
-      setActiveItem('SubmittedTimesheets')
-      history.push('SubmittedTimesheets')
+      setActiveItem('TimesheetsOverview')
+      history.push(`/allStaffs/${staffId}/TimesheetsOverview`)
+
+
     }}
   />
   {staffCanEdit &&<Menu.Item
@@ -163,6 +195,8 @@ const StaffPage = ({ name ,id }) => {
     icon = 'edit'
     onClick={(e) => {
       e.preventDefault()
+      history.push('Profile')
+      setActiveItem('Profile')
       setEditModelOpen(true)
     }}
   />}
@@ -181,6 +215,16 @@ const StaffPage = ({ name ,id }) => {
       { activeItem && activeItem.toLowerCase() === 'managetimesheets' &&
         <>
           <ManageTimeSheets setStaffName={setStaffName}></ManageTimeSheets>
+        </>
+      }
+      { activeItem && activeItem.toLowerCase() === 'timesheetsoverview' &&
+        <>
+          <ManageTimeSheets setStaffName={setStaffName}></ManageTimeSheets>
+        </>
+      }
+      { activeItem && activeItem.toLowerCase() === 'allstaffs' &&
+        <>
+          <AllStaffs></AllStaffs>
         </>
       }
     </>

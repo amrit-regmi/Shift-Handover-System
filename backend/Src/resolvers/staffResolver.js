@@ -19,7 +19,6 @@ const staffResolver = {
     getStaff: async(root,args, context) => {
 
       const loggedInStaff = context.currentUser
-
       /*If Id is set then returns staff values except password / registercode and resetcode */
       if (args.id && args.id !== null  && args.id !== undefined){
 
@@ -28,7 +27,9 @@ const staffResolver = {
 
           /**If staff has permission to edit staff then send permission info */
           if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
-            return  await Staff.findById(args.id,{ passwordHash:0,registerCode:0,resetCode:0 } ).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' }   })
+
+            const t =   await Staff.findById(args.id,{ passwordHash:0,resetCode:0 } ).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' }   })
+            return t
           }
 
           else{
@@ -43,6 +44,7 @@ const staffResolver = {
 
       /* If registrCode is set then checks the validity code and returns existing details */
       if (args.registerCode) {
+
         if(!uuidValidate(args.registerCode)){
           throw new ApolloError('Registration code Invalid')
         }
@@ -51,31 +53,55 @@ const staffResolver = {
           throw new ApolloError('Registration code has expired, please contact your supervisor' )
 
         }
+        const t = await Staff.findOne({ ...args },{ name:1 })
+        if(!t){
+          throw new ApolloError('Registration code Invalid')
+        }
 
-
-        return await Staff.findOne({ ...args })
+        return t
       }
 
-    }
+    },
+    verifyUsername: async (root,args) => {
+      if(args){
+        const staff = await Staff.findOne({ username:args.username })
+        if(staff){
+          return { status:'ERROR',message:'Provided username already exist' }
+        }else{
+          return { status:'SUCCESS',message:'Username is valid' }
+        }
+      }
+    },
   },
 
+
+
   Mutation: {
-    /*Create staff with initial information and send the register code to staff to complete registration*/
-    addStaff : async (root,args) => {
+    /*Create staff with and send the register code to staff to complete registration and set username and password*/
+    addStaff : async (root,args,context) => {
       const registerCode = uuidv4()
       const tempUserName = uuidv4()
-      const staff = new Staff({ ...args,registerCode:registerCode, username: tempUserName })
-      try {
-        await staff.save()
-        /*
+      const loggedInStaff = context.currentUser
+      if (loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin) ) {
+        const staff = new Staff({ ...args, registerCode:registerCode, username: tempUserName })
+        const permission = new Permission({ staffId: staff.id })
+        staff.permission = permission.id
+        try {
+          await staff.save()
+          await permission.save()
+          /*
           To DO:
           Send Email to Staff to set Username/Password with register link
         */
-        console.log(registerCode)
-        return ({ registerCode:registerCode })
+
+          return staff
+        }
+        catch (error){
+          throw new UserInputError(error.message)
+        }
       }
-      catch (error){
-        throw new UserInputError(error.message)
+      else{
+        throw new AuthenticationError('User do not have permission for this action')
       }
     },
 
@@ -109,7 +135,7 @@ const staffResolver = {
     Complete staff registration from the registration Link
      */
     registerStaff: async(root, args) => {
-
+      console.log(args)
       if(!uuidValidate(args.registerCode)){
         throw new ApolloError('Registration code Invalid')
       }
@@ -120,16 +146,18 @@ const staffResolver = {
 
       try {
         /*Update and reset the registration code to null*/
-        const staff = await Staff.findOneAndUpdate({ registerCode: args.registerCode },{ ...args,password: 'passwordHash' }, { new: true, runValidators: true })
+        const staff = await Staff.findOne({ registerCode: args.registerCode })
 
         if(!staff){
           throw new UserInputError('Incorrect Registration Code ')
         }
         staff.registerCode = undefined
-        staff.save()
-
-        return staff
+        staff.username = args.username
+        staff.paddword = 'password'
+        await staff.save()
+        return { status:'SUCCESS',message:'User registration successfull' }
       }catch (error){
+
         throw new UserInputError(error.message)
       }
 

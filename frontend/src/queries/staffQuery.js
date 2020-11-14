@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client'
 export const GET_STAFF = gql`
-query fetchStaff($id:String,$registerCode:String, $withPermission: Boolean!){
+query fetchStaff($id:String, $registerCode:String, $withPermission: Boolean!){
     getStaff(
       id: $id
       registerCode: $registerCode
@@ -30,6 +30,15 @@ query fetchStaff($id:String,$registerCode:String, $withPermission: Boolean!){
     }
   }
 `
+export const GET_STAFF_REG = gql`
+query fetchStaff($registerCode:String,){
+    getStaff(
+      registerCode: $registerCode
+      ){ 
+    name
+    }
+  }
+`
 
 export const GET_ALL_STAFF_MINIMAL = gql`
   query{ allStaff {
@@ -37,3 +46,27 @@ export const GET_ALL_STAFF_MINIMAL = gql`
     name
   }}
 `
+
+export const GET_ALL_STAFF = gql`
+  query{ allStaff {
+    id
+    name
+    email
+    phone
+    lastActive
+    currentStation{
+      location
+    }
+  }}
+`
+
+
+export const VERIFY_USERNAME = gql`
+  query verifyUsername( $username: String!){
+    verifyUsername(   
+      username: $username,
+    ){
+      status,
+      message
+    }
+  }`

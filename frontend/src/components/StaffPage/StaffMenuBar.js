@@ -1,11 +1,25 @@
 import React from 'react'
 import { Button, Dropdown, Menu } from 'semantic-ui-react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory, useLocation, useParams } from 'react-router-dom'
 
 
-const StaffMenuBar = ({ activeItem, setActiveItem }) => {
+const StaffMenuBar = ({ staffName, activeItem, setActiveItem }) => {
   const staff = JSON.parse( sessionStorage.getItem('staffKey'))
   const history = useHistory()
+
+  const location = useLocation()
+
+  if(location.pathname.split('/')[1] === 'register'){
+    return (
+
+      <Menu inverted color="blue" stackable >
+        <Menu.Item position='right'>
+          Welcome {staffName}
+        </Menu.Item>
+      </Menu>
+    )
+
+  }
 
   const handleMenuClick = (e, { name }) => {
     setActiveItem( name )

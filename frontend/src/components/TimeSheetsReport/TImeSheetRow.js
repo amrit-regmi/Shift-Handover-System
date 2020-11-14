@@ -120,6 +120,39 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
     )
 
   }
+
+  const updateTimeSheetApproval = () => {
+    approveTimesheet({
+      variables:{ id:timeSheet.id , status:timeSheet.status==='APPROVED'?'':'APPROVED' },
+      update: (store,response) => {
+        store.modify({
+          fields: {
+            getAllTimeSheets(existingTimeSheetRefs, { readField }){
+              const period = params.period
+              if(!period){
+                return existingTimeSheetRefs
+              }
+
+              const approved = response.data.approveTimeSheet.status
+              const modify = _.cloneDeep(existingTimeSheetRefs)
+
+              console.log('before',modify[period][timeSheet.staff.name].itemsPending)
+
+              modify[period][timeSheet.staff.name].itemsPending = approved==='APPROVED'? modify[period][timeSheet.staff.name].itemsPending-1: (modify[period][timeSheet.staff.name].itemsPending)+1
+
+
+              return modify
+
+            }
+          }
+        })
+
+
+      }
+    })
+
+  }
+
   const isWeekDay = ()  => {
     const today = new Date(date).getDay()
     if( today === 0 || today ===6){
@@ -222,8 +255,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
                   <>
                     <Popup
                       trigger=  { <Button  color ={timeSheet.status === 'APPROVED'?'green':'grey'} icon='check' size='mini' circular onClick = {() => {
-                        //console.log(timeSheet.id)
-                        approveTimesheet({ variables:{ id:timeSheet.id , status:timeSheet.status==='APPROVED'?'':'APPROVED' } })
+                        updateTimeSheetApproval()
                       }}/>}
                       content={timeSheet.status === 'APPROVED'? 'Undo Approve': 'Approve'}
                       position='bottom center'

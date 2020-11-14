@@ -130,13 +130,12 @@ const  StaffEditModel = ({ setOpen,open, fieldName, removeClick ,removeStaff ,se
 
           validate = {values => {
             let errors = {}
-            errors = { ...errors,...validateStartEndTime(values.startTime,values.endTime) }
+            errors = { ...errors,...validateStartEndTime(values.startTime,values.endTime)  }
             return errors
           } }
 
           onSubmit = {(values) =>
           {
-            console.log(values ,'submitted')
             submit(values)}
           }
 

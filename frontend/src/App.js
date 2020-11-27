@@ -57,6 +57,11 @@ const  App = () =>   {
           <StaffPage></StaffPage>
         </Route>
 
+        {/** Routing for AllStations (Admin) Page */}
+        <Route path = "/AllStations">
+          <StaffPage></StaffPage>
+        </Route>
+
         <Route path = "/Register/:registerCode">
           <StaffPage></StaffPage>
         </Route>

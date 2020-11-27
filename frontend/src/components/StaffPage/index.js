@@ -2,6 +2,7 @@ import React,{ useEffect, useState } from 'react'
 import { Link, useHistory, useLocation, useParams } from 'react-router-dom'
 import { Breadcrumb, BreadcrumbDivider, BreadcrumbSection, Menu } from 'semantic-ui-react'
 import AllStaffs from './AdminPages/AllStaffs'
+import AllStations from './AdminPages/AllStations'
 import ManageTimeSheets from './AdminPages/ManageTimeSheets'
 import Profile from './Profile'
 import RegisterPage from './RegisterPage'
@@ -37,6 +38,10 @@ const StaffPage = ({ name ,id }) => {
 
   if(locationPaths[1].toLowerCase() === 'allstaffs' && locationPaths.length <= 2 ){
     page = 'AllStaffs'
+  }
+
+  if(locationPaths[1].toLowerCase() === 'allstations' && locationPaths.length <= 2 ){
+    page = 'AllStations'
   }
 
 
@@ -89,6 +94,10 @@ const StaffPage = ({ name ,id }) => {
       history.push(`/AllStaffs/${staffId}/${activeItem}`)
 
   }
+
+  /**
+   * Set bredcrumbs for diffent view
+   */
 
   const getBreadCrumb = () => {
 
@@ -225,6 +234,12 @@ const StaffPage = ({ name ,id }) => {
       { activeItem && activeItem.toLowerCase() === 'allstaffs' &&
         <>
           <AllStaffs></AllStaffs>
+        </>
+      }
+
+      { activeItem && activeItem.toLowerCase() === 'allstations' &&
+        <>
+          <AllStations />
         </>
       }
     </>

@@ -32,3 +32,16 @@ export const GET_STATION = gql`
   }
 
 `
+
+export const ALL_STATION_LIST = gql`
+ query {
+  allStations {
+    id
+    location{
+      airportCode
+    }
+    phone
+    email
+    address
+  }
+}`

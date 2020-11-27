@@ -1,13 +1,12 @@
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
-import { Field, Formik } from 'formik'
+import { Formik } from 'formik'
 import _ from 'lodash'
 import React, { useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { Button, Form, Grid, Header, Icon, Input, Label, Loader, Message, Segment } from 'semantic-ui-react'
+import { Button, Form, Header, Icon, Input, Label,  Message, Segment } from 'semantic-ui-react'
 import { COMPLETE_REGISTRATION } from '../../mutations/staffMutation'
 import { GET_STAFF_REG,VERIFY_USERNAME } from '../../queries/staffQuery'
 import { InputField } from '../StationReportPage/NewReportForm/FormFields'
-import { validateEmail } from '../StationReportPage/NewReportForm/validator'
 const RegisterPage = ({ setName }) => {
 
   const params= useParams()
@@ -15,7 +14,7 @@ const RegisterPage = ({ setName }) => {
 
   const { loading,error,data } = useQuery(GET_STAFF_REG, { variables: { registerCode: params.registerCode }, skip: !params.registerCode  })
   const [completeRegistration,{ loading:regstrationLoading,error:registrationError,data:registrationData }] = useMutation(COMPLETE_REGISTRATION)
-  const [validateUsernameQuery,{ loading:usernameLoading,error:usernameError,data:usernameData }] = useLazyQuery(VERIFY_USERNAME)
+  const [validateUsernameQuery,{ loading:usernameLoading,data:usernameData }] = useLazyQuery(VERIFY_USERNAME)
   const [usernameVerified,setUsernameVerified] = useState({ verified:false })
 
 

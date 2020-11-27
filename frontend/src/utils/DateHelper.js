@@ -117,20 +117,26 @@ export const getMonthInt= (name) => {
   return ind
 }
 
-/** Get Month name negative
-  * Negative index gets month from end of array
+/**
+  * Positive prop gets month from  beginning of year
+  * Negative index gets month from end  of year
+  * @param  {Int} monthInt Month Number
   */
-const months = new Proxy(['January','February','March','April','May','June','July','August','September','October','November','December'], {
-  get(target, prop) {
-    if (!isNaN(prop)) {
-      prop = parseInt(prop, 10)
-      if (prop < 0) {
-        prop += target.length
+export const getMonthName = (monthInt) => {
+  const months = new Proxy(['January','February','March','April','May','June','July','August','September','October','November','December'], {
+    get(target, prop) {
+      if (!isNaN(prop)) {
+        prop = parseInt(prop, 10)
+        if (prop < 0) {
+          prop += target.length
+        }
       }
+      return target[prop]
     }
-    return target[prop]
-  }
-})
+  })
+  return months[monthInt]
+}
+
 /**
  * Retrive months form given month duration including current month
  *
@@ -147,7 +153,7 @@ export const getMonthOptions = (duration) => {
   const options = [...new Array(duration)].map((v,i) => {
     return (
       { key:i ,
-        text: months[currentMonth - i ] , value: currentMonth -1 < 0 ? months.length + currentMonth -i  : currentMonth -i }
+        text: getMonthName[currentMonth - i ] , value: currentMonth -1 < 0 ? 11 + currentMonth -i  : currentMonth -i }
     ) })
   return options
 }

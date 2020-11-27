@@ -276,9 +276,6 @@ const timeSheetResolver = {
     },
 
     getAllTimeSheets: async (root,args, context) => {
-
-
-      console.log('getAllTimeSheets')
       const searchFilters = {}
 
       if(args.staff && args.staff.length > 0){
@@ -412,11 +409,6 @@ const timeSheetResolver = {
 
       return orderedTimeSheets
     }
-
-    
-
-
-
 
   }
 

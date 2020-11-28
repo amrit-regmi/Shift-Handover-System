@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build:ui": "rm -rf build && cd ../frontend && npm run build --prod && cp -r build ../backend",
-    "deploy": "git push heroku master",
+    "deploy": "cd .. && git push heroku `git subtree split --prefix backend master`:master --force ",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
     "logs:prod": "heroku logs --tail",
     "start": "node index.js",

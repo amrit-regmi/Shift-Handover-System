@@ -27,8 +27,8 @@ app.use(express.static('build'))
   
 server.applyMiddleware({ app,path:'/' })
 
-app.listen({ port: 4000 }, () => {
-  console.log('Apollo Server on http://localhost:4000');
+app.listen({ port: config.PORT }, () => {
+  console.log('Apollo Server on http://localhost:'+config.PORT );
 })
 
   

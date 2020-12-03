@@ -2,12 +2,43 @@ import { isNumber } from 'lodash'
 
 /**
  *
- * @param {int javascript date} dateToFormat
+ * @param {int OR String } dateToFormat  supported string formats :YYYY-MM-DDTHH:MM:SS.Z
+ * @returns Date format DD-MM-YYYY HH:MM
  */
 export const formatDate = (dateToFormat) => {
+  if(!dateToFormat){
+    return null
+  }
+  if(isNaN(dateToFormat)){
+    const regexFormats = [
+      /^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z)?$/,
+    ]
+    const dateFormat = regexFormats.findIndex((regex) => {
+      if (dateToFormat.match(regex)){
+        return true
+      }
+      return false
+    })
+
+    switch (dateFormat)
+    {
+    case 0:
+    { const splitT = dateToFormat.split('T')
+      const date= splitT[0]
+      const time= splitT[1]
+
+      const dateSplit = date.split('-')
+      const timeSplit = time.split('.')[0].split(':')
+
+      return dateSplit[2]+'-'+dateSplit[1]+'-'+dateSplit[0]+ ' '+ timeSplit[0] +':'+ timeSplit[1]
+    }
+
+    default:
+      return null
+    }
+  }
 
   const date = new Date(dateToFormat)
-
   return (`${(date.getDate()).toString().padStart(2,0)}-${(date.getMonth()+1).toString().padStart(2,0)}-${date.getFullYear()} ${(date.getHours()).toString().padStart(2,0)}:${(date.getMinutes()).toString().padStart(2,0)}`)
 
 }

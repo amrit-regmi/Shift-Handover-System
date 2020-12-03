@@ -16,10 +16,14 @@ const staffSchema = new mongoose.Schema({
     sparse: true
   },
 
-  currentStation:{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Station'
+  lastActive:{
+    station:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Station'
+    },
+    activeAt: Date
   },
+  /* last active is based on handover not user login if the user is listed on handover then last active time is updted refernce to that handover*/
 
   email: {
     type: String,
@@ -63,8 +67,7 @@ const staffSchema = new mongoose.Schema({
   },
   registerCode: String,
   resetCode: String,
-  lastActive: String
-  /* last active is based on handover not user login if the user is listed on handover then last active time is updted refernce to that handover*/
+
 })
 
 staffSchema.virtual('reqHours').get(function() {

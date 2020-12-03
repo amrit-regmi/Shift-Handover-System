@@ -4,6 +4,7 @@ import { GET_ALL_STAFF } from '../../../queries/staffQuery'
 import { Segment, Dimmer, Loader, Table, TableHeaderCell, TableRow, TableCell, Button, Icon, FormButton, Input } from 'semantic-ui-react'
 import { Link } from 'react-router-dom'
 import NewStaffModel from './NewStaffModal'
+import { formatDate } from '../../../utils/DateHelper'
 
 
 const AllStaffs = () => {
@@ -63,8 +64,8 @@ const AllStaffs = () => {
               <TableCell><Link to={`/allStaffs/${staff.id}`}>{staff.name}</Link></TableCell>
               <TableCell>{staff.email}</TableCell>
               <TableCell>{staff.phone}</TableCell>
-              <TableCell>{staff.lastActive}</TableCell>
-              <TableCell>{staff.station}</TableCell>
+              <TableCell>{staff.lastActive && formatDate(staff.lastActive.activeAt) }</TableCell>
+              <TableCell>{staff.lastActive && staff.lastActive.station && staff.lastActive.station.location}</TableCell>
             </Table.Row>
           )}
         </Table.Body>

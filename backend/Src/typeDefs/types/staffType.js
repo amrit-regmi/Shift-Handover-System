@@ -7,7 +7,7 @@ const staffType =  `
     email: String!
     position:String
     contractType:String
-    lastActive: String
+    lastActive: LastActive
     username:String
     passwordHash: String
     registerCode:String
@@ -16,6 +16,11 @@ const staffType =  `
     reqHours:Int
     phone: String
     
+  }
+
+  type LastActive {
+    station: Station
+    activeAt: Date
   }
 
 `

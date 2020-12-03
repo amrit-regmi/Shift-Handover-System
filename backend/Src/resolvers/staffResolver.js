@@ -11,7 +11,7 @@ const staffResolver = {
   Query: {
     /*Returns all staff with sensitive field omitted*/
     allStaff: async (root,args) => {
-      const staffs =  await Staff.find({ ...args },{ username:0,passwordHash:0,registerCode:0,resetCode:0 })
+      const staffs =  await Staff.find({ ...args },{ username:0,passwordHash:0,registerCode:0,resetCode:0 }).populate({ path:'lastActive.station' })
       return staffs
     },
 
@@ -28,12 +28,12 @@ const staffResolver = {
           /**If staff has permission to edit staff then send permission info */
           if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
 
-            const t =   await Staff.findById(args.id,{ passwordHash:0,resetCode:0 } ).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' }   })
+            const t =   await Staff.findById(args.id,{ passwordHash:0,resetCode:0 } ).populate({ path:'permission lastActive.station' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign ' ,model:'Station' ,select:'id location' }   })
             return t
           }
 
           else{
-            const t = await Staff.findById(args.id,{ passwordHash:0,registerCode:0,resetCode:0 } ).select('-permission')
+            const t = await Staff.findById(args.id,{ passwordHash:0,registerCode:0,resetCode:0 } ).populate({ path:'lastActive.station' }).select('-permission')
             return t
           }
 

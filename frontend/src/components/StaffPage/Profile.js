@@ -7,6 +7,7 @@ import StaffEditModel from './StaffEditModel'
 import {  RESET_PASSWORD_REQ, RESET_REGISTER_CODE } from '../../mutations/staffMutation'
 import PasswordChangeModel from './PasswordChangeModel'
 import { useParams } from 'react-router-dom'
+import { formatDate } from '../../utils/DateHelper'
 
 
 const Profile = (props) => {
@@ -200,11 +201,11 @@ const Profile = (props) => {
             <TableBody>
               <Table.Row>
                 <Table.Cell> <strong> Station </strong> </Table.Cell>
-                <Table.Cell>{ data && data.getStaff.currentStation &&  data.getStaff.currentStation.location }</Table.Cell>
+                <Table.Cell>{ data && data.getStaff.lastActive &&  data.getStaff.lastActive.station && data.getStaff.lastActive.station.location }</Table.Cell>
               </Table.Row>
               <Table.Row>
                 <Table.Cell> <strong> Active at </strong> </Table.Cell>
-                <Table.Cell > {data && data.getStaff.lastActive}</Table.Cell>
+                <Table.Cell > {data && data.getStaff.lastActive && formatDate(data.getStaff.lastActive.activeAt) }</Table.Cell>
               </Table.Row>
             </TableBody>
 

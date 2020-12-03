@@ -1,9 +1,13 @@
 const stationMutation = `
   extend type Mutation {
     addStation(
-      location: String
+      location: String!
+      address: AddressInput!
       costumers: [String]
-      shift: [ShiftInfoInput]
+      shifts: [ShiftInfoInput]
+      email: String!
+      phone: String!
+      stationKey: String!
     ):Station
 
     loginToStation(
@@ -15,6 +19,13 @@ const stationMutation = `
   input ShiftInfoInput{
     name: String
     startTime: String
+  }
+
+  input AddressInput{
+    country: String
+    postcode: String
+    city: String
+    street: String
   }
 
   

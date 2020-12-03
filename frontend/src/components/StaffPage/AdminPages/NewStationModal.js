@@ -1,0 +1,250 @@
+import { useMutation, useQuery } from '@apollo/client'
+import { FieldArray, Formik } from 'formik'
+import _ from 'lodash'
+import React, { useEffect, useState } from 'react'
+import { Button, Dimmer, Form, Grid, Header, Icon, List, Loader, Modal,ModalContent, ModalHeader, Segment } from 'semantic-ui-react'
+import { ADD_STATION } from '../../../mutations/stationMutation'
+import { ALL_COSTUMERS } from '../../../queries/costumerQuey'
+import { ALL_STATION } from '../../../queries/stationQuery'
+import { InputField } from '../../StationReportPage/NewReportForm/FormFields'
+import { validateEmail, validateName } from '../../StationReportPage/NewReportForm/validator'
+import { DropDownField } from '../../TimeSheetsReport/TimeSheetEditFields'
+const NewStationModel = (props) => {
+
+  const [addStationMutation,{ loading,error }] = useMutation(ADD_STATION)
+  const [countryList,setCountryList]=  useState([])
+  const [costumerList,setCostumerList] = useState([])
+
+  const { loading: costumerLoading } = useQuery(ALL_COSTUMERS, { onCompleted : (data) => {
+    if(data.allCostumers){
+      const costumerOptions =data.allCostumers.map((costumer,index) => {
+        return { key:index, value: costumer.id, text: costumer.name }
+      } )
+      setCostumerList(costumerOptions)
+    }
+  } })
+
+  useEffect(() => {
+    const fetchCountries = async () => {
+      const response = await fetch('https://restcountries.eu/rest/v2/?fields=name;alpha2Code;')
+      const countries = await response.json()
+      const countryArray = countries.map((country,index) => {
+        const exclude = ['aq','bq','cw','gg','im','je','xk','bl','mf','sx','ss']
+        if(exclude.includes(country.alpha2Code.toLowerCase())){
+          return { key:index, value: country.name, text:  country.name  }
+        }
+        return { key:index, value: country.name, text:  country.name ,flag: country.alpha2Code.toLowerCase() }
+      })
+      setCountryList(countryArray)
+    }
+
+    fetchCountries()
+  },[])
+
+  const addStation = (values) => {
+    delete(values.stationKeyConfirm)
+    addStationMutation({
+      variables: values,
+      update: (store,response) => {
+        store.modify({
+          fields:{
+            allStation(existingStationRefs , { readField }){
+              const newStation = response.data.addStaff
+              if(existingStationRefs.some(ref => readField('id',ref) === newStation.id)){
+                return existingStationRefs
+              }
+              const update = { ...values,id: newStation.id }
+              return [...existingStationRefs,update]
+
+            }
+          }
+
+        })
+      }
+    })
+  }
+
+
+  const initVal = {
+    location: '',
+    address:{
+      street:'',
+      postcode:'',
+      city:'',
+      country:''
+    },
+    email: '',
+    phone: '',
+    costumers:[],
+    shifts:[],
+    stationKey:'',
+    stationKeyConfirm:''
+  }
+  return(
+    <Formik
+      initialValues = { initVal }
+      onSubmit= {(values) => {
+        console.log(values)
+        addStation(values)
+      }}
+      validate = {(values) => {
+        let errors = {}
+
+        if(!values.location || (values.location && values.location.length < 3)){
+          errors.location= 'Location is required and must be at least 3 charcter long'
+        }
+
+        if( !values.address.street || (values.address.street && values.address.street.length < 3) ){
+
+          errors.address = { ...errors.address, street: 'Street is required and must be at least 3 charcter long' }
+        }
+
+        if( !values.address.city ){
+          errors.address= { ...errors.address, city: 'City is required and must be at least 3 charcter long' }
+        }
+
+        if( !values.address.country ){
+          errors.address = { ...errors.address,country:'Country is required' }
+        }
+        if( !values.email  || validateEmail(values.email)){
+          errors.email = 'Email is required and must be valid'
+        }
+        if( !values.phone ){
+          errors.phone = 'Phone is required'
+        }
+        if( !values.stationKey || (values.stationKey && values.stationKey.length < 8)){
+          errors.stationKey = 'Station key is required and should be at least 8 charter long'
+        }
+        if( values.stationKeyConfirm !== values.stationKey){
+          errors.stationKeyConfirm = 'Station key confirm mismatch'
+        }
+
+        return errors
+
+      }}
+    >
+      {({ values,handleSubmit,setFieldValue,dirty }) =>
+        <Modal
+          closeIcon
+          closeOnEscape={false}
+          closeOnDimmerClick={false}
+          open = {props.open}
+          onClose= {() =>  props.setOpen(false)}
+          onOpen= {() => props.setOpen (true)}
+        >
+          <ModalHeader>New Station {props.name} </ModalHeader>
+          <ModalContent>
+
+            { loading &&
+            <Dimmer active>
+              <Loader />
+            </Dimmer>
+            }
+
+
+            <Form style={{ marginBottom:'5rem' }} autoComplete="off">
+              <Grid padded >
+                <Grid.Row style={{ padding:0 }}>
+                  <InputField name='location' label='Location' type='text' width='8' placeholder='Location identifier ex: Airport code'/>
+                </Grid.Row>
+                <Grid.Row style={{ paddingTop:3 }}>
+                  <DropDownField  name='address.country' labeled label='Country'
+                    placeholder='Select Country'
+                    search
+                    selection
+                    width='8'
+                    options= {countryList}
+                    onChange = {  (e,{ value }) => {
+                      setFieldValue('address.country',value)
+                    }}
+                  >
+
+                  </DropDownField>
+
+                </Grid.Row>
+                <Grid.Row><Header as ='h3'>Address</Header></Grid.Row>
+                <Grid.Row style={{ padding:0 }}>
+                  <InputField name='address.street' label='Street' type='text' width='8'/>
+                </Grid.Row>
+                <Grid.Row style={{ padding:0 }}>
+                  <InputField name='address.postcode' label='postcode' type='text' width='8'/>
+                </Grid.Row>
+                <Grid.Row style={{ paddingTop:0 }}>
+                  <InputField name='address.city' label='city' type='text' width='8'/>
+                </Grid.Row>
+
+                <Grid.Row><Header as ='h3'>Contact Information</Header></Grid.Row>
+                <Grid.Row style={{ padding:0 }}>
+                  <InputField name='email' label='Email' type='email'  width='8'/>
+                </Grid.Row>
+                <Grid.Row style={{ paddingTop:0 }}>
+                  <InputField name='phone' label='Phone' type='tel'  width='8'/>
+                </Grid.Row>
+
+                <Grid.Row><Header as ='h3'>Working Shift</Header></Grid.Row>
+                <FieldArray  name={'shifts'}>
+                  {({ push,remove }) => (<>
+                    { values.shifts.length > 0 && values.shifts.map((shift,index) => <Grid.Row key ={index} style={{ padding:0 }}>
+                      <Form.Group widths='13'><InputField name={`shifts[${index}].name`} label='Name' /><InputField name={`shifts[${index}].startTime`} label='StartTime'/>
+                        <Button
+                          type='button'
+                          icon
+                          size ='mini'
+                          primary
+                          onClick={ (e) => remove(index)
+                          }>
+                          <Icon name="plus circle"/> Add
+                        </Button> </Form.Group>
+                    </Grid.Row>
+                    )}
+                    <Button
+                      type='button'
+                      icon
+                      size ='mini'
+                      primary
+                      onClick={ (e) => push ({ name:'', startTime:'' })
+                      }>
+                      <Icon name="plus circle"/> Add
+                    </Button>
+                  </>)}
+
+
+
+                </FieldArray>
+
+                <Grid.Row><Header as ='h3'>Costumers</Header></Grid.Row>
+                <DropDownField  name='costumers'
+                  placeholder='Select Costumers'
+                  multiple
+                  search
+                  selection
+                  width='8'
+                  loading= {costumerLoading}
+                  options= {costumerList}
+                  onChange = {  (e,{ value }) => {
+                    setFieldValue('costumers',value)
+                  }}
+                >
+
+                </DropDownField>
+                <Grid.Row><Header as ='h3'>Station Key</Header></Grid.Row>
+                <Grid.Row style={{ padding:0 }}> <InputField name='stationKey' type='password' width='8' placeholder='stationKey' /> </Grid.Row>
+                <Grid.Row style={{ padding:0 }}> <InputField name='stationKeyConfirm' type='password' width='8' placeholder='Confirm stationKey' /> </Grid.Row>
+
+
+              </Grid>
+            </Form>
+          </ModalContent>
+          <Modal.Actions>
+            <Button   negative onClick={() => props.setOpen (false)}>Cancel</Button>
+            {dirty &&
+            <Button  positive onClick= {() => handleSubmit()}>Save</Button>}
+          </Modal.Actions>
+        </Modal>
+      }
+    </Formik>
+
+  )
+}
+
+export default NewStationModel

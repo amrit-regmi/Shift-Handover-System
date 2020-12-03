@@ -1,13 +1,23 @@
 import { gql } from '@apollo/client'
 export const ALL_STATION = gql`
- query {
+ query ($detailed: Boolean = false ){
   allStations {
+    id
     location
-    shifts {
+    shifts @skip(if: $detailed){
       name
       startTime
     }
-    id
+    address @include(if: $detailed){
+      country
+      postcode
+      city
+      street
+    }
+    phone @include(if: $detailed)
+    email @include(if: $detailed)
+    activeStaffs @include(if: $detailed)
+    
   }
 }`
 
@@ -28,20 +38,22 @@ export const GET_STATION = gql`
       }
       location
       id
+      address {
+        country
+        postcode
+        city
+        street
+      }
+      phone
+      email
+      staffList{
+        name
+      }
+      procedures{
+        title
+        description
+      }
     }
   }
 
 `
-
-export const ALL_STATION_LIST = gql`
- query {
-  allStations {
-    id
-    location{
-      airportCode
-    }
-    phone
-    email
-    address
-  }
-}`

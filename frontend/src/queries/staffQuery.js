@@ -14,7 +14,12 @@ query fetchStaff($id:String, $registerCode:String, $withPermission: Boolean!){
     email
     position
     contractType
-    lastActive
+    lastActive{
+      station{
+        location
+      }
+      activeAt
+    }
     username
     resetCode
     phone
@@ -53,9 +58,11 @@ export const GET_ALL_STAFF = gql`
     name
     email
     phone
-    lastActive
-    currentStation{
-      location
+    lastActive{
+      station{
+        location
+      }
+      activeAt
     }
   }}
 `

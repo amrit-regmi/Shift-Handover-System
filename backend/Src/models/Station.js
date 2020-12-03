@@ -3,17 +3,19 @@ const uniqueValidator = require('mongoose-unique-validator')
 
 const stationSchema = new mongoose.Schema({
   location:{
-    airportCode:{
-      type:String,
-      required: true,
-      unique: true,
-      minlength:3
-    },
+    type:String,
+    unique: true,
+    minlength:3
+  },
+  address:{
     country:{
       type:String,
       required: true,
     },
     city:{
+      type:String,
+      required: true },
+    postcode:{
       type:String,
       required: true },
     street:{
@@ -23,18 +25,13 @@ const stationSchema = new mongoose.Schema({
 
   phone:[
     { type:String,
-      required:true }
+      /*required:true */ }
   ],
 
   email: {
     type:String,
-    required:true
+    /*required:true */
   },
-
-  staffList: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Staff'
-  }],
 
   procedures:[{
     title:String,
@@ -58,6 +55,11 @@ const stationSchema = new mongoose.Schema({
       }
     }
   ]
+  ,
+  stationKey: {
+    type:String,
+    required:true
+  }
 
 })
 

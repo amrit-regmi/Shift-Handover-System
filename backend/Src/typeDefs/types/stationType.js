@@ -1,12 +1,15 @@
 const stationType = `
   type Station {
     id: ID!
-    location: String!
+    location: String
+    address: Address
     costumers: [Costumer]
     shifts: [ShiftInfo]
-    phone: String
+    phone: [String]
     email: String
     procedures: [Procedure]
+    activeStaffs: Int
+    staffList: [Staff]
   }
 
   type ShiftInfo {
@@ -14,9 +17,9 @@ const stationType = `
     startTime: String
   }
 
-  type Location{
-    airportCode: String!
+  type Address{
     country: String
+    postcode: String
     city:String
     street: String
   }
@@ -25,6 +28,7 @@ const stationType = `
     title:String!
     description: String!
   }
+
 `
 
 module.exports =  stationType

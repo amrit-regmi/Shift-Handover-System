@@ -12,7 +12,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
 
   const params= useParams()
 
-  const permission = staff.permission.timesheet
+  const permission = staff.permission && staff.permission.timesheet
 
   //console.log(permission)
 
@@ -204,7 +204,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
                * Add Button,
                * visible only if data staff is loggedin Staff or  logged in staff has permission and no record exists for  that day
                */
-            isEmptyRow  && (permission.edit.length >0 || staff.id === staffId ) &&
+            isEmptyRow  && permission && (  permission.edit.length >0 || staff.id === staffId ) &&
               <Button icon='add' size='mini' circular onClick = {() => {
                 setAdd(true)
                 setOpen(true)

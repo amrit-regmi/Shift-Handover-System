@@ -1,10 +1,10 @@
 import React, { useState,useEffect } from 'react'
 import { useQuery } from '@apollo/client'
-import { ALL_STATION } from '../../../queries/stationQuery'
+import { ALL_STATION } from '../../queries/stationQuery'
 import { Segment, Dimmer, Loader, Table, TableHeaderCell, TableRow, TableCell, Button, Icon, FormButton, Input, Flag } from 'semantic-ui-react'
 import { Link } from 'react-router-dom'
 import NewStationModel from './NewStationModal'
-import { formatDate } from '../../../utils/DateHelper'
+import { formatDate } from '../../utils/DateHelper'
 
 
 const AllStations = () => {
@@ -62,7 +62,7 @@ const AllStations = () => {
         <Table.Body>
           {stationsData && stationsData.map( station =>
             <Table.Row key= {station.id}>
-              <TableCell><Link to={`/allStations/${station.id}`}>{station.location}</Link></TableCell>
+              <TableCell><Link to={`/Manage/AllStations/${station.id}`}>{station.location}</Link></TableCell>
               <TableCell>{station.activeStaffs}</TableCell>
               <TableCell>{<> {station.address.street} <br/>   {station.address.postcode} {station.address.city} <br/>  {station.address.country}    <Flag name={station.address && station.address.country && station.address.country.toLowerCase()}></Flag> </>}</TableCell>
               <TableCell>{station.phone && station.phone.reduce((p,c) => <>{c}  <br/> {p}</> , '') } </TableCell>

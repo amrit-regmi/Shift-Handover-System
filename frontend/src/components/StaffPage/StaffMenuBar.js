@@ -21,6 +21,7 @@ const StaffMenuBar = ({ staffName, activeItem, setActiveItem }) => {
 
   }
 
+
   const handleMenuClick = (e, { name }) => {
     setActiveItem( name )
     if( ['Profile','Timesheets','TimesheetsOverview'].includes(name) ){
@@ -37,44 +38,21 @@ const StaffMenuBar = ({ staffName, activeItem, setActiveItem }) => {
 
   const menuItems = []
 
-  /**If user has some admin rights then add those items to menu and own profile view will be on dropdown Button */
-  if(staff.permission.station.edit.length > 0 || staff.permission.station.add){
-    menuItems.push ('AllStations')
-  }
-
-  if(staff.permission.staff.view){
-    menuItems.push ('AllStaffs')
-  }
-
-  if(staff.permission.timesheet.view.length > 0){
-    menuItems.push ('ManageTimesheets')
-  }
 
   const cornerButton = () => {
     return (
       <Dropdown item text = {`Welcome ${staff.name}` } >
         <Dropdown.Menu>
-          {menuItems.length > 0 && <>
-            <Dropdown.Item disabled text='My Pages'  onClick = { handleMenuClick }/>
-            <Dropdown.Item name= 'Profile' text='Profile'  onClick = { handleMenuClick }/>
-            <Dropdown.Item name ='Timesheets' text='Timesheets'  onClick = { handleMenuClick }/>
-            <Dropdown.Item name = 'TimesheetsOverview' text='TimesheetsOverview'  onClick = { handleMenuClick }/>
-            <Dropdown.Divider/>
-
-          </>
-          }
           <Dropdown.Item text='Logout' onClick={() => logout()}/>
-
         </Dropdown.Menu>
-
       </Dropdown>
     )
   }
 
-  /** If user doesnot have any admin rights then */
+  /** Add Items to Menu*/
   if (menuItems.length === 0) {
     menuItems.push('Timesheets')
-    menuItems.push('SubmittedTimesheets')
+    menuItems.push('TimesheetsOverview')
     menuItems.push('Profile')
   }
 

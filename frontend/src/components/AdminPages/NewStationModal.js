@@ -3,12 +3,12 @@ import { FieldArray, Formik } from 'formik'
 import _ from 'lodash'
 import React, { useEffect, useState } from 'react'
 import { Button, Dimmer, Form, Grid, Header, Icon, List, Loader, Modal,ModalContent, ModalHeader, Segment } from 'semantic-ui-react'
-import { ADD_STATION } from '../../../mutations/stationMutation'
-import { ALL_COSTUMERS } from '../../../queries/costumerQuey'
-import { ALL_STATION } from '../../../queries/stationQuery'
-import { InputField } from '../../StationReportPage/NewReportForm/FormFields'
-import { validateEmail, validateName } from '../../StationReportPage/NewReportForm/validator'
-import { DropDownField } from '../../TimeSheetsReport/TimeSheetEditFields'
+import { ADD_STATION } from '../../mutations/stationMutation'
+import { ALL_COSTUMERS } from '../../queries/costumerQuey'
+import { ALL_STATION } from '../../queries/stationQuery'
+import { InputField } from '../StationReportPage/NewReportForm/FormFields'
+import { validateEmail, validateName } from '../StationReportPage/NewReportForm/validator'
+import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
 const NewStationModel = (props) => {
 
   const [addStationMutation,{ loading,error }] = useMutation(ADD_STATION)

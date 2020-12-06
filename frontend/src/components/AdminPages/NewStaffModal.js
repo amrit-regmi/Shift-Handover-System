@@ -3,10 +3,10 @@ import { Formik } from 'formik'
 import _ from 'lodash'
 import React, { useEffect } from 'react'
 import { Button, Dimmer, Form, Grid, Icon, List, Loader, Modal,ModalContent, ModalHeader, Segment } from 'semantic-ui-react'
-import { STAFF_ADD } from '../../../mutations/staffMutation'
-import { InputField } from '../../StationReportPage/NewReportForm/FormFields'
-import { validateEmail, validateName } from '../../StationReportPage/NewReportForm/validator'
-import { DropDownField } from '../../TimeSheetsReport/TimeSheetEditFields'
+import { STAFF_ADD } from '../../mutations/staffMutation'
+import { InputField } from '../StationReportPage/NewReportForm/FormFields'
+import { validateEmail, validateName } from '../StationReportPage/NewReportForm/validator'
+import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
 const NewStaffModel = (props) => {
 
   const [addStaffMutation,{ loading,error }] = useMutation(STAFF_ADD)

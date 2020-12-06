@@ -1,10 +1,10 @@
 import React, { useState,useEffect } from 'react'
 import { useQuery } from '@apollo/client'
-import { GET_ALL_STAFF } from '../../../queries/staffQuery'
+import { GET_ALL_STAFF } from '../../queries/staffQuery'
 import { Segment, Dimmer, Loader, Table, TableHeaderCell, TableRow, TableCell, Button, Icon, FormButton, Input } from 'semantic-ui-react'
 import { Link } from 'react-router-dom'
 import NewStaffModel from './NewStaffModal'
-import { formatDate } from '../../../utils/DateHelper'
+import { formatDate } from '../../utils/DateHelper'
 
 
 const AllStaffs = () => {
@@ -61,7 +61,7 @@ const AllStaffs = () => {
         <Table.Body>
           {staffsData && staffsData.map( staff =>
             <Table.Row key= {staff.id}>
-              <TableCell><Link to={`/allStaffs/${staff.id}`}>{staff.name}</Link></TableCell>
+              <TableCell><Link to={`/Manage/AllStaffs/${staff.id}/Profile`}>{staff.name}</Link></TableCell>
               <TableCell>{staff.email}</TableCell>
               <TableCell>{staff.phone}</TableCell>
               <TableCell>{staff.lastActive && formatDate(staff.lastActive.activeAt) }</TableCell>

@@ -30,7 +30,7 @@ const Profile = (props) => {
   }
 
 
-  const { loading,error,data } = useQuery(GET_STAFF,{ variables:{ id:staffId ,withPermission: props.staffCanEdit  } })
+  const { loading,error,data } = useQuery(GET_STAFF,{ variables:{ id:staffId ,withPermission: props.staffCanEdit || false  } })
 
 
 
@@ -43,7 +43,7 @@ const Profile = (props) => {
   }
 
   useEffect(() => {
-    if(data)
+    if(data && props.setStaffName)
       props.setStaffName(data.getStaff.name)
 
   },[data, props])

@@ -12,14 +12,16 @@ const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,times
   const today = new Date()
   const [number,setNumber] = useState (selected || getWeekNumber(today))
   const [year,setYear] = useState(selectedYear || today.getFullYear())
-  const queryParams = { staff: staffId, filterDuration: selectBy  , number:number, year: year }
+  const queryParams = { staff: staffId || staff.id , filterDuration: selectBy  , number:number, year: year }
+
   const { error,loading,data } = useQuery(GET_TIMESHEETS, { variables:queryParams })
 
   useEffect(() => {
     if (data && data.getStaff )
       setStaffName(data.getStaff.name)
 
-  },[data, setStaffName])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[data])
 
   /** Get Month name from index
   * Negative index gets month from end of array

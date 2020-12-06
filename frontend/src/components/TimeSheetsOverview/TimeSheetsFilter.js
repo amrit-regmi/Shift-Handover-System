@@ -1,19 +1,15 @@
-import { useLazyQuery, useQuery } from '@apollo/client'
+import { useLazyQuery } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
-import { Link, useHistory, useLocation, useParams } from 'react-router-dom'
-import  _  from 'lodash'
+import { useLocation, useParams } from 'react-router-dom'
 import { DateInput } from 'semantic-ui-calendar-react'
-import { Dropdown, Form, FormGroup, Header, Select ,Segment,Button, Label, Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, Loader } from 'semantic-ui-react'
-import { GET_ALL_STAFF_MINIMAL } from '../../../queries/staffQuery'
-import { GET_ALL_TIMESHEETS } from '../../../queries/timeSheetQuery'
-import { formatDate, getMonthOptions, getWeekOptions,getWeekNumber,getMonthInt } from '../../../utils/DateHelper'
-import TimeSheet from '../TimeSheet'
-import TimeSheetsReport from '../../TimeSheetsReport'
+import { Form, FormGroup, Segment,Label } from 'semantic-ui-react'
+//import { GET_ALL_STAFF_MINIMAL } from '../../../queries/staffQuery'
+import { formatDate, getMonthOptions, getWeekOptions,getWeekNumber } from '../../utils/DateHelper'
+import { GET_ALL_STAFF_MINIMAL } from '../../queries/staffQuery'
 
-const ManageTimeSheets = ({ setStaffName }) => {
+const TimeSheetsFilter = ({ setFilter }) => {
   const loggedInStaff = JSON.parse( sessionStorage.getItem('staffKey'))
   const params = useParams()
-  const location = useLocation()
   const today = new Date()
   const [staff,setStaff] = useState([])
   const [period,setPeriod] = useState('date')
@@ -24,6 +20,10 @@ const ManageTimeSheets = ({ setStaffName }) => {
   const [number,setNumber] = useState(getWeekNumber(today))
   const [year,setYear] = useState(today.getFullYear())
 
+  const location = useLocation ()
+  const basePage =  location.pathname.split('/')[2]
+
+
   const [filterStatus,setFilterStatus] = useState('')
 
   const [staffOptions,setStaffOptions] = useState([])
@@ -31,76 +31,34 @@ const ManageTimeSheets = ({ setStaffName }) => {
   const [getAllStaffs,{ loading: staffLoading, data: staffData }] = useLazyQuery(GET_ALL_STAFF_MINIMAL)
 
   useEffect(() => {
-    if (staffData){
+    if(staffData){
       const staffOpt = staffData.allStaff.map((staff,index) => {
         return { key:index, value:staff.id, text: staff.name }
       } )
-
       setStaffOptions(staffOpt)
     }
-  },[staffData])
+
+
+  }, [staffData])
 
   useEffect(() => {
-    if(params.staffId){
+    setFilter({ staff, period ,stations ,groupBy ,from ,to , number, year, filterStatus })
+  },[staff, period, stations, groupBy, from, to, number, year, filterStatus, setFilter])
+
+  useEffect(() => {
+    if(params.staffId ){
       setStaff([params.staffId])
     }else{
       setStaff([])
     }
-  },[params])
-
-
-
-  const variables  = {
-    staff:staff,
-    period:period,
-    from:from,
-    to:to,
-    number:number,
-    groupBy:groupBy,
-    year:year,
-    stations:stations,
-    filterStatus: filterStatus
-  }
-
-  if(staff.length === 1){
-    variables.staffId = staff[0]
-  }
-
-  const { loading,error,data } = useQuery(GET_ALL_TIMESHEETS,{ variables: variables,skip: params.period })
-
-
-  useEffect (() => {
-    if(data && data.getStaff){
-      setStaffName(data.getStaff.name)
+    if(basePage.toLowerCase() === 'mypage'){
+      setStaff([loggedInStaff.id])
     }
-  },[data, setStaffName])
+  },[basePage, loggedInStaff.id, params])
 
 
-  if(params.period) {
-    const periodTitle = params.period.split(' ')
-    let period
-    let selected
-    let selectedYear
-    if(periodTitle[0] === 'Week'){
-      period='week'
-      selected = periodTitle[1]
-      selectedYear = periodTitle[2]
-    }
-    else{
-      period='month'
-      selected = getMonthInt(periodTitle[0])
-      selectedYear = periodTitle[1]
-      console.log(selected,periodTitle[0])
-    }
-
-    return <TimeSheet period= {period} selected={parseInt(selected)} selectedYear={parseInt(selectedYear) } staffId={params.staffId} setStaffName={setStaffName} timesheetOnly />
-  }
-
-
-  const stationOptions = loggedInStaff.permission.timesheet.view.map((station,index ) => {
+  const stationOptions = loggedInStaff.permission && loggedInStaff.permission.timesheet.view.map((station,index ) => {
     return { key: index, value:station._id, text: station.location }})
-
-
 
   return (
 
@@ -111,7 +69,7 @@ const ManageTimeSheets = ({ setStaffName }) => {
         <Form size='mini'>
           <FormGroup widths='equal' >
             {
-              !params.staffId &&
+              !params.staffId && basePage.toLowerCase() !== 'mypage' &&
               <Form.Dropdown
                 label='Staff'
                 value= {staff}
@@ -198,57 +156,6 @@ const ManageTimeSheets = ({ setStaffName }) => {
           </FormGroup>
         </Form>
       </Segment>
-
-
-
-      <Loader active={loading}> Loading TimeSheet Overview</Loader>
-
-      <Table >
-        <TableHeader>
-          <TableRow>
-            {!params.staffId &&
-            <TableHeaderCell>Staff Name</TableHeaderCell>
-            }
-            <TableHeaderCell>Period</TableHeaderCell>
-            <TableHeaderCell> Stations</TableHeaderCell>
-            <TableHeaderCell> Total Hours</TableHeaderCell>
-            <TableHeaderCell> Status</TableHeaderCell>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data && data.getAllTimeSheets && _.map(data.getAllTimeSheets, (staffs,period) =>
-            _.map(staffs,(staff,name) =>
-              <TableRow key={name} positive= {staff.itemsPending?false:true} negative= {staff.itemsPending?true:false}>
-                {!params.staffId &&
-                <TableCell><Link to={`/ManageTimesheets/${staff.id}`} onClick={() => {
-                  setStaffName(name)
-                }}> {name}</Link></TableCell> }
-                <TableCell>{period}</TableCell>
-                <TableCell>{
-                  _.reduce(staff.station,(p,c,key) => {
-                    if(c !== 0){
-                      return ( (p?p+'/':'')+key)
-                    }
-                    return p
-
-                  },'')}
-                </TableCell>
-                <TableCell>{staff.totHours}</TableCell>
-                <TableCell><Link to={`${location.pathname}/${params.staffId?'':`${staff.id}/`}${period}`}
-                  onClick={() => {
-                    setStaffName(name)
-                  }}>{staff.itemsPending ?  `${staff.itemsPending}  Items Pending`: 'All Approved' } </Link></TableCell>
-              </TableRow>)
-
-          )
-          }
-
-        </TableBody>
-      </Table>
-
-
-
-
     </>)
 
 
@@ -256,4 +163,4 @@ const ManageTimeSheets = ({ setStaffName }) => {
 
 
 }
-export default ManageTimeSheets
+export default TimeSheetsFilter

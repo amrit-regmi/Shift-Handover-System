@@ -23,7 +23,7 @@ const staffResolver = {
       if (args.id && args.id !== null  && args.id !== undefined){
 
         /** If staff has permission to view staff information */
-        if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin || loggedInStaff.permission.staff.view || args.id === loggedInStaff.id)) {
+        if((loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin || loggedInStaff.permission.staff.view ))|| args.id === loggedInStaff.id) {
 
           /**If staff has permission to edit staff then send permission info */
           if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {

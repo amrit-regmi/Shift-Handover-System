@@ -25,8 +25,8 @@ export const GET_STATION = gql`
   query fetchStation($id: String!){
     getStation(id: $id) {
       costumers {
+        contract
         aircrafts {
-          id
           registration
         }
         name
@@ -47,7 +47,11 @@ export const GET_STATION = gql`
       phone
       email
       staffList{
+        id
         name
+        lastActive{
+          activeAt
+        }
       }
       procedures{
         title

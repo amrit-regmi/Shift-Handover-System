@@ -52,7 +52,11 @@ const  App = () =>   {
 
 
         {/** Routing for /Manage/AllStations */}
-        <Route path = {['/Manage/AllStations/:stationId', '/Manage/AllStations' ]}>
+        <Route path = {['/Manage/AllStations/:stationId/:page' ]}>
+          <AdminPages/>
+        </Route>
+        <Redirect from='/Manage/AllStations/:stationId' to='/Manage/AllStations/:stationId/BasicInfo'/>
+        <Route path = '/Manage/AllStations'>
           <AdminPages/>
         </Route>
 

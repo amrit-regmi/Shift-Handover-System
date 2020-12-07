@@ -1,18 +1,15 @@
 import React, { useState,useEffect } from 'react'
 import { useQuery } from '@apollo/client'
 import { ALL_STATION } from '../../queries/stationQuery'
-import { Segment, Dimmer, Loader, Table, TableHeaderCell, TableRow, TableCell, Button, Icon, FormButton, Input, Flag } from 'semantic-ui-react'
+import { Segment, Loader, Table, TableHeaderCell, TableRow, TableCell, Button, Icon, Input, Flag } from 'semantic-ui-react'
 import { Link } from 'react-router-dom'
 import NewStationModel from './NewStationModal'
-import { formatDate } from '../../utils/DateHelper'
 
 
 const AllStations = () => {
   const { loading,error,data } = useQuery(ALL_STATION , { variables:{ detailed:true } })
   const  [stationsData,setStationsData]  = useState([])
   const [stationAddOpen,setStationAddOpen ]= useState(false)
-
-  console.log(data)
 
   useEffect  (() => {
     if(data  && data.allStations ){

@@ -1,8 +1,6 @@
 import React,{ useEffect, useState } from 'react'
 import { Link, useHistory, useLocation, useParams } from 'react-router-dom'
 import { Breadcrumb, BreadcrumbDivider, BreadcrumbSection } from 'semantic-ui-react'
-import AdminPages from '../AdminPages'
-//import { sub } from '../../../../backend/Src/typeDefs/types/staffType'
 import ManageTimeSheets from '../AdminPages/ManageTimeSheets'
 import Profile from './Profile'
 import RegisterPage from './RegisterPage'

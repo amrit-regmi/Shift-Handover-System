@@ -1,6 +1,6 @@
 import React from 'react'
-import { Button, Dropdown, Menu } from 'semantic-ui-react'
-import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { Dropdown, Menu } from 'semantic-ui-react'
+import { useHistory, useLocation } from 'react-router-dom'
 
 
 const StaffMenuBar = ({ staffName, activeItem, setActiveItem }) => {

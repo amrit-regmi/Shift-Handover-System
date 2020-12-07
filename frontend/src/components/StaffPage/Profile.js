@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
-import { Button, Confirm, Divider, Grid,Header,Icon,Loader, Menu, MenuItem, Table, TableBody } from 'semantic-ui-react'
+import { Button, Confirm, Grid,Header,Icon,Loader, Table, TableBody } from 'semantic-ui-react'
 import { GET_STAFF } from '../../queries/staffQuery'
 import PermissionManager from './PermissionManager'
 import StaffEditModel from './StaffEditModel'
@@ -34,8 +34,8 @@ const Profile = (props) => {
 
 
 
-  const [resetPassword,{ loading: rpLoading,error:rpError,data:rpData }] = useMutation(RESET_PASSWORD_REQ)
-  const [resetRegisterCode,{ loading: rcLoading,error:rcError,data:rcData }] = useMutation(RESET_REGISTER_CODE)
+  const [resetPassword,{ loading: rpLoading,error:rpError }] = useMutation(RESET_PASSWORD_REQ)
+  const [resetRegisterCode,{ loading: rcLoading,error:rcError }] = useMutation(RESET_REGISTER_CODE)
 
 
   const resetConfirm = () => {

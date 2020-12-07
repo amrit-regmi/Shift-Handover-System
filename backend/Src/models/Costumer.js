@@ -8,12 +8,19 @@ const costumerSchema = mongoose.Schema({
       ref: 'Aircraft'
     }
   ],
-  staffList: [
+  contract:{
+    type: String
+  },
+
+  keyContacts:[
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Staff'
+      phone: {
+        type: String,
+        required:true },
+      description: String
     }
   ],
+
   stations: [
     {
       type: mongoose.Schema.Types.ObjectId,

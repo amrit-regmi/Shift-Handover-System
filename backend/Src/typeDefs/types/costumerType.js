@@ -3,8 +3,14 @@ const costumerType =  `
     id: ID!
     name: String
     stations: [Station]
-    aircrafts: [Aircraft!]!
-    staffList: [Staff]
+    aircrafts: [Aircraft!]
+    contract: String
+    keyContacts: [PhoneNumbers] 
+  }
+
+  type PhoneNumbers{
+    phone: String!
+    description: String
   }
 `
 

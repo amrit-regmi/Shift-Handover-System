@@ -34,7 +34,12 @@ const AdminMenuBar = ({  activeItem, setActiveItem }) => {
 
   if(staff.permission.timesheet.view.length > 0){
     menuItems.push ('ManageTimesheets')
+    menuItems.push ('Costumers')
   }
+
+  /*if(staff.permission.costumers && staff.permission.costumers.view ){
+    
+  }*/
 
 
   const getMenuItems = () => {

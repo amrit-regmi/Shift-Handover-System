@@ -1,4 +1,4 @@
-import {  gql, useApolloClient, useMutation } from '@apollo/client'
+import {  gql, useMutation } from '@apollo/client'
 import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Table,Button, Popup, Header, Message,  Segment,Form } from 'semantic-ui-react'
@@ -7,7 +7,6 @@ import TimeSheetEditModel from './TimeSheetEditModel'
 import _ from 'lodash'
 
 const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) => {
-  const client = useApolloClient()
   const staff = JSON.parse( sessionStorage.getItem('staffKey'))
 
   const params= useParams()
@@ -31,9 +30,9 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
 
   const [clarifyText,setClarifyText] = useState('')
 
-  const [approveTimesheet,{ loading:timesheetSignLoading,error:timesignError, data:timesheetSignData }] = useMutation(APPROVE_TIMESHEET)
-  const [mutatedeleteTimesheet,{ loading:deleteLoading,error:deleteError, data:deleteData }] = useMutation(DELETE_TIMESHEET)
-  const [requestClarification,{ loading:clarifyLoading,error:clarifyError, data:clarifyData }] = useMutation(REQUEST_CLARIFICATION)
+  const [approveTimesheet,{ loading:timesheetSignLoading }] = useMutation(APPROVE_TIMESHEET)
+  const [mutatedeleteTimesheet,{ loading:deleteLoading }] = useMutation(DELETE_TIMESHEET)
+  const [requestClarification,{ loading:clarifyLoading }] = useMutation(REQUEST_CLARIFICATION)
 
   const deleteTimeSheet = () => {
     mutatedeleteTimesheet(
@@ -42,7 +41,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
           if(response.data.deleteTimeSheet && response.data.deleteTimeSheet.status === 'SUCCESS') {
             store.modify({
               fields:{
-                getTimeSheetByUser(existingTimeSheetRefs, { DELETE }){
+                getTimeSheetByUser({ DELETE }){
                   return DELETE
                 },
 
@@ -127,7 +126,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
       update: (store,response) => {
         store.modify({
           fields: {
-            getAllTimeSheets(existingTimeSheetRefs, { readField }){
+            getAllTimeSheets(existingTimeSheetRefs, {  readField }){
               const period = params.period
               if(!period){
                 return existingTimeSheetRefs

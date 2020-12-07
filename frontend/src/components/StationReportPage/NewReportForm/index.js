@@ -34,7 +34,7 @@ const NewReport = () => {
   }
   const [initialFields,setInitialFields] = useState(init)
 
-  const [submitReport,{ loading, error, data }] = useMutation(SUBMIT_REPORT,{
+  const [submitReport,{ data }] = useMutation(SUBMIT_REPORT,{
     onError: (error) => {
       console.log(error)
     }
@@ -181,7 +181,7 @@ const NewReport = () => {
         }}
       >
 
-        {({ values,handleSubmit,errors,touched,dirty  }) =>
+        {({ values,handleSubmit,errors,touched  }) =>
           <>
             <Form onSubmit = {handleSubmit}>
               {/*Shift start end times*/}

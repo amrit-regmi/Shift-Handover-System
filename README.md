@@ -61,4 +61,5 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |14.11.2020  | 8    | Timesheet Management / All Users/ New User / User Registration Link -complete -pending testing
 |28.11.2020 | 5  | appolo-server-express install/ troubleshoot / deploy to heroku |
 |03.12.2020 | 6 | Staff schema changes and corresponding changes on frontend / all stations page and new station add page implemented |
-|06.12.2020 | 6 | Refactoring of Staff Component to smaller components (Admin Pages/ Timsheet Overview) nad realted changes / Station info page
+|06.12.2020 | 6 | Refactoring of Staff Component to smaller components (Admin Pages/ Timsheet Overview) nad realted changes / Station info page |
+|12.12.2020 | 7 | Costumers    Page / Add / Overview - Station Sub-Menu navigation link

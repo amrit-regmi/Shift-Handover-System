@@ -7,6 +7,8 @@ import StationInfo from '../StationInfo/Index'
 import TimeSheetsOverview from '../TimeSheetsOverview'
 import AdminMenuBar from './AdminMenuBar'
 import ManageTimeSheets from './ManageTimeSheets'
+import Costumers from './Costumers'
+import CostumerInfo from '../CostumerInfo'
 //import AllStaffs from '../../AdminPages/AllStaffs'
 //import AllStations from '../../AdminPages/AllStations'
 
@@ -21,6 +23,7 @@ const AdminPages = () => {
 
   const [activeItem, setActiveItem] = useState(basePage)
 
+  console.log(basePage)
   useEffect(() => {
     setActiveItem(basePage)}
   ,[basePage, location, params])
@@ -62,6 +65,18 @@ const AdminPages = () => {
         activeItem && activeItem.toLowerCase() === 'allstations' && params.stationId &&
       <>
         <StationInfo/>
+      </>
+      }
+      { /**If current page is allStations and stationId value is not set */
+        activeItem && activeItem.toLowerCase() === 'costumers' && !params.id &&
+      <>
+        <Costumers/>
+      </>
+      }
+      { /**If current page is allStations and stationId value is set */
+        activeItem && activeItem.toLowerCase() === 'costumers' && params.id &&
+      <>
+        <CostumerInfo/>
       </>
       }
     </>

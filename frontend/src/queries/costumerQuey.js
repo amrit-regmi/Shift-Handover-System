@@ -8,11 +8,44 @@ query fetchAllCostumers ($detailed: Boolean = false) {
         id
         location
       }
-      
+      contract @include(if: $detailed)
       aircrafts @include(if: $detailed) {
         id
         registration
       }
     }
   }
+`
+
+export const GET_COSTUMER = gql ` 
+query getCostumerId ($id:String){
+  getCostumer(
+    id:$id
+  ){
+    name
+    id 
+    stations{
+      id
+      location
+      address{
+        street
+        postcode
+        city
+        country
+      }
+    }
+    aircrafts{
+      id
+      registration
+    }
+    contract
+    keyContacts{
+      phone
+      description
+    }
+
+
+  }
+}
+
 `

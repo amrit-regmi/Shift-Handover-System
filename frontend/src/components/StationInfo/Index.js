@@ -1,18 +1,28 @@
 import { useQuery } from '@apollo/client'
-import React, { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { Button, Card, Flag, Grid, Header, Icon, Loader, Menu, Segment, Table } from 'semantic-ui-react'
+import React, { Fragment, useEffect, useState } from 'react'
+import { Link, useLocation, useParams } from 'react-router-dom'
+import { Breadcrumb, BreadcrumbDivider, BreadcrumbSection, Button, Card, Flag, Grid, Header, Icon, Loader, Menu, Segment, Table } from 'semantic-ui-react'
 import { GET_STATION } from '../../queries/stationQuery'
 import { formatDate } from '../../utils/DateHelper'
+import CostumerInfo from '../CostumerInfo'
 import StationMenu from './stationMenu'
 
 const StationInfo = (props) => {
   const [stationData, setStationData] = useState('')
   const [activeItem,setActiveItem] = useState('BasicInfo')
+  const location = useLocation()
+  const locationPaths = location.pathname && location.pathname.split('/').filter(path => path)
 
+  const params = useParams()
 
+  useEffect(() => {
+    if(params.page){
+      setActiveItem(params.page)
+    }
+  },[params])
 
   let stationId = useParams().stationId
+
   /** If stationId is passed as props then passed stationId should have precedence over params */
   if(props.stationId){
     stationId = props.stationId
@@ -24,9 +34,24 @@ const StationInfo = (props) => {
     variables: { id: stationId },
     skip: !stationId,
     onCompleted: (data) => setStationData(data.getStation)
-  } )
+  })
 
-  console.log(stationData)
+  /**Gets bredcrumb item link
+   * @param {Int} index - indexNumber of current item on fullpath
+   */
+  const getBreadCrumbLink = (index) => {
+    const arr = [...locationPaths]
+    const link = arr.reduce((p,c,i) => {
+      if(i > index){ // stop at current page
+        arr.splice(1)
+        return p
+      }
+      return p+'/'+c
+    },'')
+
+    return link
+
+  }
 
   if(!stationId || !stationData || loading ){
     return(
@@ -39,6 +64,35 @@ const StationInfo = (props) => {
 
   return (
     <>
+      <Breadcrumb>
+        {locationPaths.map((path,index) => {
+          if(index === 0) { //Skip for base page
+            return ''
+          }
+          return (
+            <Fragment key={index}>
+              <BreadcrumbSection
+                active= {index === locationPaths.length-1  }
+                as={index < locationPaths.length-1?Link:''} //as Link previous Page
+                to ={ getBreadCrumbLink(index)}
+              >
+                {index===2 && stationData.location}
+                {index===4 && locationPaths[index-1].toLowerCase() === 'costumers' && //If the path is costumerId then display costumer name else it must be procedure, display procdure id
+                 stationData.costumers.filter(costumer => costumer.id === path)[0].name
+                }
+                {
+                  index !== 2 && index !== 4 &&
+                  path
+                }
+
+              </BreadcrumbSection>
+              { index < locationPaths.length-1 &&
+              <BreadcrumbDivider></BreadcrumbDivider>}
+            </Fragment>
+          )
+        })}
+      </Breadcrumb>
+
       <StationMenu station= {stationData} activeItem ={activeItem} setActiveItem= {setActiveItem}></StationMenu>
       {activeItem === 'BasicInfo' &&
         <Grid padded>
@@ -98,18 +152,25 @@ const StationInfo = (props) => {
         </Header.Subheader>
       </Header>}
 
-      {activeItem === 'Costumers' &&
+      {activeItem === 'Costumers' && ! params.id &&
       <>
-        {stationData.costumers && stationData.costumers.map(costumer =>
-          <Card key={costumer.id} link raised as={Link} to='/Manage/AllStaffs'>
-            <Card.Content textAlign='center' header = {costumer.name} />
-            <Card.Content textAlign='center' >{costumer.contract? costumer.contract + ' Contract':''}</Card.Content>
-            <Card.Content textAlign='center' extra>
-              <Header as ='h5'> <Icon name='plane'/> Total Aircrafts: {costumer.aircrafts.length}</Header>
-            </Card.Content>
-          </Card>)}
-        <Button primary icon floated='left'><Icon name='add circle'/> Add More </Button>
+        <Card.Group>
+          {stationData.costumers && stationData.costumers.map(costumer =>
+            <Card key={costumer.id} link raised as={Link} to={`${location.pathname}/${costumer.id}`}>
+              <Card.Content textAlign='center' header = {costumer.name} />
+              <Card.Content textAlign='center' >{costumer.contract? costumer.contract + ' Contract':''}</Card.Content>
+              <Card.Content textAlign='center' extra>
+                <Header as ='h5'> <Icon name='plane'/> Total Aircrafts: {costumer.aircrafts.length}</Header>
+              </Card.Content>
+            </Card>)}
+        </Card.Group>
+        <Segment basic compact><Button primary icon ><Icon name='add circle'/> Add More </Button></Segment>
       </>
+
+      }
+
+      {activeItem === 'Costumers' && params.id &&
+       <CostumerInfo></CostumerInfo>
       }
 
       {activeItem === 'Settings' &&

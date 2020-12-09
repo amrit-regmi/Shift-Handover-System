@@ -14,10 +14,9 @@ const costumerSchema = mongoose.Schema({
 
   keyContacts:[
     {
-      phone: {
-        type: String,
-        required:true },
-      description: String
+      phone: String,
+      description: String,
+      email:String
     }
   ],
 

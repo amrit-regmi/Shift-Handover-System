@@ -5,6 +5,7 @@ import { useHistory, useParams } from 'react-router-dom'
 import { Button, Flag, Grid, Header, Icon, Label, Loader, Modal, Segment, Table } from 'semantic-ui-react'
 import {  DELETE_COSTUMER, REMOVE_AIRCRFAT, REMOVE_CONTACT, REMOVE_COSTUMER_FROM_STATION } from '../../mutations/costumerMutation'
 import { GET_COSTUMER } from '../../queries/costumerQuey'
+import ConfirmModal from '../ConfirmModal'
 import AddAircraftModal from './AddAircraftModal'
 import AddContactModal from './AddContactModal'
 import AddStationModal from './AddStationModal'
@@ -267,23 +268,7 @@ const CostumerInfo = ({ costumerData }) => {
 
 
       {confirmModalOpen &&
-      <Modal
-        open= {confirmModalOpen}
-        closeOnEscape= {false}
-        closeOnDimmerClick={false}
-      >
-        <Modal.Header >Confirm</Modal.Header>
-        <Modal.Content>{confirm.title}</Modal.Content>
-        <Modal.Actions>
-          <Button positive onClick= {() => {
-            confirm.fn()
-            setConfirmModalOpen(false)
-          }
-          }>Confirm </Button>
-          <Button negative  onClick= {() => setConfirmModalOpen(false)}>Cancel </Button>
-        </Modal.Actions>
-      </Modal>
-
+        <ConfirmModal open= {confirmModalOpen} confitm= {confirm} setOpen= {setConfirmModalOpen} ></ConfirmModal>
       }
 
 

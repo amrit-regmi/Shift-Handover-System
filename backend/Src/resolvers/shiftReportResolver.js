@@ -8,7 +8,7 @@ const jwt  = require('jsonwebtoken')
 
 const shiftReportResolver = {
   Mutation: {
-    submitShiftReport: async(root,args,context) => {
+    submitShiftReport: async(_root,args,context) => {
       const currentStation = context.currentStation
       if (!currentStation) {
         throw new AuthenticationError('Invalid authentication')
@@ -190,7 +190,7 @@ const shiftReportResolver = {
     },
 
 
-    startReporting : async ( root,args ) => {
+    startReporting : async ( _root,args ) => {
       const shiftReport = new ShiftReport({
         station:args.station,
         shift: args.shift,
@@ -205,7 +205,7 @@ const shiftReportResolver = {
 
   Query:{
 
-    getShiftReport: async(root,args,context) => {
+    getShiftReport: async(_root,args,context) => {
       const currentStation = context.currentStation
 
       if (!(args.station && args.flag) && (!args.id || args.id === null) ){
@@ -257,7 +257,7 @@ const shiftReportResolver = {
       }
     },
 
-    getReportList : async (root,args,context) => {
+    getReportList : async (_root,args,context) => {
       const currentStation = context.currentStation
       if (!args.stationId){
         /**TODO: Permission check needs to be implemented */
@@ -273,7 +273,7 @@ const shiftReportResolver = {
       return shiftReports
 
     },
-    getShiftReportByShift: async(root,args,context) => {
+    getShiftReportByShift: async(_root,args,_context) => {
       const report = await ShiftReport.findOne(args).populate('station')
       return report
 

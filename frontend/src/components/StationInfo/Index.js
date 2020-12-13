@@ -1,7 +1,7 @@
 import { useQuery } from '@apollo/client'
 import React, { Fragment, useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { Breadcrumb, BreadcrumbDivider, BreadcrumbSection, Button, Card, Flag, Grid, Header, Icon, Loader, Menu, Segment, Table } from 'semantic-ui-react'
+import { Breadcrumb, BreadcrumbDivider, BreadcrumbSection, Button, Card, Flag, Grid, Header, Icon, Loader, Segment, Table } from 'semantic-ui-react'
 import { GET_STATION } from '../../queries/stationQuery'
 import { formatDate } from '../../utils/DateHelper'
 import CostumerInfo from '../CostumerInfo'
@@ -30,11 +30,16 @@ const StationInfo = (props) => {
 
   const loggedInStaff = JSON.parse( sessionStorage.getItem('staffKey'))
 
-  const { loading } = useQuery(GET_STATION, {
+  const { loading,data } = useQuery(GET_STATION, {
     variables: { id: stationId },
     skip: !stationId,
-    onCompleted: (data) => setStationData(data.getStation)
   })
+
+  useEffect (() => {
+    if(data) {
+      setStationData(data.getStation)
+    }
+  },[data])
 
   /**Gets bredcrumb item link
    * @param {Int} index - indexNumber of current item on fullpath

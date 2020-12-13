@@ -5,12 +5,14 @@ const costumerType =  `
     stations: [Station]
     aircrafts: [Aircraft!]
     contract: String
-    keyContacts: [PhoneNumbers] 
+    keyContacts: [Contact] 
   }
 
-  type PhoneNumbers{
-    phone: String!
-    description: String
+  type Contact{
+    id:ID
+    phone: String
+    description: String!
+    email: String
   }
 `
 

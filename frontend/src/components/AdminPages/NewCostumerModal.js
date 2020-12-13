@@ -1,46 +1,87 @@
-import { useMutation, useLazyQuery } from '@apollo/client'
+import { useMutation, useLazyQuery, gql } from '@apollo/client'
 import { FieldArray, Formik } from 'formik'
-import _, { forEach } from 'lodash'
+import { cloneDeep, forEach } from 'lodash'
 import React, { useEffect, useState } from 'react'
-import { Button, Dimmer, Form, Grid, Header, Icon, List, Loader, Modal,ModalContent, ModalHeader, Segment } from 'semantic-ui-react'
+import { Button, Dimmer, Form, Grid, Header, Icon, Loader, Modal,ModalContent, ModalHeader } from 'semantic-ui-react'
 import { ADD_COSTUMER } from '../../mutations/costumerMutation'
-import { ALL_STATION } from '../../queries/stationQuery'
+import { ALL_STATION, GET_STATION } from '../../queries/stationQuery'
 import { InputField } from '../StationReportPage/NewReportForm/FormFields'
 import { validateEmail } from '../StationReportPage/NewReportForm/validator'
 import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
 const NewCostumerModel = (props) => {
 
   const [stationOptions,setStationOptions]=  useState([])
-  const[addCostumerMutation, { loading,error,data }] = useMutation(ADD_COSTUMER)
+  const[addCostumerMutation, { loading,error }] = useMutation(ADD_COSTUMER)
 
-  const [loadStations, { loading:stationLoading }] = useLazyQuery(ALL_STATION, { onCompleted : (data) => {
-    if(data.allStations){
-      const stations =data.allStations.map((station,index) => {
+  const [loadStations, { loading:stationLoading, data: stationData }] = useLazyQuery(ALL_STATION)
+
+  useEffect(() => {
+    if(stationData && stationData.allStations){
+      const stations =stationData.allStations.map((station,index) => {
         return { key:index, value: station.id, text:station.location }
       } )
       setStationOptions(stations)
     }
-  } })
+
+  },[stationData])
 
 
   const addCostumer = (values) => {
     addCostumerMutation({
       variables: values,
-      update: (store,response) => {
-        console.log(response)
-        store.modify({
-          fields:{
-            allCostumers(existingCostumersRefs , { readField }){
-              const newCostumer = response.data.addCostumer
-              if(existingCostumersRefs.some(ref => readField('id',ref) === newCostumer.id)){
-                return existingCostumersRefs
-              }
-              return [...existingCostumersRefs,response]
+      update: (store,{ data: { addCostumer } }) => {
 
-            }
+        forEach( addCostumer.stations, station => {
+          try { /** Append costumer to corresponding stations in cache */
+            const { getStation: data } = cloneDeep(store.readQuery({
+              query: GET_STATION,
+              variables: { id: station.id } }))
+
+            store.writeQuery({
+              query: GET_STATION,
+              variables: { id: station.id } ,
+              data: {
+                ...data,costumers :[...data.costumers, addCostumer]
+              }
+            })
+          }
+          catch (e) {
+            /**No query found */
           }
 
         })
+
+        /**Append to costumers List */
+        store.modify({
+          fields:{
+            allCostumers(existingCostumersRefs = [] , { readField }){
+              const newCostumerRef  = store.writeFragment({
+                data: addCostumer,
+                fragment : gql `
+                  fragment NewCostumer on Costumer {
+                    name
+                    id
+                    contract
+                    aircrafts{
+                      id
+                      registration
+                    }
+                    stations{
+                      id
+                    }
+
+                  }   
+                `
+              })
+
+              if(existingCostumersRefs.some(ref => readField('id',ref) === addCostumer.id)){
+                return existingCostumersRefs
+              }
+              return [...existingCostumersRefs,newCostumerRef]
+            }
+          }
+        })
+
       }
     })
   }
@@ -63,6 +104,7 @@ const NewCostumerModel = (props) => {
     <Formik
       initialValues = { initVal }
       onSubmit= {(values) => {
+
         const submittedValues = { ...values , aircrafts: values.aircrafts ? values.aircrafts.toUpperCase().split(','):[] }
         addCostumer(submittedValues)
       }}
@@ -138,7 +180,12 @@ const NewCostumerModel = (props) => {
             }
 
 
-            <Form style={{ marginBottom:'5rem' }} autoComplete="off">
+            <Form style={{ marginBottom:'5rem' }} autoComplete="off"
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleSubmit()
+              }
+              }>
               <Grid padded >
                 <Grid.Row style={{ padding:0 }}>
                   <InputField name='name' label='Name' type='text' width='8' placeholder='Costumer Name'/>
@@ -176,7 +223,7 @@ const NewCostumerModel = (props) => {
                           link
                           name ="cancel"
                           color='red'
-                          onClick={ (e) => remove(index)
+                          onClick={ () => remove(index)
                           }/>
                       </Form.Group>
                     </Grid.Row>
@@ -187,7 +234,7 @@ const NewCostumerModel = (props) => {
                       icon
                       size ='mini'
                       primary
-                      onClick={ (e) => push ({ description:'',phone:'' ,email:'' })
+                      onClick={ () => push ({ description:'',phone:'' ,email:'' })
                       }>
                       <Icon name="plus circle"/> Add
                     </Button>
@@ -199,7 +246,10 @@ const NewCostumerModel = (props) => {
           <Modal.Actions>
             <Button   negative onClick={() => props.setOpen (false)}>Cancel</Button>
             {dirty &&
-            <Button  positive onClick= {() => handleSubmit()}>Save</Button>}
+            <Button  positive onClick= {(e) => {
+              e.preventDefault()
+              handleSubmit()
+            }}>Save</Button>}
           </Modal.Actions>
         </Modal>
       }

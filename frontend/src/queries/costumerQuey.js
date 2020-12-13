@@ -40,8 +40,10 @@ query getCostumerId ($id:String){
     }
     contract
     keyContacts{
+      id
       phone
       description
+      email
     }
 
 

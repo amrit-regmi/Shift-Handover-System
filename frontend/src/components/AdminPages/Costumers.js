@@ -17,8 +17,6 @@ const Costumers = () => {
     return null
   }
 
-  console.log(data)
-
   if(loading){
     return <Segment basic ><Loader active> Loading Costumer Data</Loader></Segment>
   }

@@ -14,6 +14,7 @@ module.exports = {
       'error',
       2
     ],
+    'no-unused-vars': [2, { 'args': 'all', 'argsIgnorePattern': '^_' }],
     'quotes': [
       'error',
       'single'

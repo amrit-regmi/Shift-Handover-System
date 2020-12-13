@@ -10,13 +10,13 @@ const Permission = require('../models/Permission')
 const staffResolver = {
   Query: {
     /*Returns all staff with sensitive field omitted*/
-    allStaff: async (root,args) => {
+    allStaff: async (_root,args) => {
       const staffs =  await Staff.find({ ...args },{ username:0,passwordHash:0,registerCode:0,resetCode:0 }).populate({ path:'lastActive.station' })
       return staffs
     },
 
     /*Returns staff by ID or registraion Code*/
-    getStaff: async(root,args, context) => {
+    getStaff: async(_root,args, context) => {
 
       const loggedInStaff = context.currentUser
       /*If Id is set then returns staff values except password / registercode and resetcode */
@@ -62,7 +62,7 @@ const staffResolver = {
       }
 
     },
-    verifyUsername: async (root,args) => {
+    verifyUsername: async (_root,args) => {
       if(args){
         const staff = await Staff.findOne({ username:args.username })
         if(staff){
@@ -78,7 +78,7 @@ const staffResolver = {
 
   Mutation: {
     /*Create staff with and send the register code to staff to complete registration and set username and password*/
-    addStaff : async (root,args,context) => {
+    addStaff : async (_root,args,context) => {
       const registerCode = uuidv4()
       const tempUserName = uuidv4()
       const loggedInStaff = context.currentUser
@@ -105,7 +105,7 @@ const staffResolver = {
       }
     },
 
-    resetRegisterCode: async (root,args,context) => {
+    resetRegisterCode: async (_root,args,context) => {
       const loggedInStaff = context.currentUser
       if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin) && args.id) {
         const registerCode = uuidv4()
@@ -134,7 +134,7 @@ const staffResolver = {
     /*
     Complete staff registration from the registration Link
      */
-    registerStaff: async(root, args) => {
+    registerStaff: async(_root, args) => {
       console.log(args)
       if(!uuidValidate(args.registerCode)){
         throw new ApolloError('Registration code Invalid')
@@ -164,7 +164,7 @@ const staffResolver = {
     },
 
     /**Edit Staff Informatiion  */
-    staffEdit : async (root,args,context) => {
+    staffEdit : async (_root,args,context) => {
 
       const loggedInStaff = context.currentUser
       if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
@@ -182,7 +182,7 @@ const staffResolver = {
      * Generate the password reset link and send email to linked email address
     */
 
-    resetPasswordReq: async (root,args) => {
+    resetPasswordReq: async (_root,args) => {
       if(args.id && args.id!== null && args.id !== undefined){
         const resetCode = uuidv4()
         const staffById = await Staff.findByIdAndUpdate(args.id,{ resetCode:resetCode })
@@ -200,7 +200,7 @@ const staffResolver = {
      * if password is set and user is verified sets new password
     */
 
-    resetPassword: async (root,args) => {
+    resetPassword: async (_root,args) => {
       if(args.resetCode && args.password){
 
         if(!uuidValidate(args.resetCode)){
@@ -233,7 +233,7 @@ const staffResolver = {
 
     },
 
-    changePassword: async (root,args, context ) => {
+    changePassword: async (_root,args, context ) => {
       const loggedInStaff = context.currentUser
       if(!(args.password && args.newPassword && args.id )){
         throw new UserInputError('Missing required Fields')
@@ -254,15 +254,52 @@ const staffResolver = {
 
     },
 
-    staffLogin : async (root,args) => {
+    setStaffStatus: async (_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
+        if(!args.id){
+          throw new UserInputError('Missing required Fields')
+        }
+
+        await Staff.findByIdAndUpdate(args.id,{ $set :{ disabled:args.disabled } })
+
+        return({ status:'SUCCESS', message: 'Staff status updated'  })
+
+
+      }
+      else{
+        throw new AuthenticationError('You not have rights fot this action ')
+      }
+    },
+
+    staffDelete: async(_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
+        if(!args.id){
+          throw new UserInputError('Missing required Fields')
+        }
+        await Staff.findByIdAndDelete(args.id)
+        return({ status:'SUCCESS', message: 'Staff Deleted'  })
+      }
+      else{
+        throw new AuthenticationError('You not have rights fot this action ')
+      }
+
+    },
+
+    staffLogin : async (_root,args) => {
       if(!(args.username && args.password)){
         throw new UserInputError('Username and password is required')
       }
       const staff = await Staff.findOne({ username:args.username }).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' } , select:'id staff station timesheet admin'   })
 
-      console.log(staff.permission)
+
 
       if(!staff)  throw new AuthenticationError ('Cannot find staff with provided credentials')
+
+      if(staff.disabled){
+        throw new AuthenticationError ('Your Account is disabled, please contact your supervisor.')
+      }
 
       if(staff &&  staff.passwordHash !== args.password  ){
 

@@ -49,6 +49,7 @@ export const GET_ALL_STAFF_MINIMAL = gql`
   query{ allStaff {
     id
     name
+    
   }}
 `
 
@@ -58,6 +59,7 @@ export const GET_ALL_STAFF = gql`
     name
     email
     phone
+    disabled
     lastActive{
       station{
         location

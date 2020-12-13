@@ -15,6 +15,7 @@ const staffType =  `
     permission:Permission
     reqHours:Int
     phone: String
+    disabled: Boolean
     
   }
 

@@ -68,6 +68,11 @@ const staffSchema = new mongoose.Schema({
   registerCode: String,
   resetCode: String,
 
+  disabled: {
+    type:Boolean,
+    default: false
+  }
+
 })
 
 staffSchema.virtual('reqHours').get(function() {

@@ -85,6 +85,30 @@ export const STAFF_ADD = gql`
   }
 `
 
+export const SET_STAFF_STATUS= gql`
+  mutation toggleleStaffStatus( $id: String!, $disabled: Boolean! ){
+    setStaffStatus(
+      id: $id,
+      disabled: $disabled
+      )
+      {
+      status
+      message
+    }
+  }
+`
+
+export const DELETE_STAFF= gql`
+  mutation deleteStaff( $id: String!){
+    staffDelete(
+      id: $id,
+    ){
+      status
+      message
+    }
+  }
+`
+
 export const COMPLETE_REGISTRATION = gql`
   mutation registerStaff( $registerCode:String!, $username: String!, $password: String!){
     registerStaff(
@@ -94,6 +118,5 @@ export const COMPLETE_REGISTRATION = gql`
     ){
       status,
       message
-
     }
   }`

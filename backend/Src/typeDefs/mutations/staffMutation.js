@@ -49,6 +49,15 @@ const staffMutation = `
       position: String
     ): Staff
 
+    setStaffStatus(
+      id: String!
+      disabled: Boolean!
+    ): ResponseMessage
+
+    staffDelete(
+      id: String!
+    ): ResponseMessage
+
 
     }
 

@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@apollo/client'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Button, Confirm, Grid,Header,Icon,Loader, Table, TableBody } from 'semantic-ui-react'
 import { GET_STAFF } from '../../queries/staffQuery'
 import PermissionManager from './PermissionManager'
@@ -8,9 +8,11 @@ import {  RESET_PASSWORD_REQ, RESET_REGISTER_CODE } from '../../mutations/staffM
 import PasswordChangeModel from './PasswordChangeModel'
 import { useParams } from 'react-router-dom'
 import { formatDate } from '../../utils/DateHelper'
+import { NotificationContext } from '../../contexts/NotificationContext'
 
 
 const Profile = (props) => {
+  const[,dispatch]= useContext(NotificationContext)
   const params = useParams()
 
   const [confirm,setConfirm] = useState({ open:false, handleCancel:() => {}, handleConfirm:() => {} })
@@ -34,8 +36,24 @@ const Profile = (props) => {
 
 
 
-  const [resetPassword,{ loading: rpLoading,error:rpError }] = useMutation(RESET_PASSWORD_REQ)
-  const [resetRegisterCode,{ loading: rcLoading,error:rcError }] = useMutation(RESET_REGISTER_CODE)
+  const [resetPassword,{ loading: rpLoading,error:rpError }] = useMutation(RESET_PASSWORD_REQ,{
+    onCompleted: () => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, password reset code sent to users email' ,type: 'SUCCESS' } })
+    },
+
+    onerror: (err) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to reset'}<br/> {err.message}</> ,type: 'ERROR' } })
+    }
+  })
+  const [resetRegisterCode,{ loading: rcLoading,error:rcError }] = useMutation(RESET_REGISTER_CODE,{
+    onCompleted: () => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, new register code sent to users email' ,type: 'SUCCESS' } })
+    },
+
+    onerror: (err) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to send new register code'}<br/> {err.message}</> ,type: 'ERROR' } })
+    }
+  })
 
 
   const resetConfirm = () => {

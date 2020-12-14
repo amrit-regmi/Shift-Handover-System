@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react'
+import React, { useState,useEffect, useContext } from 'react'
 import { useMutation, useQuery } from '@apollo/client'
 import { GET_ALL_STAFF } from '../../queries/staffQuery'
 import { Segment, Loader, Table, TableHeaderCell, TableRow, TableCell, Button, Icon, Input, Form, Checkbox } from 'semantic-ui-react'
@@ -7,9 +7,11 @@ import NewStaffModel from './NewStaffModal'
 import { formatDate } from '../../utils/DateHelper'
 import { DELETE_STAFF, SET_STAFF_STATUS } from '../../mutations/staffMutation'
 import ConfirmModal from '../ConfirmModal'
+import { NotificationContext } from '../../contexts/NotificationContext'
 
 
 const AllStaffs = () => {
+  const[,dispatch] = useContext(NotificationContext)
   const { loading,error,data } = useQuery(GET_ALL_STAFF)
   const  [staffsData,setStaffsData]  = useState([])
   const [staffAddOpen,setStaffAddOpen ]= useState(false)
@@ -22,7 +24,7 @@ const AllStaffs = () => {
   const [toggleStaffStatus, { loading: toggleing }] = useMutation ( SET_STAFF_STATUS)
 
 
-  const staffDelete = (id) => {
+  const staffDelete = (id,name) => {
     deleteStaff({
       variables: { id: id } ,
       update: (store) => {
@@ -30,10 +32,13 @@ const AllStaffs = () => {
           id: `Staff:${id}`
         })
       }
-    })
+    }).then(
+      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, staff ${name} deleted` ,type: 'SUCCESS' } }),
+      err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, Cannot delete staff ${name}`}<br/> {err.message}</> ,type: 'ERROR' } })
+    )
   }
 
-  const staffToggle = (id, toggle) => {
+  const staffToggle = (id, name, toggle) => {
     toggleStaffStatus({
       variables: { id:id , disabled: !toggle },
       update: (store) => {
@@ -46,7 +51,10 @@ const AllStaffs = () => {
           }
         })
       }
-    })
+    }).then(
+      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, staff ${name} set ${toggle?'active':'disabled'}` ,type: 'SUCCESS' } }),
+      err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, Cannot toggle status for  staff ${name}`}<br/> {err.message}</> ,type: 'ERROR' } })
+    )
   }
 
 
@@ -109,15 +117,15 @@ const AllStaffs = () => {
               <TableCell>{staff.lastActive && staff.lastActive.station && staff.lastActive.station.location}</TableCell>
               <TableCell>{staff.accountStatus}<Form.Field>
                 <Checkbox checked={!staff.disabled } toggle label={staff.disabled ?'Disabled': 'Active'} disabled = {staff.id === loggedInstaff.id}
-                  onClick ={(e,{ checked }) => {
-                    staffToggle( staff.id,checked)
+                  onChange ={(e,{ checked }) => {
+                    staffToggle( staff.id,staff.name,checked)
                   }}/>
               </Form.Field></TableCell>
               <TableCell>
                 {staff.id !== loggedInstaff.id && <Button circular size ='mini' icon ='trash' negative disabled = {staff.id === loggedInstaff.id}
                   onClick={() => {
                     setConfirmModalOpen(true)
-                    setConfirm({ title:'Are you sure, you want to delete '+ staff.name +'?', fn: () => staffDelete(staff.id) })
+                    setConfirm({ title:'Are you sure, you want to delete '+ staff.name +'?', fn: () => staffDelete(staff.id,staff.name) })
                   }}
                 ></Button>}
               </TableCell>

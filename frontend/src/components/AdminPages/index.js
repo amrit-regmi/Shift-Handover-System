@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import StaffPage from '../StaffPage'
 import AllStaffs from './AllStaffs'
 import AllStations from './AllStations'
 import StationInfo from '../StationInfo/Index'
-import TimeSheetsOverview from '../TimeSheetsOverview'
 import AdminMenuBar from './AdminMenuBar'
 import ManageTimeSheets from './ManageTimeSheets'
 import Costumers from './Costumers'
@@ -23,7 +22,6 @@ const AdminPages = () => {
 
   const [activeItem, setActiveItem] = useState(basePage)
 
-  console.log(basePage)
   useEffect(() => {
     setActiveItem(basePage)}
   ,[basePage, location, params])

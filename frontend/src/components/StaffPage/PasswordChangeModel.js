@@ -1,23 +1,31 @@
 import { useMutation } from '@apollo/client'
 import { Formik } from 'formik'
 import _ from 'lodash'
-import React from 'react'
+import React, { useContext } from 'react'
 import { Button, Dimmer, Form, Grid, Loader, Modal,ModalContent, ModalHeader } from 'semantic-ui-react'
+import { NotificationContext } from '../../contexts/NotificationContext'
 import { CHANGE_PASSWORD } from '../../mutations/staffMutation'
 import { InputField } from '../StationReportPage/NewReportForm/FormFields'
 const PasswordChangeModel = (props) => {
 
-  const [changePassword,{ loading,error,data }] = useMutation(CHANGE_PASSWORD)
+  const [,dispatch] = useContext(NotificationContext)
+  const [changePassword,{ loading,error }] = useMutation(CHANGE_PASSWORD,{
+    onCompleted: () => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, password cahanged' ,type: 'SUCCESS' } })
+      props.setOpen(false)
+    },
+
+    onError: (err) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to change password'}<br/> {err.message}</> ,type: 'ERROR' } })
+      props.setOpen(false)
+    }
+  })
 
 
   const initVal = {
     password:'',
     newPassword:'',
     confirmPassword:''
-  }
-
-  if(error){
-    console.log(error)
   }
 
   return(
@@ -69,7 +77,7 @@ const PasswordChangeModel = (props) => {
 
           }}
         >
-          {({ values,handleSubmit,setFieldValue,dirty ,errors }) => <Form style={{ marginBottom:'5rem' }} onSubmit= {handleSubmit}>
+          {({ handleSubmit,dirty ,errors }) => <Form style={{ marginBottom:'5rem' }} onSubmit= {handleSubmit}>
             <Grid>
               <Grid.Row>
                 <InputField name='password' label='Old Password' type='password'/>

@@ -1,22 +1,32 @@
 import { useMutation, useQuery } from '@apollo/client'
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { Button, Checkbox, Dimmer, Form, Header,Loader, Table, TableBody } from 'semantic-ui-react'
 import _ from 'lodash'
 import { ALL_STATION } from '../../queries/stationQuery'
 import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
 import { FieldArray, Formik } from 'formik'
 import { CHANGE_PERMISSION } from '../../mutations/permissionMutation'
+import { NotificationContext } from '../../contexts/NotificationContext'
 
 
 const PermissionManager = ({ permissions }) => {
 
+  const [,dispatch] = useContext(NotificationContext)
   const staff =  JSON.parse(sessionStorage.getItem('staffKey'))
   const [superUserSet,setSuperUserSet] = useState((permissions && permissions.admin )|| false)
 
   const hasSuperPermission = staff.permission.admin
 
   // console.log(hasSuperPermission,staff ,superUserSet)
-  const [updatePermission,{ loading: pLoading, error: pError, data: pData }] = useMutation(CHANGE_PERMISSION)
+  const [updatePermission,{ loading: pLoading, error: pError, data: pData }] = useMutation(CHANGE_PERMISSION,{
+    onCompleted: () => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, permission changed' ,type: 'SUCCESS' } })
+    },
+
+    onerror: (err) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to change permission'}<br/> {err.message}</> ,type: 'ERROR' } })
+    }
+  })
 
   const mapPermission = (permssionType,v) => permssionType && permssionType.map(v => {
     if(!v) return null

@@ -1,14 +1,15 @@
 import { gql, useMutation } from '@apollo/client'
-import React, { Fragment } from 'react'
+import React, { Fragment, useContext } from 'react'
 import { ADD_CONTACT } from '../../mutations/costumerMutation'
 import { forEach } from 'lodash'
 import { Button, Form, Icon, Modal } from 'semantic-ui-react'
 import { FieldArray, Formik } from 'formik'
 import { InputField } from '../StationReportPage/NewReportForm/FormFields'
 import { validateEmail } from '../StationReportPage/NewReportForm/validator'
+import { NotificationContext } from '../../contexts/NotificationContext'
 
 const AddContactModal = ({ open ,setOpen ,costumer }) => {
-
+  const[,dispatch] = useContext(NotificationContext)
   const [addContacts] = useMutation (ADD_CONTACT,{
     update:(store,{ data: { addContact } }) => {
 
@@ -38,7 +39,17 @@ const AddContactModal = ({ open ,setOpen ,costumer }) => {
           }
         }
       })
+    },
+    onCompleted: ({ addContact }) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, contacts added' ,type: 'SUCCESS' } })
+      setOpen(false)
+    },
+
+    onerror: (err) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to add contacts'}<br/> {err.message}</> ,type: 'ERROR' } })
+      setOpen(false)
     }
+
   })
 
   return(

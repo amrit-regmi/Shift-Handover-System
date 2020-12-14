@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from '@apollo/client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { Button, Flag, Grid, Header, Icon, Label, Loader, Modal, Segment, Table } from 'semantic-ui-react'
+import { Button, Flag, Grid, Header, Icon, Label, Loader, Segment, Table } from 'semantic-ui-react'
+import { NotificationContext } from '../../contexts/NotificationContext'
 import {  DELETE_COSTUMER, REMOVE_AIRCRFAT, REMOVE_CONTACT, REMOVE_COSTUMER_FROM_STATION } from '../../mutations/costumerMutation'
 import { GET_COSTUMER } from '../../queries/costumerQuey'
 import ConfirmModal from '../ConfirmModal'
@@ -11,6 +12,7 @@ import AddContactModal from './AddContactModal'
 import AddStationModal from './AddStationModal'
 
 const CostumerInfo = ({ costumerData }) => {
+  const [,dispatch]= useContext(NotificationContext)
   const [data,setData] = useState('')
   const [addStationModalOpen,setAddStationModalOpen] = useState(false)
   const [addAircraftModalOpen,setAddAircraftModalOpen] = useState(false)
@@ -26,13 +28,21 @@ const CostumerInfo = ({ costumerData }) => {
       store.evict({ //Remove costumer from all datas
         id: `Costumer:${data.id}`
       })
+    },
+    onCompleted: () => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, costumer ${data.name} deleted` ,type: 'SUCCESS' } })
+    },
+
+    onerror: (err) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, failed to delete  costumer ${data.name}`}<br/> {err.message}</> ,type: 'ERROR' } })
+
     }
   })
   const [removeContact] = useMutation( REMOVE_CONTACT )
   const [removeAircraftMut] = useMutation( REMOVE_AIRCRFAT )
 
 
-  const removeContactFromStation = ({ id }) => {
+  const removeContactFromStation = ({ id, description }) => {
     removeContact({
       variables:{ id,costumer: data.id },
       update: (store) => {
@@ -41,10 +51,13 @@ const CostumerInfo = ({ costumerData }) => {
           id: `Contact:${id}`
         })
       }
-    })
+    }).then(
+      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, Contact ${description} removed` ,type: 'SUCCESS' } }),
+      err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, Cannot remove Contact ${description}`}<br/> {err.message}</> ,type: 'ERROR' } }),
+    )
   }
 
-  const removeAircraft = ({ id }) => {
+  const removeAircraft = ({ id, registration }) => {
     removeAircraftMut({
       variables:{ id },
       update: (store) => {
@@ -52,10 +65,13 @@ const CostumerInfo = ({ costumerData }) => {
           id: `Aircraft:${id}`
         })
       }
-    })
+    }).then(
+      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, Aircraft ${registration} removed` ,type: 'SUCCESS' } }),
+      err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, Cannot remove Aircrfat ${registration}`}<br/> {err.message}</> ,type: 'ERROR' } }),
+    )
   }
 
-  const removeCostumerFromStation = ({ variables  }) => {
+  const removeCostumerFromStation = ({ variables ,location  }) => {
     removeFromStation({
       variables: variables,
       update: (store) => {
@@ -87,7 +103,10 @@ const CostumerInfo = ({ costumerData }) => {
 
           }
         )
-      } })
+      } }).then(
+      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, Station ${location? location:''} deassigned for costumer ${data.name}` ,type: 'SUCCESS' } }),
+      err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, Cannot deassign costumer ${data.name} ${location?'and '+location : ''}`}<br/> {err.message}</> ,type: 'ERROR' } }),
+    )
   }
 
 
@@ -133,7 +152,7 @@ const CostumerInfo = ({ costumerData }) => {
                   <Label floating  size='tiny' style={{ backgroundColor:'transparent' }}>
                     <Icon link  name='cancel' onClick = {() => {
                       setConfirm({ title: `Are you sure you want to  deassign Aircraft ${aircraft.registration} from this Costumer ?`, fn: () => {
-                        removeAircraft({ id:aircraft.id })
+                        removeAircraft({ id:aircraft.id, registration: aircraft.registration })
                       } })
                       setConfirmModalOpen(true)
 
@@ -175,7 +194,7 @@ const CostumerInfo = ({ costumerData }) => {
                       <Table.Cell>
                         <Icon link name='cancel' onClick ={() => {
                           setConfirm({ title: `Are you sure you want to  remove contact ${contact.description} from this Costumer ?`, fn: () => {
-                            removeContactFromStation({ id: contact.id })
+                            removeContactFromStation({ id: contact.id ,description: contact.description })
                           } })
                           setConfirmModalOpen(true)
 
@@ -221,7 +240,7 @@ const CostumerInfo = ({ costumerData }) => {
                         { params.stationId !== station.id &&
                           <Icon link   name='cancel' onClick={() => {
                             setConfirm({ title: `Are you sure you want to  remove station ${station.location} from this Costumer ?`, fn: () => {
-                              removeCostumerFromStation({ variables:{ station: station.id, costumer: data.id } })
+                              removeCostumerFromStation({ variables:{ station: station.id, costumer: data.id }, location: station.location })
                             } })
                             setConfirmModalOpen(true)
                           }}/>}
@@ -268,7 +287,7 @@ const CostumerInfo = ({ costumerData }) => {
 
 
       {confirmModalOpen &&
-        <ConfirmModal open= {confirmModalOpen} confitm= {confirm} setOpen= {setConfirmModalOpen} ></ConfirmModal>
+        <ConfirmModal open= {confirmModalOpen} confirm= {confirm} setOpen= {setConfirmModalOpen} ></ConfirmModal>
       }
 
 

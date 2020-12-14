@@ -1,15 +1,16 @@
 import { useMutation, useLazyQuery, gql } from '@apollo/client'
 import { FieldArray, Formik } from 'formik'
 import { cloneDeep, forEach } from 'lodash'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Button, Dimmer, Form, Grid, Header, Icon, Loader, Modal,ModalContent, ModalHeader } from 'semantic-ui-react'
+import { NotificationContext } from '../../contexts/NotificationContext'
 import { ADD_COSTUMER } from '../../mutations/costumerMutation'
 import { ALL_STATION, GET_STATION } from '../../queries/stationQuery'
 import { InputField } from '../StationReportPage/NewReportForm/FormFields'
 import { validateEmail } from '../StationReportPage/NewReportForm/validator'
 import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
 const NewCostumerModel = (props) => {
-
+  const [,dispatch] = useContext(NotificationContext)
   const [stationOptions,setStationOptions]=  useState([])
   const[addCostumerMutation, { loading,error }] = useMutation(ADD_COSTUMER)
 
@@ -83,7 +84,11 @@ const NewCostumerModel = (props) => {
         })
 
       }
-    })
+    }).then(
+      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, costumer ${values.name} added` ,type: 'SUCCESS' } }),
+      err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, Cannot add costumer ${values.name}`}<br/> {err.message}</> ,type: 'ERROR' } }),
+      props.setOpen(false)
+    )
   }
 
 

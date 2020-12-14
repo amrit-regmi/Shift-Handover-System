@@ -1,13 +1,14 @@
 import { gql, useMutation } from '@apollo/client'
-import React from 'react'
+import React, { useContext } from 'react'
 import { ADD_AIRCRFAT } from '../../mutations/costumerMutation'
 import { forEach } from 'lodash'
 import { Button, Form, Modal } from 'semantic-ui-react'
 import { Formik } from 'formik'
 import { InputField } from '../StationReportPage/NewReportForm/FormFields'
+import { NotificationContext } from '../../contexts/NotificationContext'
 
 const AddAircraftModal = ({ open ,setOpen ,costumer }) => {
-
+  const [,dispatch] = useContext(NotificationContext)
   const [addAircrafts] = useMutation (ADD_AIRCRFAT,{
     update:(store,{ data: { addAircrafts } }) => {
 
@@ -35,6 +36,15 @@ const AddAircraftModal = ({ open ,setOpen ,costumer }) => {
           }
         }
       })
+    },
+    onCompleted: ({ addAircrafts }) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, aircrafts ${addAircrafts.reduce((p,c) => p+c.registration+ ', ','')}  added` ,type: 'SUCCESS' } })
+      setOpen(false)
+    },
+
+    onerror: (err) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to add aircrafts'}<br/> {err.message}</> ,type: 'ERROR' } })
+      setOpen(false)
     }
   })
 

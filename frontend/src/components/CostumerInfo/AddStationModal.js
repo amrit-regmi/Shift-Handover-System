@@ -1,14 +1,15 @@
 import { useLazyQuery, useMutation } from '@apollo/client'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { ADD_STATION_TO_COSTUMER } from '../../mutations/costumerMutation'
 import { forEach } from 'lodash'
 import { Button, Form, Modal } from 'semantic-ui-react'
 import { Formik } from 'formik'
 import { ALL_STATION } from '../../queries/stationQuery'
 import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
+import { NotificationContext } from '../../contexts/NotificationContext'
 
 const AddStationModal = ({ open ,setOpen ,costumer }) => {
-
+  const [,dispatch] = useContext(NotificationContext)
   const[stationOptions,setStationOptions] = useState([])
   const [loadStations, { loading:stationLoading, data: stationData }] = useLazyQuery(ALL_STATION)
 
@@ -47,6 +48,15 @@ const AddStationModal = ({ open ,setOpen ,costumer }) => {
           }
         })
       })
+    },
+    onCompleted: ({ addStationsToCostumer }) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, stations added' ,type: 'SUCCESS' } })
+      setOpen(false)
+    },
+
+    onerror: (err) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to add stations'}<br/> {err.message}</> ,type: 'ERROR' } })
+      setOpen(false)
     }
   })
 

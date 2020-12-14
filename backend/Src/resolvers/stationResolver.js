@@ -48,7 +48,7 @@ const stationResolver = {
         await Costumer.bulkWrite(
           costumers.map((costumer) => ({
             updateOne: {
-              filter: { id:costumer.id },
+              filter: { id:costumer },
               update: { $addToSet:{ stations:  ObjectId(station.id ) }
               }
             }
@@ -57,7 +57,6 @@ const stationResolver = {
 
         return station
       } catch(err) {
-        console.log(err)
         throw new UserInputError(err.message)
       }
     },

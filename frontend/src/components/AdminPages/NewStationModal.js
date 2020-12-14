@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from '@apollo/client'
 import { FieldArray, Formik } from 'formik'
-import _ from 'lodash'
-import React, { useEffect, useState } from 'react'
+import _, { forEach } from 'lodash'
+import React, { useContext, useEffect, useState } from 'react'
 import { Button, Dimmer, Form, Grid, Header, Icon, List, Loader, Modal,ModalContent, ModalHeader, Segment } from 'semantic-ui-react'
+import { NotificationContext } from '../../contexts/NotificationContext'
 import { ADD_STATION } from '../../mutations/stationMutation'
 import { ALL_COSTUMERS } from '../../queries/costumerQuey'
 import { ALL_STATION } from '../../queries/stationQuery'
@@ -11,6 +12,7 @@ import { validateEmail, validateName } from '../StationReportPage/NewReportForm/
 import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
 const NewStationModel = (props) => {
 
+  const [,dispatch] = useContext(NotificationContext)
   const [addStationMutation,{ loading,error }] = useMutation(ADD_STATION)
   const [countryList,setCountryList]=  useState([])
   const [costumerList,setCostumerList] = useState([])
@@ -30,7 +32,7 @@ const NewStationModel = (props) => {
       const countries = await response.json()
       const countryArray = countries.map((country,index) => {
         const exclude = ['aq','bq','cw','gg','im','je','xk','bl','mf','sx','ss']
-        if(exclude.includes(country.alpha2Code.toLowerCase())){
+        if(exclude.includes(country.alpha2Code.toLowerCase())){ //exclusdw coutry codes have no flags defined on semntic ui so return without flag
           return { key:index, value: country.name, text:  country.name  }
         }
         return { key:index, value: country.name, text:  country.name ,flag: country.alpha2Code.toLowerCase() }
@@ -42,14 +44,13 @@ const NewStationModel = (props) => {
   },[])
 
   const addStation = (values) => {
-    delete(values.stationKeyConfirm)
     addStationMutation({
       variables: values,
-      update: (store,response) => {
+      update: (store,{ data:{ addStation } }) => {
         store.modify({
           fields:{
-            allStation(existingStationRefs , { readField }){
-              const newStation = response.data.addStaff
+            allStations(existingStationRefs , { readField }){
+              const newStation = addStation
               if(existingStationRefs.some(ref => readField('id',ref) === newStation.id)){
                 return existingStationRefs
               }
@@ -60,8 +61,28 @@ const NewStationModel = (props) => {
           }
 
         })
+        /**Add station information to each added costumer on cache */
+        forEach(values.costumers, costumer => {
+          store.modify({
+            id: `Costumer:${costumer}`,
+            fields:{
+              stations(existingStationRefs, { readField }) {
+                if(existingStationRefs.some(ref => readField('id',ref) === addStation.id)){
+                  return existingStationRefs
+                }
+                return [...existingStationRefs, { '__ref':`Station:${addStation.id}` }]
+              }
+            }
+          })
+        })
+
+
       }
-    })
+    }).then(
+      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, ${values.location} added to station list` ,type: 'SUCCESS' } }),
+      err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, ${values.location} cannot be added to station list`}<br/> {err.message}</> ,type: 'ERROR' } }),
+      props.setOpen(false),
+    )
   }
 
 

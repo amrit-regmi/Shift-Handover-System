@@ -1,12 +1,12 @@
 This project is Shift Handover System for the Aircraft Maintenece Organisation. 
 -Features to be Included:
 1. Support for Multiple Line station and Multiple Customers
-    - Authirized User can add remove Customers/ Station 
+    - Authirized User can add remove Customers/ Station -Implemented
 2. Administrative Panel for Station Manager
     - Aprrove/ Request Clearification / Amend Working Hours for Staffs -Implemented
-    - Overview of Working Hours / Overtime per User / Station 
-    - Enable/ Disable Check in out methods. 
-    - Add Additional Tasks to shift
+    - Overview of Working Hours / Overtime per User / Station - Implemented
+    - Enable/ Disable Check in out methods. -SKIPPED FOR NOW
+    - Add Additional Tasks to shift - SKIPPED FOR NOW
     - Set handover email receiving groups
 3. Handover Page
     -  include Work perfomed per Customer/ EachAircraft  Staff (times) - Implemented
@@ -14,12 +14,12 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
     -  BarCode / Password  confirmation of worktime for Each User listed. - Password Confirmation Implmented -Barcode Implementetion Skipped for now
     -  New User can add themself to shift if they are not in the system. - Implemented 
     -  Browse old Handovers per Station - Implemented
-    -  Station Info Page (Staffs,costumer,contacts,procedures)
+    -  Station Info Page (Staffs,costumer,contacts,procedures) -Implemented (Procedure- skipped)
     -  Browse all the open tasks - SKIPPED FOR NOW
 6. After each Handover HTML formatted Email will be sent to all receving group set by station Manager
 7. Staff Panel 
     - Individual Staff can login  to view/ Edit their working hours / Add clerification - Implemented
-    - Request for Approval of time sheet Per Week  or Month
+    - Request for Approval of time sheet Per Week  or Month -Implemented
     
 # Work Time Accounting
 
@@ -64,3 +64,4 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |06.12.2020 | 6 | Refactoring of Staff Component to smaller components (Admin Pages/ Timsheet Overview) nad realted changes / Station info page |
 |09.12.2020 | 7 | Costumers    Page / Add / Overview - Station Sub-Menu navigation link|
 |13.12.2020 | 8 | Costumer Page Add/Remove Aircrfat/Station/Contact implemented
+|14.12.2020 | 5 | Global notification component implmented for staff/ station / costumer pages

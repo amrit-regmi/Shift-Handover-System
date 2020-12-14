@@ -108,7 +108,7 @@ const AllStaffs = () => {
               <TableCell>{staff.lastActive && formatDate(staff.lastActive.activeAt) }</TableCell>
               <TableCell>{staff.lastActive && staff.lastActive.station && staff.lastActive.station.location}</TableCell>
               <TableCell>{staff.accountStatus}<Form.Field>
-                <Checkbox loading={toggleing} checked={!staff.disabled } toggle label={staff.disabled ?'Disabled': 'Active'} disabled = {staff.id === loggedInstaff.id}
+                <Checkbox checked={!staff.disabled } toggle label={staff.disabled ?'Disabled': 'Active'} disabled = {staff.id === loggedInstaff.id}
                   onClick ={(e,{ checked }) => {
                     staffToggle( staff.id,checked)
                   }}/>

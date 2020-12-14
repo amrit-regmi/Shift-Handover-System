@@ -166,16 +166,21 @@ const staffResolver = {
     /**Edit Staff Informatiion  */
     staffEdit : async (_root,args,context) => {
 
-      const loggedInStaff = context.currentUser
-      if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
-        const { id, ...toUpdate } = { ...args }
-        const staff = await Staff.findByIdAndUpdate(id,{ ...toUpdate }, { new: true, runValidators: true }).select('-permission')
-        console.log(staff)
-        return staff
+      try {
+        const loggedInStaff = context.currentUser
+        if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
+          const { id, ...toUpdate } = { ...args }
+          const staff = await Staff.findByIdAndUpdate(id,{ ...toUpdate }, { new: true, runValidators: true }).select('-permission')
+          return staff
 
-      }else{
-        throw new AuthenticationError('User do not have permission for this action')
+        }else{
+          throw new AuthenticationError('User do not have permission for this action')
+        }
+
+      } catch (error) {
+        throw new UserInputError(error.message)
       }
+
 
     },
     /**

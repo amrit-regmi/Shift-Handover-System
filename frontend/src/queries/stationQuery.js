@@ -33,6 +33,7 @@ export const GET_STATION = gql`
         id
       }
       shifts {
+        id
         name
         startTime
       }
@@ -57,6 +58,8 @@ export const GET_STATION = gql`
         title
         description
       }
+      mailingList
+
     }
   }
 

@@ -10,9 +10,11 @@ const stationType = `
     procedures: [Procedure]
     activeStaffs: Int
     staffList: [Staff]
+    mailingList: [String]
   }
 
   type ShiftInfo {
+    id:ID
     name: String
     startTime: String
   }

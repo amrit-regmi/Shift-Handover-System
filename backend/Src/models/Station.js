@@ -59,7 +59,12 @@ const stationSchema = new mongoose.Schema({
   stationKey: {
     type:String,
     required:true
-  }
+  },
+
+  mailingList:[{
+    type:String,
+  }]
+
 
 })
 

@@ -5,11 +5,15 @@ import { Breadcrumb, BreadcrumbDivider, BreadcrumbSection, Button, Card, Flag, G
 import { GET_STATION } from '../../queries/stationQuery'
 import { formatDate } from '../../utils/DateHelper'
 import CostumerInfo from '../CostumerInfo'
+import AssignCostumersModal from './AssignCostumersModal'
+import Settings from './Settings'
 import StationMenu from './stationMenu'
 
 const StationInfo = (props) => {
   const [stationData, setStationData] = useState('')
   const [activeItem,setActiveItem] = useState('BasicInfo')
+  const [assignCostumerModalOpen, setAssignCostumerModalOpen] = useState(false)
+
   const location = useLocation()
   const locationPaths = location.pathname && location.pathname.split('/').filter(path => path)
 
@@ -169,7 +173,16 @@ const StationInfo = (props) => {
               </Card.Content>
             </Card>)}
         </Card.Group>
-        <Segment basic compact><Button primary icon ><Icon name='add circle'/> Add More </Button></Segment>
+        <Segment basic compact>
+          <Button primary icon onClick = {() => setAssignCostumerModalOpen(true)}>
+            <Icon name='add circle' /> Add More
+          </Button>
+          {assignCostumerModalOpen &&
+          <AssignCostumersModal open={assignCostumerModalOpen} setOpen={setAssignCostumerModalOpen} station={stationData}></AssignCostumersModal>
+          }
+
+
+        </Segment>
       </>
 
       }
@@ -179,11 +192,12 @@ const StationInfo = (props) => {
       }
 
       {activeItem === 'Settings' &&
-      <Header as='h5'> This Station Settings feature is not Implemented yet, will be implemanted soon ...
+      <Settings data={stationData}></Settings>
+      /**<Header as='h5'> This Station Settings feature is not Implemented yet, will be implemanted soon ...
         <Header.Subheader>
           After this implemetation, one will be able to change station settings such as 'SignIn/Off Work Methods', 'Add Remove Shifts', 'Number of active reporting', 'Change Station Key'
         </Header.Subheader>
-      </Header>}
+      </Header>*/}
     </>
   )
 

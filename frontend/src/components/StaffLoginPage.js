@@ -1,12 +1,13 @@
-import React, { useState,useEffect } from 'react'
+import React, { useState,useEffect, useContext } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useQuery, useMutation } from '@apollo/client'
-import { Button, Form, Radio, Grid, Header, Image, Segment, Divider } from 'semantic-ui-react'
-import { ALL_STATION } from '../queries/stationQuery'
+import { useMutation } from '@apollo/client'
+import { Button, Form, Grid, Header, Image, Segment, Divider } from 'semantic-ui-react'
 import { LOGIN_STAFF } from '../mutations/staffMutation'
+import { NotificationContext } from '../contexts/NotificationContext'
 
 
 const StaffLoginPage = () => {
+  const [,dispatch] = useContext(NotificationContext)
   const history = useHistory()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -14,9 +15,9 @@ const StaffLoginPage = () => {
   /**
    * staff Login mutation hook
    */
-  const [login,{ loading, error, data }] = useMutation(LOGIN_STAFF,{
-    onError: (error) => {
-      console.log(error)
+  const [login,{ data }] = useMutation(LOGIN_STAFF,{
+    onError: (err) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, Cannot Login'}<br/> {err.message}</> ,type: 'ERROR' } })
     }
   })
 
@@ -49,10 +50,6 @@ const StaffLoginPage = () => {
   if(storedStaffKey){
     history.push(`/staff/${storedStaffKey.id}`)
   }
-
-  /**If Login mutation error */
-  if (error) return `Error! ${error}`
-
 
   return (
 

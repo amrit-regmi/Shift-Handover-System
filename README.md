@@ -64,4 +64,5 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |06.12.2020 | 6 | Refactoring of Staff Component to smaller components (Admin Pages/ Timsheet Overview) nad realted changes / Station info page |
 |09.12.2020 | 7 | Costumers    Page / Add / Overview - Station Sub-Menu navigation link|
 |13.12.2020 | 8 | Costumer Page Add/Remove Aircrfat/Station/Contact implemented
-|14.12.2020 | 5 | Global notification component implmented for staff/ station / costumer pages
+|14.12.2020 | 5 | Global notification component implmented for staff/ station / costumer pages |
+|17.12.2020 | 6 | Station Pages - Add/Remove mailingList/shifts , DeleteStation , Assign Costumers , ResetStationKey Implemneted | 

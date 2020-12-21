@@ -66,3 +66,4 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |13.12.2020 | 8 | Costumer Page Add/Remove Aircrfat/Station/Contact implemented
 |14.12.2020 | 5 | Global notification component implmented for staff/ station / costumer pages |
 |17.12.2020 | 6 | Station Pages - Add/Remove mailingList/shifts , DeleteStation , Assign Costumers , ResetStationKey Implemneted | 
+|21.12.2020 | 6 | Node Mailer Implemented - Staff registration link and timesheet report are now sent to email

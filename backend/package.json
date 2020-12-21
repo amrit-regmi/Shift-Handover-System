@@ -51,6 +51,7 @@
     "lodash": "^4.17.20",
     "mongoose": "^5.10.2",
     "mongoose-unique-validator": "^2.0.3",
+    "nodemailer": "^6.4.17",
     "nodemon": "^2.0.4",
     "uuid": "^8.3.0"
   },

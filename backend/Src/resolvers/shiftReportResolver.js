@@ -5,6 +5,7 @@ const { UserInputError,AuthenticationError } = require('apollo-server')
 const _ = require('lodash')
 const config = require('../../config')
 const jwt  = require('jsonwebtoken')
+const { sendUShiftReportEmail } = require('../mailer/shiftReportEmail')
 
 const shiftReportResolver = {
   Mutation: {
@@ -135,7 +136,7 @@ const shiftReportResolver = {
                 task.status = task.action
               }
 
-              task.updates = [{ handoverId: shiftReport.id, action: 'TASK_CREATED' , notes: task.action }]
+              task.updates = [{ handoverId: shiftReport.id, action: `TASK_CREATED_${task.action}` , note: task.newNotes }]
               /**Remove action field */
               delete task.action
               return task
@@ -160,7 +161,7 @@ const shiftReportResolver = {
         shiftReport.flag = 'MOST_RECENTLY_COMPLETED'
         await shiftReport.save()
 
-        return await ShiftReport.populate( shiftReport,
+        const newReport = await  ShiftReport.populate( shiftReport,
           [
             {
               path:'station'
@@ -179,13 +180,20 @@ const shiftReportResolver = {
                   path: 'costumer handoverId'
                 }
               },
-
             }
           ])
 
+
+        try {
+          await sendUShiftReportEmail(newReport,newReport.station.mailingList)
+        // eslint-disable-next-line no-empty
+        } catch (error) {
+        }
+
+        return newReport
+
       }catch(err){
-        console.log(err)
-        throw new UserInputError(err.message)
+        throw new Error(err.message)
       }
     },
 
@@ -249,6 +257,10 @@ const shiftReportResolver = {
               },
             }
           ])
+
+
+        /**Testing email send */
+        //await sendUShiftReportEmail(shiftReport,shiftReport.station.mailingList)
         return shiftReport
       }
       catch(err) {

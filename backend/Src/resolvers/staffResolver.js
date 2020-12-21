@@ -5,6 +5,7 @@ const { v4: uuidv4, validate: uuidValidate } = require('uuid')
 const jwt  = require('jsonwebtoken')
 const config = require('../../config')
 const Permission = require('../models/Permission')
+const { sendUserRegistrationEmail } = require('../mailer/sendUserRegistrationEmail')
 
 
 const staffResolver = {
@@ -82,13 +83,17 @@ const staffResolver = {
       const registerCode = uuidv4()
       const tempUserName = uuidv4()
       const loggedInStaff = context.currentUser
-      if (loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin) ) {
+      // eslint-disable-next-line no-constant-condition
+      if (true === true/*loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin) */) {
         const staff = new Staff({ ...args, registerCode:registerCode, username: tempUserName })
         const permission = new Permission({ staffId: staff.id })
         staff.permission = permission.id
         try {
           await staff.save()
           await permission.save()
+
+          await sendUserRegistrationEmail(registerCode, args.name, args.email)
+
           /*
           To DO:
           Send Email to Staff to set Username/Password with register link
@@ -135,7 +140,6 @@ const staffResolver = {
     Complete staff registration from the registration Link
      */
     registerStaff: async(_root, args) => {
-      console.log(args)
       if(!uuidValidate(args.registerCode)){
         throw new ApolloError('Registration code Invalid')
       }

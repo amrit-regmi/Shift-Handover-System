@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Menu } from 'semantic-ui-react'
 
-const StationMenu = ({ station ,activeItem, setActiveItem }) => {
+const StationMenu = ({ station ,activeItem, setActiveItem ,setActiveCostumer }) => {
   const history = useHistory()
-
+  const staff = JSON.parse( sessionStorage.getItem('staffKey'))
   const location = useLocation()
 
   const navigatePath = (page) => {
@@ -23,7 +23,10 @@ const StationMenu = ({ station ,activeItem, setActiveItem }) => {
 
   const handleMenuClick = (e, { name }) => {
     setActiveItem(name)
-    if(activeItem !== name){
+    /**Reset the costumer page back to list mode */
+    setActiveCostumer('')
+    /**If the stationInfo is being viewed from shiftRporting page then url navigation is disabled so we don't push aciveitem*/
+    if(activeItem !== name && staff){
       history.push(navigatePath(name))
     }
 
@@ -50,11 +53,12 @@ const StationMenu = ({ station ,activeItem, setActiveItem }) => {
         onClick={handleMenuClick}
       />
 
+      {staff && (staff.permission.admin || staff.permission.station.edit.includes(station.id) ) &&
       <Menu.Item
         name='Settings'
         active = {activeItem === 'Settings'}
         onClick={handleMenuClick}
-      />
+      />}
     </Menu>
 
   )}

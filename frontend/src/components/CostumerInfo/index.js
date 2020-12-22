@@ -11,7 +11,8 @@ import AddAircraftModal from './AddAircraftModal'
 import AddContactModal from './AddContactModal'
 import AddStationModal from './AddStationModal'
 
-const CostumerInfo = ({ costumerData }) => {
+const CostumerInfo = ({ costumerData ,costumerId }) => {
+  const staff = JSON.parse( sessionStorage.getItem('staffKey'))
   const [,dispatch]= useContext(NotificationContext)
   const [data,setData] = useState('')
   const [addStationModalOpen,setAddStationModalOpen] = useState(false)
@@ -20,7 +21,7 @@ const CostumerInfo = ({ costumerData }) => {
 
   const params = useParams()
   const history = useHistory()
-  const { loading: costumerLoading ,error: costumerError, data: fetchedData } = useQuery(GET_COSTUMER,{ variables:{ id: params.id }, skip: costumerData })
+  const { loading: costumerLoading ,error: costumerError, data: fetchedData } = useQuery(GET_COSTUMER,{ variables:{ id: params.costumerId ||costumerId }, skip: costumerData })
 
   const [removeFromStation] = useMutation(REMOVE_COSTUMER_FROM_STATION )
   const [deleteCostumer] = useMutation(DELETE_COSTUMER, {
@@ -149,6 +150,7 @@ const CostumerInfo = ({ costumerData }) => {
 
               {data.aircrafts && data.aircrafts.map((aircraft,index) =>
                 <Segment key={index} compact style={{ display:'inline-flex', margin:'0.1rem' , width:'4.3rem' }}>
+                  {  staff && staff.permission.admin  &&
                   <Label floating  size='tiny' style={{ backgroundColor:'transparent' }}>
                     <Icon link  name='cancel' onClick = {() => {
                       setConfirm({ title: `Are you sure you want to  deassign Aircraft ${aircraft.registration} from this Costumer ?`, fn: () => {
@@ -157,11 +159,14 @@ const CostumerInfo = ({ costumerData }) => {
                       setConfirmModalOpen(true)
 
                     }}></Icon>
-                  </Label>
+                  </Label>}
                   {aircraft.registration}
                 </Segment>)}
 
-              <Button style={{ marginTop:'1rem', display:'block' }}circular icon primary size='small' onClick= {() => setAddAircraftModalOpen(true)}><Icon name='add'/></Button>
+              {
+                staff && staff.permission.admin  &&
+                <Button style={{ marginTop:'1rem', display:'block' }}circular icon primary size='small' onClick= {() => setAddAircraftModalOpen(true)}><Icon name='add'/></Button>
+              }
             </Segment>
 
 
@@ -191,18 +196,21 @@ const CostumerInfo = ({ costumerData }) => {
                       <Table.Cell>
                         {contact.email}
                       </Table.Cell>
-                      <Table.Cell>
-                        <Icon link name='cancel' onClick ={() => {
-                          setConfirm({ title: `Are you sure you want to  remove contact ${contact.description} from this Costumer ?`, fn: () => {
-                            removeContactFromStation({ id: contact.id ,description: contact.description })
-                          } })
-                          setConfirmModalOpen(true)
+                      { staff && (staff.permission.admin || staff.permission.station.edit.includes (params.stationId)) &&
+                          <Table.Cell>
+                            <Icon link name='cancel' onClick ={() => {
+                              setConfirm({ title: `Are you sure you want to  remove contact ${contact.description} from this Costumer ?`, fn: () => {
+                                removeContactFromStation({ id: contact.id ,description: contact.description })
+                              } })
+                              setConfirmModalOpen(true)
 
-                        }}></Icon>
-                      </Table.Cell>
+                            }}></Icon>
+                          </Table.Cell>
+                      }
                     </Table.Row>)
                 }
               </Table.Body>
+              { staff && (staff.permission.admin || staff.permission.station.edit.includes (params.stationId)) &&
               <Table.Footer>
                 <Table.Row>
                   <Table.Cell>
@@ -210,6 +218,7 @@ const CostumerInfo = ({ costumerData }) => {
                   </Table.Cell>
                 </Table.Row>
               </Table.Footer>
+              }
             </Table>
 
 
@@ -236,25 +245,27 @@ const CostumerInfo = ({ costumerData }) => {
                       <Table.Cell>
                         {`${station.address.city} , ${station.address.country}`} <Flag name={station.address.country && station.address.country.toLowerCase()}></Flag>
                       </Table.Cell>
-                      <Table.Cell>
-                        { params.stationId !== station.id &&
+                      {staff && (staff.permission.admin || staff.permission.station.edit.includes (params.stationId)) &&
+                        <Table.Cell>
+                          { params.stationId !== station.id &&
                           <Icon link   name='cancel' onClick={() => {
                             setConfirm({ title: `Are you sure you want to  remove station ${station.location} from this Costumer ?`, fn: () => {
                               removeCostumerFromStation({ variables:{ station: station.id, costumer: data.id }, location: station.location })
                             } })
                             setConfirmModalOpen(true)
                           }}/>}
-                      </Table.Cell>
+                        </Table.Cell>}
                     </Table.Row>)
                 }
               </Table.Body>
-              <Table.Footer>
-                <Table.Row>
-                  <Table.Cell>
-                    <Button circular icon primary size='small' onClick= {() => setAddStationModalOpen(true)}><Icon name='add'/></Button>
-                  </Table.Cell>
-                </Table.Row>
-              </Table.Footer>
+              { (staff && (staff.permission.admin || staff.permission.station.edit.includes (params.stationId))) &&
+             <Table.Footer>
+               <Table.Row>
+                 <Table.Cell>
+                   <Button circular icon primary size='small' onClick= {() => setAddStationModalOpen(true)}><Icon name='add'/></Button>
+                 </Table.Cell>
+               </Table.Row>
+             </Table.Footer>}
             </Table>
 
           </Grid.Column>
@@ -262,7 +273,7 @@ const CostumerInfo = ({ costumerData }) => {
         </Grid.Row>
 
         <Grid.Row>
-          {params.stationId &&
+          {params.stationId && (staff && (staff.permission.admin || staff.permission.station.edit.includes (params.stationId))) &&
           <Button negative
             onClick={() => {
               setConfirm({ title: `Are you sure you want to  remove costumer ${data.name} from this station ?`, fn: () => {
@@ -273,7 +284,7 @@ const CostumerInfo = ({ costumerData }) => {
             }}> Remove from Station </Button>
           }
 
-          {!params.stationId &&
+          {!params.stationId && staff && staff.permission.admin &&
           <Button icon negative
             onClick={() => {
               setConfirm({ title: `Are you sure you want to  delete costumer ${data.name} ?` , fn: () => {

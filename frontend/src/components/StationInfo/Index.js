@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client'
 import React, { Fragment, useEffect, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useHistory, useLocation, useParams } from 'react-router-dom'
 import { Breadcrumb, BreadcrumbDivider, BreadcrumbSection, Button, Card, Flag, Grid, Header, Icon, Loader, Segment, Table } from 'semantic-ui-react'
 import { GET_STATION } from '../../queries/stationQuery'
 import { formatDate } from '../../utils/DateHelper'
@@ -12,8 +12,9 @@ import StationMenu from './stationMenu'
 const StationInfo = (props) => {
   const [stationData, setStationData] = useState('')
   const [activeItem,setActiveItem] = useState('BasicInfo')
+  const [activeCostumer,setActiveCostumer] = useState('')
   const [assignCostumerModalOpen, setAssignCostumerModalOpen] = useState(false)
-
+  const history = useHistory()
   const location = useLocation()
   const locationPaths = location.pathname && location.pathname.split('/').filter(path => path)
 
@@ -73,36 +74,38 @@ const StationInfo = (props) => {
 
   return (
     <>
-      <Breadcrumb>
-        {locationPaths.map((path,index) => {
-          if(index === 0) { //Skip for base page
-            return ''
-          }
-          return (
-            <Fragment key={index}>
-              <BreadcrumbSection
-                active= {index === locationPaths.length-1  }
-                as={index < locationPaths.length-1?Link:''} //as Link previous Page
-                to ={ getBreadCrumbLink(index)}
-              >
-                {index===2 && stationData.location}
-                {index===4 && locationPaths[index-1].toLowerCase() === 'costumers' && //If the path is costumerId then display costumer name else it must be procedure, display procdure id
+      { loggedInStaff &&
+        <Breadcrumb>
+          {locationPaths.map((path,index) => {
+            if(index === 0) { //Skip for base page
+              return ''
+            }
+            return (
+              <Fragment key={index}>
+                <BreadcrumbSection
+                  active= {index === locationPaths.length-1  }
+                  as={index < locationPaths.length-1?Link:''} //as Link previous Page
+                  to ={ getBreadCrumbLink(index)}
+                >
+                  {index===2 && stationData.location}
+                  {index===4 && locationPaths[index-1].toLowerCase() === 'costumers' && //If the path is costumerId then display costumer name else it must be procedure, display procdure id
                  stationData.costumers.filter(costumer => costumer.id === path)[0].name
-                }
-                {
-                  index !== 2 && index !== 4 &&
+                  }
+                  {
+                    index !== 2 && index !== 4 &&
                   path
-                }
+                  }
 
-              </BreadcrumbSection>
-              { index < locationPaths.length-1 &&
+                </BreadcrumbSection>
+                { index < locationPaths.length-1 &&
               <BreadcrumbDivider></BreadcrumbDivider>}
-            </Fragment>
-          )
-        })}
-      </Breadcrumb>
+              </Fragment>
+            )
+          })}
+        </Breadcrumb>
+      }
 
-      <StationMenu station= {stationData} activeItem ={activeItem} setActiveItem= {setActiveItem}></StationMenu>
+      <StationMenu station= {stationData} activeItem ={activeItem} setActiveItem= {setActiveItem} setActiveCostumer ={setActiveCostumer}> </StationMenu>
       {activeItem === 'BasicInfo' &&
         <Grid padded>
           <Grid.Row columns='4'>
@@ -140,7 +143,7 @@ const StationInfo = (props) => {
                   {stationData.staffList.length > 0 && stationData.staffList.map((staff,i ) => <Table.Row key={i}>
                     <Table.Cell>
                       {
-                        loggedInStaff.permission.staff.view?
+                        loggedInStaff && loggedInStaff.permission.staff.view?
                           <Link to={`/Manage/AllStaffs/${staff.id}/Profile`}>{staff.name}</Link>: staff.name
                       }
                     </Table.Cell>
@@ -161,11 +164,19 @@ const StationInfo = (props) => {
         </Header.Subheader>
       </Header>}
 
-      {activeItem === 'Costumers' && ! params.id &&
+      {activeItem === 'Costumers' && ! (params.costumerId || activeCostumer) &&
       <>
         <Card.Group>
           {stationData.costumers && stationData.costumers.map(costumer =>
-            <Card key={costumer.id} link raised as={Link} to={`${location.pathname}/${costumer.id}`}>
+            <Card key={costumer.id} link raised
+              onClick = {() => {
+                if(loggedInStaff){
+                  history.push(`${location.pathname}/${costumer.id}`)
+                }else{
+                  setActiveCostumer(costumer.id)
+                }
+
+              }}>
               <Card.Content textAlign='center' header = {costumer.name} />
               <Card.Content textAlign='center' >{costumer.contract? costumer.contract + ' Contract':''}</Card.Content>
               <Card.Content textAlign='center' extra>
@@ -173,6 +184,7 @@ const StationInfo = (props) => {
               </Card.Content>
             </Card>)}
         </Card.Group>
+        {loggedInStaff && (loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.includes(stationId)) &&
         <Segment basic compact>
           <Button primary icon onClick = {() => setAssignCostumerModalOpen(true)}>
             <Icon name='add circle' /> Add More
@@ -182,13 +194,13 @@ const StationInfo = (props) => {
           }
 
 
-        </Segment>
+        </Segment>}
       </>
 
       }
 
-      {activeItem === 'Costumers' && params.id &&
-       <CostumerInfo></CostumerInfo>
+      {activeItem === 'Costumers' && (params.costumerId || activeCostumer) &&
+       <CostumerInfo costumerId = {activeCostumer}></CostumerInfo>
       }
 
       {activeItem === 'Settings' &&

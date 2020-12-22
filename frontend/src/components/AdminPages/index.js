@@ -66,13 +66,13 @@ const AdminPages = () => {
       </>
       }
       { /**If current page is allStations and stationId value is not set */
-        activeItem && activeItem.toLowerCase() === 'costumers' && !params.id &&
+        activeItem && activeItem.toLowerCase() === 'costumers' && !params.costumerId &&
       <>
         <Costumers/>
       </>
       }
       { /**If current page is allStations and stationId value is set */
-        activeItem && activeItem.toLowerCase() === 'costumers' && params.id &&
+        activeItem && activeItem.toLowerCase() === 'costumers' && params.costumerId &&
       <>
         <CostumerInfo/>
       </>

@@ -68,6 +68,11 @@ const MenuBar = ({ activeItem, setActiveItem }) => {
           onClick = {handleMenuClick}>
         </Menu.Item>
 
+        <Menu.Item name= "stationInfo"
+          active = {activeItem === 'stationInfo'}
+          onClick = {handleMenuClick}>
+        </Menu.Item>
+
         { /* Will be implemented on future
        <Menu.Item name= "allOpenTasks"
           active = {activeItem === 'allOpenTasks'}

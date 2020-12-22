@@ -11,6 +11,7 @@ import { GET_STATION } from '../../queries/stationQuery'
 import NewReportForm from './NewReportForm'
 import AllReportsTable from './AllReportsTable'
 import { NotificationContext } from '../../contexts/NotificationContext'
+import StationInfo from '../StationInfo/Index'
 
 
 const StationReportPage = () => {
@@ -91,6 +92,11 @@ const StationReportPage = () => {
         {activeItem === 'startNewReport'&&
           //<NewReportShiftSelectModel  stationId={id} ></NewReportShiftSelectModel>
           <NewReportForm  setActiveItem={setActiveItem}></NewReportForm>
+        }
+
+        {activeItem === 'stationInfo'&&
+          //<NewReportShiftSelectModel  stationId={id} ></NewReportShiftSelectModel>
+          <StationInfo stationId={id}></StationInfo>
         }
       </Context.Provider>
     </>

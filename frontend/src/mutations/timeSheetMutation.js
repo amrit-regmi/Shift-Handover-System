@@ -107,6 +107,7 @@ export const REQUEST_CLARIFICATION = gql`
      id: $id,
      clearify:$clearify,    
    ){
+    id
     remarks{
       by
       date

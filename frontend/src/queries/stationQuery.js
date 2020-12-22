@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client'
 export const ALL_STATION = gql`
  query ($detailed: Boolean = false ){
-  allStations {
+  allStations (detailed: $detailed){
     id
     location
     shifts @skip(if: $detailed){
@@ -27,6 +27,7 @@ export const GET_STATION = gql`
       costumers {
         contract
         aircrafts {
+          id
           registration
         }
         name

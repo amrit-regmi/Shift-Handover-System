@@ -37,6 +37,14 @@ export const SUBMIT_REPORT = gql`
       description
       id
       status
+      updates {
+        action
+        handoverId {
+          id
+          shift
+        }
+        note
+      }
       
     }
   } 

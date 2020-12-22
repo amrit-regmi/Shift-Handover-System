@@ -6,16 +6,16 @@ const _ = require('lodash')
 const config = require('../../config')
 const jwt  = require('jsonwebtoken')
 const { sendUShiftReportEmail } = require('../mailer/shiftReportEmail')
+const Staff = require('../models/Staff')
 
 const shiftReportResolver = {
   Mutation: {
     submitShiftReport: async(_root,args,context) => {
       const currentStation = context.currentStation
-      if (!currentStation) {
+      if (!(currentStation && currentStation.id !== args.id )) {
         throw new AuthenticationError('Invalid authentication')
       }
 
-      //console.log(currentStation)
       try{
         let shiftReport
         /**If submitting the saved shift report then report will have Id */
@@ -57,15 +57,33 @@ const shiftReportResolver = {
           const user =  staff.name
           /**Verify the jwt token  return the decoded information */
           try{
-            //console.log(staff)
             const data = jwt.verify(staff.signOffKey, config.JWT_SECRET)
-
-            //console.log(date.toUTCString())
-            return { shiftReport:shiftReport, staff: data.id, startTime: data.startTime, endTime:data.endTime, break:data.break, date : date  }
+            return { shiftReport:shiftReport.id, staff: data.id, station: args.station , startTime: data.startTime, endTime:data.endTime, break:data.break, date : date ,
+              remarks: {
+                title:'Remark Added', text: data.remark , date: data.endTime ,by: staff.name
+              } }
           } catch (err){
-            console.log('TimeSheet Verification error')
             throw new AuthenticationError(`${user} cannot be authenticated, please signoff again : ${err}`)
           }
+
+
+        })
+
+
+
+
+        staffAndTime.forEach( async entry => {
+          const splittedDateTime = entry.endTime.split(' ')
+          const dateSplit = splittedDateTime[0].split('-')
+          const timeSplit = splittedDateTime[1].split(':')
+
+          console.log(entry)
+          const activeAtUTC = new Date (Date.UTC(dateSplit[2],dateSplit[1]-1,dateSplit[0],timeSplit[0],timeSplit[1]))
+          console.log(entry.staff, { lastActive: { station: entry.station , activeAt:  activeAtUTC } } )
+
+          await Staff.findByIdAndUpdate(entry.staff, { lastActive: { station: entry.station , activeAt:  activeAtUTC } } )
+
+
         })
 
 
@@ -121,7 +139,7 @@ const shiftReportResolver = {
                 //console.log(existingTask)
                 await existingTask.save()
               } catch(error) {
-                console.log('Task Error', task.id)
+
                 throw new UserInputError(error,'Please check tasks inputs')
               }
               return existingTask
@@ -221,8 +239,7 @@ const shiftReportResolver = {
       }
 
 
-      if (!args.id && (!currentStation || currentStation.id !== args.station )) {
-
+      if (!args.id && !(currentStation && currentStation.id !== args.id )) {
         throw new AuthenticationError('Invalid authentication')
       }
 
@@ -271,10 +288,21 @@ const shiftReportResolver = {
 
     getReportList : async (_root,args,context) => {
       const currentStation = context.currentStation
+
       if (!args.stationId){
-        /**TODO: Permission check needs to be implemented */
-        const allReports = await ShiftReport.find({}).populate('station')
-        return allReports
+        const loggedInStaff = context.currentUser
+        /**Only staff with station edit or admin permission can view all shiftreports for all station */
+        if(loggedInStaff && (loggedInStaff.permission.admin  || (loggedInStaff.permission.station.edit.length > 0))){
+          let allReports
+          if (loggedInStaff.permission.admin){
+            allReports = await ShiftReport.find({}).populate('station')
+          }
+          else{
+            allReports = await ShiftReport.find({ station: { $in: loggedInStaff.permission.station.edit } }).populate('station')
+          }
+          return allReports
+        }
+
       }
 
       if (!currentStation || currentStation.id !== args.stationId ) {
@@ -285,6 +313,7 @@ const shiftReportResolver = {
       return shiftReports
 
     },
+
     getShiftReportByShift: async(_root,args,_context) => {
       const report = await ShiftReport.findOne(args).populate('station')
       return report

@@ -42,7 +42,6 @@ const RegisterPage = ({ setName }) => {
   }
 
   if(data && data.getStaff){
-    console.log(data)
     setName(data.getStaff.name)
   }
 

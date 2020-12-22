@@ -13,11 +13,11 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
 
   const permission = staff.permission && staff.permission.timesheet
 
-  //console.log(permission)
+  console.log(timeSheet)
 
   const startTime = timeSheet.startTime
   const endTime = timeSheet.endTime
-  const station = timeSheet.station && timeSheet.station.location
+  const station = timeSheet.shiftReport && timeSheet.shiftReport.station.location
   const shift = (timeSheet.shiftReport && timeSheet.shiftReport.shift) || timeSheet.shift
   const  breakt = timeSheet.break
   const totalHours = timeSheet.total
@@ -90,30 +90,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
       clearify: clarifyText
     }
 
-    requestClarification({ variables: vars ,
-      update:(store,response) => {
-        store.writeFragment({
-          id: `TimeSheet:${timeSheet.id}`,
-          fragment: gql `fragment AddRemarks on TimeSheet {
-            remarks
-          }`,
-          data: {
-            remarks : response.data.requestClarification.remarks
-          }
-        },
-        )
-
-        const test = store.readFragment({
-          id: `TimeSheet:${timeSheet.id}`,
-          fragment: gql ` fragment ReadRemarks on TimeSheet {
-            remarks
-          }`
-        })
-
-        console.log(test)
-
-
-      } }
+    requestClarification({ variables: vars }
 
 
     )
@@ -203,7 +180,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
                * Add Button,
                * visible only if data staff is loggedin Staff or  logged in staff has permission and no record exists for  that day
                */
-            isEmptyRow  && permission && (  permission.edit.length >0 || staff.id === staffId ) &&
+            isEmptyRow  && permission && (  permission.sign.length >0 || staff.id === staffId ) &&
               <Button icon='add' size='mini' circular onClick = {() => {
                 setAdd(true)
                 setOpen(true)
@@ -223,14 +200,14 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
                  * visible only
                  *    if data staff is loggedin Staff
                  *    or
-                 *    logged in staff has permission to edit timesheet for that station
+                 *    logged in staff has permission to sign timesheet for that station
                  *    and
                  *    record exists for that day
                  *    and
                  *    record is not already approved
                  *
                  */
-                timeSheet.status !== 'APPROVED' && ((permission.edit.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0 )) &&
+                timeSheet.status !== 'APPROVED' && ((permission.sign.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0 )) &&
                   <Popup
                     trigger=  {<Button icon='edit' size='mini' circular onClick = {() => {
                       setAdd(false)
@@ -307,7 +284,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
                 *    record is not already approved
                 */
 
-                timeSheet.status !== 'APPROVED' &&((permission.edit.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0)   || staff.id === staffId  ) &&
+                timeSheet.status !== 'APPROVED' &&((permission.sign.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0)   || staff.id === staffId  ) &&
                 <Popup as={Message} warning
                   trigger=  { <Button  color = 'red' icon='trash' size='mini' circular />}
                   content={
@@ -339,6 +316,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
         openReport={openReport}
         date = {date}
         open={open}
+        status ={timeSheet.status}
         setOpen= {setOpen}
         startTime= {startTime}
         endTime= {endTime}

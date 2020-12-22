@@ -85,7 +85,7 @@ const TimeSheetsOverview = ({ setStaffName  }) => {
               <TableRow key={name} positive= {staff.itemsPending?false:true} negative= {staff.itemsPending?true:false}>
                 {!params.staffId   && basePage.toLowerCase() !== 'mypage' &&
                 <TableCell><Link to={`/Manage/ManageTimesheets/${staff.id}`} onClick={() => {
-                  //setStaffName(name)
+
                 }}> {name}</Link></TableCell> }
                 <TableCell>{period}</TableCell>
                 <TableCell>{
@@ -100,7 +100,7 @@ const TimeSheetsOverview = ({ setStaffName  }) => {
                 <TableCell>{staff.totHours}</TableCell>
                 <TableCell><Link to={`${location.pathname}/${params.staffId?'':`${staff.id}/`}${period}`}
                   onClick={() => {
-                    //setStaffName(name)
+
                   }}>{staff.itemsPending ?  `${staff.itemsPending}  Items Pending`: 'All Approved' } </Link></TableCell>
               </TableRow>)
 

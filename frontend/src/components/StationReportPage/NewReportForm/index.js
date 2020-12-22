@@ -1,10 +1,10 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { Formik } from 'formik'
 import Context from '../Context'
-import { Form, Header, Button, Icon } from 'semantic-ui-react'
+import { Form, Header, Button, Dimmer, Segment, Loader, Message } from 'semantic-ui-react'
 import { DateInputField } from './FormFields'
 import { validateStaffsField, validateStartEndTime, validateTasks } from './validator'
-import { formatDate, operateDate } from '../../../utils/DateHelper'
+import { formatDate, operateDate, toDate } from '../../../utils/DateHelper'
 import _ from 'lodash'
 import StaffForms from './StaffForms'
 import AircraftSelectionForm from './AircraftSelectionForm'
@@ -12,11 +12,12 @@ import TaskForms from './TaskForms'
 import StaffAddModel from './StaffAddModel'
 import { useMutation } from '@apollo/client'
 import { SUBMIT_REPORT } from '../../../mutations/submitShiftReport'
+import { GET_SHIFT_REPORT } from '../../../queries/shiftReportQuery'
+import { NotificationContext } from '../../../contexts/NotificationContext'
 
-
-
-const NewReport = () => {
+const NewReportForm = ({ setActiveItem }) => {
   const context = useContext(Context)
+  const[,dispatch] = useContext(NotificationContext)
   const station = context.state.station
   const reportData = context.state.lastShiftReport
 
@@ -34,12 +35,52 @@ const NewReport = () => {
   }
   const [initialFields,setInitialFields] = useState(init)
 
-  const [submitReport,{ data }] = useMutation(SUBMIT_REPORT,{
+  const [submitReport,{ loading }] = useMutation(SUBMIT_REPORT,{
+    update(store,result) {
+
+      const data = { getShiftReport: result.data.submitShiftReport }
+      store.writeQuery(
+        { query: GET_SHIFT_REPORT ,
+          variables:{
+            station: station.id,
+            flag:'MOST_RECENTLY_COMPLETED'
+          },
+          data
+        }
+      )
+
+      console.log(result,data)
+    },
+
+    onCompleted: () => {
+      setActiveItem('lastShiftReport')
+    },
+
     onError: (error) => {
-      console.log(error)
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: error.message ,type: 'ERROR' } })
     }
   })
-
+  const getShiftName = (startTime) => {
+    const sdt = new Date(toDate(startTime))
+    const shiftName = station.shifts.reduce((p,c) => {
+      /**Setting the shiftTime to given startTime for comparision  */
+      const splitSt = c.startTime.split(':')
+      const st = new Date(sdt)
+      st.setHours(splitSt[0])
+      st.setMinutes(splitSt[1])
+      /** Diffence between given startTIme and shift startttime */
+      const diff = (sdt-st)/(60*60*1000)
+      /**return the lowest positive diffence if exist or highest negative differnce*/
+      if((diff > p.diff && p.diff < 0) ){
+        return { name: c.name ,diff: diff }
+      }
+      if(diff > 0 && diff< p.diff){
+        return { name: c.name ,diff: diff }
+      }
+      return p
+    },{ name:'',diff:-24 })
+    return shiftName.name
+  }
 
   useEffect (() => {
     //initial aircraft list from last shift report
@@ -102,18 +143,12 @@ const NewReport = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ,[])
 
-  useEffect(() => {
-    if(data){
-      console.log(data.submitShiftReport)
-    }
-  })
-
   /**Format submit data  before submit*/
   const beforeSubmit = (formdata) => {
     let submitData = { station: station.id , staffs: formdata.staffs, startTime:formdata.startTime, endTime: formdata.endTime, tasks:{} }
 
     /**Reduce the tasks to be only array of tasks */
-    const tasks =  _.reduce(formdata.tasks, (tasks,tasksByIdentifier,identifier) => {
+    const updatedTasks =  _.reduce(formdata.tasks, (tasks,tasksByIdentifier,identifier) => {
       let taskList = _.map(tasksByIdentifier, (task,index) => {
         let initialTask
         /**Compare the task with the initial tasks, reduce to only include the changes */
@@ -140,21 +175,21 @@ const NewReport = () => {
     /**Only include staff signoff Key and name */
     const staffs = formdata.staffs.map((staff) => {return { signOffKey: staff.signOffKey, name:staff.name }})
 
-    submitData = { ...submitData,tasks: tasks, staffs: staffs ,shift: 'Day' }
+    submitData = { ...submitData,tasks: updatedTasks, staffs: staffs ,shift: getShiftName(formdata.startTime) }
 
     return submitData
 
   }
 
-  /*if(loading) {
+  if(loading) {
     return(
-      <Segment>
+      <Segment style={{ height:'10rem' }} basic size='huge'>
         <Dimmer active inverted>
           <Loader inverted>Submitting Data</Loader>
         </Dimmer>
       </Segment>
     )
-  }*/
+  }
 
   return (
     <>
@@ -169,19 +204,18 @@ const NewReport = () => {
 
           if(!_.isEmpty(taskErrors) ) errors.tasks = taskErrors
           if(!_.isEmpty(staffErrors) ) errors.staffs = staffErrors
+
           return errors
 
         }}
         onSubmit={(values) => {
-
-          console.log('submit Clicked',values)
           const submitData = beforeSubmit(values)
           submitReport({ variables: submitData })
 
         }}
       >
 
-        {({ values,handleSubmit,errors,touched  }) =>
+        {({ values,handleSubmit,errors,touched,submitCount }) =>
           <>
             <Form onSubmit = {handleSubmit}>
               {/*Shift start end times*/}
@@ -205,26 +239,33 @@ const NewReport = () => {
               {/*Dynamic Input fields for Aircraft Tasks*/}
               <AircraftSelectionForm costumers ={costumers} checkedAircrafts={checkedAircrafts} setCheckedAircrafts= {setCheckedAircrafts} values={values} />
 
-              {/**
-           * TODO:
-           * Input fields if the aircraft/costumer is not listed on the reporting page
-           */}
-              <Header as="h3">Work Performed for Other Costumer</Header>
-              <Button  type='button' icon primary><Icon name="plus circle"/> Add </Button>
-
+              {/*Dynamic Input fields for Other Tasks*/}
               <Header as="h3">Other Tasks</Header>
               <TaskForms tasksIdentifier = 'OTHER' tasks = {values.tasks.OTHER}> </TaskForms>
 
+              {/*Dynamic Input fields for Other Tasks*/}
               <Header as="h3">Logistics Task</Header>
               <TaskForms tasksIdentifier = 'LOGISTICS' tasks = {values.tasks.LOGISTICS}> </TaskForms>
 
+              <Message
+                error
+                content={
+                  <Header as='h5'>There are some errors on the report <Header.Subheader>Please fix the errors before trying again</Header.Subheader></Header>
+                }
+                visible ={(!_.isEmpty(errors) && submitCount > 0 ) === true}
+              />
 
+              <Message
+                success
+                content={
+                  <Header as='h5'>Great! Everything seems to be fixed <Header.Subheader>Please, proceed to submit whenever ready</Header.Subheader></Header>
+                }
+                visible ={(_.isEmpty(errors) && submitCount > 0 ) === true}
+              />
 
-
-              <Button   primary type="submit"> Submit Report </Button>
+              <Segment disabled = {!_.isEmpty(errors) && submitCount > 0} color='blue' inverted tertiary clearing>
+                <Button floated='right' type="submit" primary> Submit Report </Button> </Segment>
             </Form>
-
-
             <StaffAddModel setOpen= {setOpenAddStaffModel} open= {openAddStaffModel} shiftStartTime = {values.startTime} shiftEndTime={values.endTime}></StaffAddModel></>}
 
 
@@ -235,4 +276,4 @@ const NewReport = () => {
   )
 }
 
-export default NewReport
+export default NewReportForm

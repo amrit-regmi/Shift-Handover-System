@@ -10,6 +10,7 @@ import reducer from './stationReducer'
 import { GET_STATION } from '../../queries/stationQuery'
 import NewReportForm from './NewReportForm'
 import AllReportsTable from './AllReportsTable'
+import { NotificationContext } from '../../contexts/NotificationContext'
 
 
 const StationReportPage = () => {
@@ -18,6 +19,7 @@ const StationReportPage = () => {
   const initialState = useContext(Context)
   const [state,dispatch] = useReducer(reducer, initialState)
 
+  const [,notificationDispatch] = useContext(NotificationContext)
 
   if(!JSON.parse( sessionStorage.getItem('stationKey'))){
     history.push('/')
@@ -39,7 +41,9 @@ const StationReportPage = () => {
   }
 
   const useMultipleQuery = () => {
-    const res1 = useQuery(GET_SHIFT_REPORT,{ variables:queryParams })
+    const res1 = useQuery(GET_SHIFT_REPORT,{
+      variables:queryParams,
+      onError: () => notificationDispatch({ type:'ADD_NOTIFICATION',  payload:{ content: errorReport.message ,type: 'ERROR' } }) })
     const res2 = useQuery(GET_STATION,{ variables:{ id: id } })
     return [res1, res2]
   }
@@ -60,15 +64,12 @@ const StationReportPage = () => {
   //const { loading:loadingReport, error:errorReport, data: dataReport } = useQuery(GET_SHIFT_REPORT,{ variables:queryParams })
 
 
+
   if (loadingReport) {
     return (
       <Loader active>Fetching Data</Loader>
     )
   }
-
-
-
-  if (errorReport) return `Error! ${errorReport}`
 
   return (
     <>
@@ -81,7 +82,7 @@ const StationReportPage = () => {
         <MenuBar activeItem= {activeItem} setActiveItem={setActiveItem}/>
 
         { activeItem === 'lastShiftReport' &&
-          <ShiftReport reportData= {dataReport.getShiftReport} />
+          <ShiftReport reportData= {dataReport && dataReport.getShiftReport}  />
         }
         { activeItem === 'browseAllReports' &&
           <AllReportsTable  />
@@ -89,7 +90,7 @@ const StationReportPage = () => {
 
         {activeItem === 'startNewReport'&&
           //<NewReportShiftSelectModel  stationId={id} ></NewReportShiftSelectModel>
-          <NewReportForm ></NewReportForm>
+          <NewReportForm  setActiveItem={setActiveItem}></NewReportForm>
         }
       </Context.Provider>
     </>

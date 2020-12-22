@@ -115,12 +115,11 @@ const staffResolver = {
       if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin) && args.id) {
         const registerCode = uuidv4()
         try {
-          await Staff.findByIdAndUpdate(args.id,{ registerCode:registerCode } )
-          /*
-            To DO:
-            Send Email to Staff  with new register link
-          */
-          console.log(registerCode)
+          const staff =  await Staff.findById(args.id)
+          staff.registerCode = registerCode
+          await staff.save()
+
+          await sendUserRegistrationEmail(registerCode, staff.name, staff.email)
           return({ status:'SUCCESS', message: 'Register Code  reset'  })
         }
         catch (error){

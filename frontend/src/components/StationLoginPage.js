@@ -1,12 +1,14 @@
-import React, { useState,useEffect } from 'react'
+import React, { useState,useEffect, useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
 import { Button, Form, Radio, Grid, Header, Image, Segment, Divider } from 'semantic-ui-react'
 import { ALL_STATION } from '../queries/stationQuery'
 import { LOGIN_TO_STATION } from '../mutations/stationMutation'
+import { NotificationContext } from '../contexts/NotificationContext'
 
 
 const StationLoginPage = () => {
+  const[,dispatch] = useContext(NotificationContext)
   const history = useHistory()
   const [radioButton, setRadioButton] = useState({})
   const [stationKey,setStationKey]= useState('')
@@ -18,7 +20,8 @@ const StationLoginPage = () => {
    */
   const [loginStation,loginToStationResult] = useMutation(LOGIN_TO_STATION,{
     onError: (error) => {
-      console.log(error)
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, Cannot Login'}<br/> {error.message}</> ,type: 'ERROR' } })
+
     }
   })
 
@@ -114,8 +117,8 @@ const StationLoginPage = () => {
     setRadioButton({ value,label })
   }
 
-  /**If Login mutation error */
-  if (error) return `Error! ${error}`
+  /**If Login mutation error
+  if (error) return `Error! ${error}` */
 
 
   return (

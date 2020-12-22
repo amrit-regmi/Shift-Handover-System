@@ -54,7 +54,7 @@ const stationResolver = {
       }
 
       if(loggedInStaff){
-        if(!loggedInStaff.permission.station.edit.includes(args.id)){
+        if(!(loggedInStaff.permission.station.edit.includes(args.id) || loggedInStaff.permission.admin) ){
           throw new AuthenticationError('You do not have rights to view this station')
         }
       }

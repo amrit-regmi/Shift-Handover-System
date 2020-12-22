@@ -9,7 +9,7 @@ const StaffMenuBar = ({ staffName, activeItem, setActiveItem }) => {
 
   const location = useLocation()
 
-  if(location.pathname.split('/')[1] === 'register'){
+  if(location.pathname.split('/')[1].toLowerCase() === 'register'){
     return (
 
       <Menu inverted color="blue" stackable >

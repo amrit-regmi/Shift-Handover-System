@@ -29,6 +29,9 @@ const enumType =  `
     OPEN 
     NOTES_ADDED 
     TASK_CREATED
+    TASK_CREATED_OPEN
+    TASK_CREATED_CLOSED
+    TASK_CREATED_DEFERRED
   }
 `
 

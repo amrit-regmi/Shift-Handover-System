@@ -31,7 +31,7 @@ const taskSchema = new mongoose.Schema({
     },
     action:{
       type:String,
-      enum:['DEFERRED', 'CLOSED', 'OPEN' ,'NOTES_ADDED', 'TASK_CREATED'],
+      enum:['DEFERRED', 'CLOSED', 'OPEN' ,'NOTES_ADDED', 'TASK_CREATED_OPEN','TASK_CREATED_CLOSED', 'TASK_CREATED_DEFERRED'],
     },
     note:{
       type:String

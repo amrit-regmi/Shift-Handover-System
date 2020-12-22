@@ -2,8 +2,8 @@
 
 const stationQuery = `
   extend type Query {
-    allStations: [Station]
-    getStation(location:String,id:String): Station
+    allStations(detailed:Boolean): [Station]
+    getStation(id:String!): Station
   }
 `
 

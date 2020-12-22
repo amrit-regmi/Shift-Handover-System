@@ -1,7 +1,7 @@
 const Station = require('../models/Station')
 const Costumer = require('../models/Costumer')
 const Staff = require ('../models/Staff')
-const { UserInputError } = require('apollo-server')
+const { UserInputError, AuthenticationError } = require('apollo-server')
 const config = require('../../config')
 const jwt  = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
@@ -11,18 +11,58 @@ const ObjectId = require('mongoose').Types.ObjectId
 
 const stationResolver = {
   Query: {
-    allStations: async () => {
-      const stations =  await Station.find({}).populate('costumers')
+    allStations: async (_root,args,context) => {
+      let stations
+      const filter = {}
+      if(args.detailed){
+        const loggedInStaff = context.currentUser
+        /**Basic station list can be provided without autehntication
+         *  but for detailed list only the station within staffs edit right is provided
+         * or staff has add rights thaen can view all stations*/
+        if (!loggedInStaff ){
+          throw new Error('You do not have permission to view station list')
+        }
+
+        if(!(loggedInStaff.permission.admin || loggedInStaff.permission.station.add)){
+          filter.station = { $in:loggedInStaff.permission.station.edit }
+        }
+
+      }
+      stations =  await Station.find(filter)
+
       return stations
 
     },
 
-    getStation: async (_root,args) => {
-      if (args.id){
+    getStation: async (_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      const currentStation = context.currentStation
 
-        return  await Station.findById(args.id ).populate({ path:'costumers', populate:({ path:'aircrafts' }) })
+      if(!args.id){
+        throw new UserInputError('Please provide stationId')
       }
-      return await Station.findOne({ ...args }).populate({ path:'costumers', populate:({ path:'aircrafts' }) })
+
+      if(!(loggedInStaff || currentStation) ){
+        throw new AuthenticationError('Please log in with appropriate permission to view this station')
+      }
+
+      if(currentStation){
+        if(currentStation.id !== args.id){
+
+          throw new AuthenticationError('Station is not authinticated')
+        }
+      }
+
+      if(loggedInStaff){
+        if(!loggedInStaff.permission.station.edit.includes(args.id)){
+          throw new AuthenticationError('You do not have rights to view this station')
+        }
+      }
+
+      return await Station.findById(args.id).populate({ path:'costumers', populate:({ path:'aircrafts' }) })
+
+
+
     }
   },
   Station: {
@@ -30,8 +70,9 @@ const stationResolver = {
       const staffList =  Staff.find( { 'lastActive.station':  ObjectId(root.id) , 'lastActive.activeAt': { $gte: new Date ((new Date().getTime() - (24 * 60 * 60 * 1000))) }  } )
       return staffList
     },
+
     activeStaffs: async root => {
-      /**Counts all the staff who are active within last 72 hours for given station */
+      /**Counts all the staff who are active within last 24 hours for given station */
       const count =  await Staff.collection.countDocuments( { 'lastActive.station':  ObjectId(root.id) , 'lastActive.activeAt': { $gte: new Date ((new Date().getTime() - (24 * 60 * 60 * 1000))) }  } )
       return count
     }
@@ -39,7 +80,11 @@ const stationResolver = {
   },
 
   Mutation: {
-    addStation : async (_root,args, _context) => {
+    addStation : async (_root,args, context) => {
+      const loggedInStaff = context.currentUser
+      if (!(loggedInStaff.permission.admin ||loggedInStaff.permission.station.add)){
+        throw new Error('You do not have permission to add station')
+      }
       const { stationKey,...inputargs } = { ...args }
       const key = await  bcrypt.hash(stationKey, 10)
       const station = new Station({ ...inputargs, stationKey: key })
@@ -63,7 +108,11 @@ const stationResolver = {
     },
 
 
-    assignCostumers: async(_root,args,_context) => {
+    assignCostumers: async(_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      if (!(loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.includes(args.stationId))){
+        throw new Error('You do not have permission to assign costumers to this station')
+      }
       try {
         const station = await Station.findById(args.stationId,{ stationKey:0 })
         if(!station){
@@ -84,7 +133,11 @@ const stationResolver = {
       }
     },
 
-    deleteStation: async(_root,args,_context) => {
+    deleteStation: async(_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      if (!(loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.includes(args.stationId))){
+        throw new Error('You do not have permission to delete station')
+      }
       try {
         await Station.findByIdAndDelete(args.stationId)
         return ({ type:'SUCCESS', message:'Station Removed' })
@@ -94,7 +147,11 @@ const stationResolver = {
       }
     },
 
-    changeStationKey: async(_root,args) => {
+    changeStationKey: async(_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      if (!(loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.includes(args.stationId))){
+        throw new Error('You do not have permission to change stationKey')
+      }
       try{
         if(!args.stationKey || args.stationKey.length < 8 ){
           throw new Error('Invalid Station key')
@@ -108,7 +165,11 @@ const stationResolver = {
       }
     },
 
-    removeFromMailingList: async(_root,args) => {
+    removeFromMailingList: async(_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      if (!(loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.includes(args.stationId))){
+        throw new Error('You do not have permission to change mailing list')
+      }
       try {
         const station = await Station.findById(args.stationId)
         if(!station){
@@ -125,7 +186,11 @@ const stationResolver = {
 
     },
 
-    addToMailingList: async(_root,args) => {
+    addToMailingList: async(_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      if (!(loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.includes(args.stationId))){
+        throw new Error('You do not have permission to change mailing list')
+      }
       try {
         const station = await Station.findById(args.stationId)
         if(!station){
@@ -143,7 +208,11 @@ const stationResolver = {
 
     },
 
-    removeShift: async(_root,args) => {
+    removeShift: async(_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      if (!(loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.includes(args.stationId))){
+        throw new Error('You do not have permission to modify shifts')
+      }
 
       try {
         const station = await Station.findById(args.stationId)
@@ -163,7 +232,11 @@ const stationResolver = {
 
     },
 
-    addShifts: async(_root,args) => {
+    addShifts: async(_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      if (!(loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.includes(args.stationId))){
+        throw new Error('You do not have permission to modify shifts')
+      }
       try {
         const station = await Station.findById(args.stationId)
         if(!station){

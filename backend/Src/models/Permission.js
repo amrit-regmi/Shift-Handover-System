@@ -34,11 +34,6 @@ const permissionSchema = mongoose.Schema({
   },
 
   timesheet:{
-    edit:[{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Station'
-    }] ,
-
     view: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Station'

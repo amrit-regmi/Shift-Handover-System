@@ -4,15 +4,16 @@ const Staff = require('../models/Staff')
 const { UserInputError, AuthenticationError } = require('apollo-server')
 const config = require('../../config')
 const jwt  = require('jsonwebtoken')
-const { sleep, getDatefromWeek ,getLastDateFromMonth, getMonthName, toDate, getWeek, formatDate } = require('../utils/helper')
+const { getDatefromWeek ,getLastDateFromMonth, getMonthName, toDate, getWeek, formatDate } = require('../utils/helper')
 const { v4: uuidv4 } = require('uuid')
 const _ = require('lodash')
+const { sendUserRegistrationEmail } = require('../mailer/sendUserRegistrationEmail')
 
 
 
 const timeSheetResolver = {
   Mutation: {
-    addToTimeSheet: async (root,args,context) => {
+    addToTimeSheet: async (_root,args,context) => {
       const staff = context.currentUser
       let timeSheet
       /**If args.id is set  then it is treated as update request*/
@@ -22,7 +23,7 @@ const timeSheetResolver = {
           throw new UserInputError('Cannot find timesheet')
         }
         /**If the user updating the timesheet is different then the logged in user check for permission */
-        if( !timeSheet.staff.equals(staff.id) && !staff.permission.timesheet.edit){
+        if( !timeSheet.staff.equals(staff.id) && !staff.permission.timesheet.sign){
           throw new AuthenticationError('Permission denied')
         }
 
@@ -33,6 +34,12 @@ const timeSheetResolver = {
       }
       /**If args.id is not set  then it is treated as add request*/
       if(!args.id){
+        /**If the user adding to the timesheet is different then the logged in user check for permission  */
+        if( !args.staff === staff.id){
+          if(!staff.permission.timesheet.sign.includes(args.station)){
+            throw new AuthenticationError( 'User doesnot have rights to add timesheet to specified station')
+          }
+        }
         /**If not start Time and endtime */
         if(!(args.startTime && args.endTime && args.shift && args.station)){
           throw new UserInputError('Required fields are missing')
@@ -47,14 +54,7 @@ const timeSheetResolver = {
           }
 
         }
-        /**If the user adding to the timesheet is different then the logged in user check for permission  */
-        if( !args.staff === staff.id){
-          if(!staff.permission.timesheet.edit.includes(args.station)){
-            throw new AuthenticationError( 'User doesnot have rights to add timesheet to specified station')
-          }
 
-
-        }
 
         const reportDateSplit = args.startTime.split(' ')[0].split('-')
         const date = new Date(Date.UTC(reportDateSplit[2],reportDateSplit[1]-1,reportDateSplit[0]))
@@ -84,11 +84,10 @@ const timeSheetResolver = {
       }
     },
 
-    signOffTimeSheet: async (root,args) => {
+    signOffTimeSheet: async (_root,args) => {
       /**Updating  data to timesheet model will be implemented here in future together with realtime reporting sync accross diffent computers
        * For now it only generates the token for staff which is used to verify the timesheet data when report is submitted.
       */
-
       //await sleep(5000)
       const signOffToken = {
         startTime: args.startTime,
@@ -105,7 +104,6 @@ const timeSheetResolver = {
         if(args.additionalAction === 'reset'){
           staff = await Staff.findOne({ email: args.email })
           if(!staff) throw new UserInputError('Provided email address is not linked to any user')
-
           if(staff){
             const resetCode = uuidv4()
             staff.resetCode = resetCode
@@ -114,6 +112,8 @@ const timeSheetResolver = {
             } catch (err) {
               throw new UserInputError(err.message)
             }
+            signOffToken.remark =  'Unsigned Timesheet, forgot Password'
+            await sendUserRegistrationEmail(resetCode, staff.name, staff.email)
           }
         }
 
@@ -127,8 +127,9 @@ const timeSheetResolver = {
           } catch (err) {
             throw new UserInputError(err)
           }
+          signOffToken.remark =  'Unsigned Timesheet, first registration'
 
-          /**Email the register code to user to be implemented */
+          await sendUserRegistrationEmail(registerCode, args.name, args.email)
         }
 
         /**If update or remove */
@@ -169,7 +170,7 @@ const timeSheetResolver = {
 
     },
 
-    approveTimeSheet: async(root,args,context) => {
+    approveTimeSheet: async(_root,args,context) => {
       const staff = context.currentUser
 
       const timesheet = await TimeSheet.findById(args.id)
@@ -200,11 +201,11 @@ const timeSheetResolver = {
 
     },
 
-    deleteTimeSheet: async(root,args,context) => {
+    deleteTimeSheet: async(_root,args,context) => {
       const staff = context.currentUser
       const timesheet = await TimeSheet.findById(args.id)
 
-      if(!(staff.permission.timesheet.edit.includes(timesheet.station) || timesheet.staff.equals(staff.id))){
+      if(!(staff.permission.timesheet.sign.includes(timesheet.station) || timesheet.staff.equals(staff.id))){
         throw new AuthenticationError('You do not have rights to delete this timesheet')
       }
       await timesheet.remove()
@@ -213,12 +214,12 @@ const timeSheetResolver = {
 
     },
 
-    requestClarification: async (root,args,context) => {
+    requestClarification: async (_root,args,context) => {
       const staff = context.currentUser
       const timesheet = await TimeSheet.findById(args.id)
 
-      if(!(staff.permission.timesheet.edit.includes(timesheet.station) || timesheet.staff.equals(staff.id))){
-        throw new AuthenticationError('You do not have rights to delete this timesheet')
+      if(!(staff.permission.timesheet.sign.includes(timesheet.station) || timesheet.staff.equals(staff.id))){
+        throw new AuthenticationError('You do not have rights to modify this timesheet')
       }
 
       const remarks = [ ...timesheet.remarks ]
@@ -239,12 +240,11 @@ const timeSheetResolver = {
   },
 
   Query: {
-    getTimeSheetByUser: async (root,args) => {
+    getTimeSheetByUser: async (_root,args,context) => {
+      const staff = context.currentUser
       let startDate
       let endDate
       let to
-
-      console.log('getTimeSheetByUser')
 
       switch (args.filterDuration) {
       case 'week':
@@ -268,14 +268,18 @@ const timeSheetResolver = {
         },
       }
 
-
+      /**If logged staff does not have admin rights or is not requested user then only return the stations for which he has right to view/sign  */
+      if(!staff.permission.admin || staff.id !== args.staff){
+        searchFilters.station = { $in : [...staff.permission.timesheet.view,...staff.permission.timesheet.sign] }
+      }
 
       const timesheets = await TimeSheet.find( searchFilters
       ).populate({ path:'shiftReport staff station' , populate: { path: 'station' } })
       return timesheets
     },
 
-    getAllTimeSheets: async (root,args, context) => {
+    getAllTimeSheets: async (_root,args, context) => {
+      const staff = context.currentUser
       const searchFilters = {}
 
       if(args.staff && args.staff.length > 0){
@@ -321,9 +325,23 @@ const timeSheetResolver = {
         }
       }
 
+      const permittedStaitons =[...new Set( [...staff.permission.timesheet.view,...staff.permission.timesheet.sign])]
+      /**If logged staff does not have admin rights or is not requested user then only return the stations for which he has right to view/sign  */
+      if(!(staff.permission.admin || staff.id === args.staff)){
+        searchFilters.station = { $in : permittedStaitons }
+      }
+
+
       if(args.stations && args.stations.length > 0 ) {
+        const notPermitted = args.station.find(station => !permittedStaitons.includes(station))
+        /**Only allow permitted stations to be searched */
+        if(notPermitted && (!staff.permission.admin || staff.id !== args.staff)){
+          throw new Error (`You do not have rights to view timesheet for ${notPermitted} `)
+        }
+
         searchFilters.station = { $in : args.stations }
       }
+
 
       const timesheets = await TimeSheet.find( searchFilters
       ).populate({ path:'shiftReport staff station' , populate: { path: 'station' } }).lean()

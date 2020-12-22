@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
-import { Button, Checkbox, Dimmer, Form, Header,Loader, Table, TableBody } from 'semantic-ui-react'
+import { Button, Checkbox, Form, Header,Table, TableBody } from 'semantic-ui-react'
 import _ from 'lodash'
 import { ALL_STATION } from '../../queries/stationQuery'
 import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
@@ -12,13 +12,14 @@ import { NotificationContext } from '../../contexts/NotificationContext'
 const PermissionManager = ({ permissions }) => {
 
   const [,dispatch] = useContext(NotificationContext)
+  const [options,setOptions] = useState([]) // List permitted stations
   const staff =  JSON.parse(sessionStorage.getItem('staffKey'))
-  const [superUserSet,setSuperUserSet] = useState((permissions && permissions.admin )|| false)
+  const [superUserSet,setSuperUserSet] = useState((permissions && permissions.admin )|| false) //If the staff is assigned admin permission
 
   const hasSuperPermission = staff.permission.admin
 
   // console.log(hasSuperPermission,staff ,superUserSet)
-  const [updatePermission,{ loading: pLoading, error: pError, data: pData }] = useMutation(CHANGE_PERMISSION,{
+  const [updatePermission,{ loading: pLoading }] = useMutation(CHANGE_PERMISSION,{
     onCompleted: () => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, permission changed' ,type: 'SUCCESS' } })
     },
@@ -28,7 +29,7 @@ const PermissionManager = ({ permissions }) => {
     }
   })
 
-  const mapPermission = (permssionType,v) => permssionType && permssionType.map(v => {
+  const mapPermission = (permssionType) => permssionType && permssionType.map(v => {
     if(!v) return null
     return v._id
   })
@@ -60,7 +61,6 @@ const PermissionManager = ({ permissions }) => {
       }
 
       if(k==='timesheet'){
-        mod.edit = mapPermission (mod.edit )
         mod.view = mapPermission (mod.view )
         mod.sign = mapPermission (mod.sign)
 
@@ -73,7 +73,15 @@ const PermissionManager = ({ permissions }) => {
   })
 
   const { loading,data } = useQuery(ALL_STATION,{ skip: !hasSuperPermission })
-  const [options,setOptions] = useState([])
+  useEffect(() => {
+    if(data){
+      const stations = data.allStations
+      const stationOptions = stations.map((station,index) => {
+        return { key:index, value: station.id, text: station.location }
+      })
+      setOptions(stationOptions)
+    }
+  },[data])
 
 
 
@@ -81,6 +89,7 @@ const PermissionManager = ({ permissions }) => {
     if (hasSuperPermission) {
       return options
     }
+    /**Set return station options based on users current permitted station  */
     let soptions = []
     switch (fieldName){
     case 'station.edit':
@@ -91,14 +100,7 @@ const PermissionManager = ({ permissions }) => {
 
       }
       return soptions
-    case 'timesheet.edit':
-      if(staff.permission.timesheet.edit.length ) {
-        soptions = staff.permission.timesheet.edit.map((v,i) => {
-          return { key:i, value: v._id, text: v.location }
-        })
 
-      }
-      return soptions
     case 'timesheet.view':
       if(staff.permission.timesheet.view.length ) {
         soptions = staff.permission.timesheet.view.map((v,i) => {
@@ -122,15 +124,7 @@ const PermissionManager = ({ permissions }) => {
 
   }
 
-  useEffect(() => {
-    if(data){
-      const stations = data.allStations
-      const stationOptions = stations.map((station,index) => {
-        return { key:index, value: station.id, text: station.location }
-      })
-      setOptions(stationOptions)
-    }
-  },[data])
+
 
 
   const allStationIds =  options.map(station => station.value)
@@ -139,31 +133,33 @@ const PermissionManager = ({ permissions }) => {
     <Formik
       initialValues = {{ ...permission }}
       onSubmit= { (values ) => {
-        //delete(values.__typename)
         const formValues = { ...values }
 
-        _.reduce(values,(prev,cur,scope) =>
-        {
-          if(permission[scope] && _.isEqual(permission[scope] , formValues[scope] )){
-            delete formValues[scope]
+        if(!formValues.admin) {
+          _.reduce(values,(prev,cur,scope) =>
+          {
+            if(permission[scope] && _.isEqual(permission[scope] , formValues[scope] )){
+              delete formValues[scope]
 
-          }
-          if(permission[scope] && !_.isEqual( permission[scope] ,formValues[scope] )){
-            _.reduce(formValues[scope],(prev,cur,pType) => {
-              console.log(scope,pType,formValues[scope][pType],permissions[scope][pType], _.isEqual( permissions[scope][pType],formValues[scope][pType]))
-              if( _.isEqual(permissions[scope][pType],formValues[scope][pType] )){
-                delete formValues[scope][pType]
-              }
-            },{})
+            }
+            if(permission[scope] && !_.isEqual( permission[scope] ,formValues[scope] )){
+              _.reduce(formValues[scope],(prev,cur,pType) => {
+                console.log(scope,pType,formValues[scope][pType],permissions[scope][pType], _.isEqual( permissions[scope][pType],formValues[scope][pType]))
+                if( _.isEqual(permissions[scope][pType],formValues[scope][pType] )){
+                  delete formValues[scope][pType]
+                }
+              },{})
 
-          }
+            }
+          },{})
+          updatePermission({ variables: { ...formValues,id: permissions.id } })
+        }
+        else{
+
+          updatePermission({ variables: { admin:true,id: permissions.id } })
+        }
 
 
-
-
-        },{})
-
-        updatePermission({ variables: { ...formValues,id: permissions.id } })
       }
 
       }
@@ -185,7 +181,6 @@ const PermissionManager = ({ permissions }) => {
             if(checked) {
               setFieldValue('station.edit',allStationIds)
               setFieldValue('station.add',true)
-              setFieldValue('timesheet.edit',allStationIds)
               setFieldValue('timesheet.view',allStationIds)
               setFieldValue('timesheet.sign',allStationIds)
               setFieldValue('staff.edit',true)
@@ -227,7 +222,7 @@ const PermissionManager = ({ permissions }) => {
                   </Table.Cell>
                   {/**EDIT COLUMN */}
                   <Table.Cell >
-                    {(key=== 'station' || key=== 'timesheet') &&
+                    {(key=== 'station') &&
                     <DropDownField
                       multiple
                       selection

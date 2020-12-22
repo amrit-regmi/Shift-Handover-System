@@ -24,15 +24,15 @@ const AdminMenuBar = ({  activeItem, setActiveItem }) => {
   const menuItems = []
 
   /**If user has some admin rights then add those items to menu and own profile options view will be on dropdown Button */
-  if(staff.permission.station.edit.length > 0 || staff.permission.station.add){
+  if(staff.permission.admin || staff.permission.station.edit.length > 0 || staff.permission.station.add){
     menuItems.push ('AllStations')
   }
 
-  if(staff.permission.staff.view){
+  if(staff.permission.admin || staff.permission.staff.view){
     menuItems.push ('AllStaffs')
   }
 
-  if(staff.permission.timesheet.view.length > 0){
+  if(staff.permission.admin || staff.permission.timesheet.view.length > 0){
     menuItems.push ('ManageTimesheets')
     menuItems.push ('Costumers')
   }

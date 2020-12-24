@@ -68,3 +68,4 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |17.12.2020 | 6 | Station Pages - Add/Remove mailingList/shifts , DeleteStation , Assign Costumers , ResetStationKey Implemneted | 
 |21.12.2020 | 6 | Node Mailer Implemented - Staff registration link and timesheet report are now sent to email |
 |22.12.2020 | 6 | Permissions for stations and timesheets implemented on backend and frontend / Add more email notoficatiions / Updated report page to include station info / added more details to timesheet signing
+|24.12.2020 | 6 | Bug Fixes, Staff / Costumer Permission / Permission panel update

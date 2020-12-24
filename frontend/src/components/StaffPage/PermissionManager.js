@@ -10,7 +10,6 @@ import { NotificationContext } from '../../contexts/NotificationContext'
 
 
 const PermissionManager = ({ permissions }) => {
-
   const [,dispatch] = useContext(NotificationContext)
   const [options,setOptions] = useState([]) // List permitted stations
   const staff =  JSON.parse(sessionStorage.getItem('staffKey'))
@@ -124,13 +123,11 @@ const PermissionManager = ({ permissions }) => {
 
   }
 
-
-
-
   const allStationIds =  options.map(station => station.value)
 
   return (
     <Formik
+      enableReinitialize
       initialValues = {{ ...permission }}
       onSubmit= { (values ) => {
         const formValues = { ...values }
@@ -144,7 +141,6 @@ const PermissionManager = ({ permissions }) => {
             }
             if(permission[scope] && !_.isEqual( permission[scope] ,formValues[scope] )){
               _.reduce(formValues[scope],(prev,cur,pType) => {
-                console.log(scope,pType,formValues[scope][pType],permissions[scope][pType], _.isEqual( permissions[scope][pType],formValues[scope][pType]))
                 if( _.isEqual(permissions[scope][pType],formValues[scope][pType] )){
                   delete formValues[scope][pType]
                 }
@@ -251,18 +247,23 @@ const PermissionManager = ({ permissions }) => {
                   </Table.Cell >
 
                   {/**ADD COLUMN */}
-                  <Table.Cell >
-                    {key !== 'timesheet'?
-                      <Checkbox
-                        toggle
-                        disabled = {  !hasPermission(staff.permission[key].add) || superUserSet}
-                        name={`${key}.add`}
-                        checked = {values[`${key}`].add }
-                        onChange= {(e,{ checked }) => {
-                          setFieldValue(`${key}.add`,checked)
-                        }}/> : ''
-                    }
-                  </Table.Cell>
+                  {<Table.Cell >
+                    {key!== 'timesheet' &&
+                    <Checkbox
+                      toggle
+                      disabled = {  !hasPermission(staff.permission[key].add) || superUserSet}
+                      name={`${key}.add`}
+                      checked = {values[`${key}`].add }
+                      onChange= {(e,{ checked }) => {
+                        console.log(`${key}.add`,checked)
+                        setFieldValue(`${key}.add`,checked)
+                        if(key === 'staff' && checked){
+                          /**If staff has add permission then must have view permission by default */
+                          setFieldValue(`${key}.view`,true)
+                        }
+                      }}/>}
+
+                  </Table.Cell>}
 
                   {/**VIEW COLUMN */}
                   <Table.Cell  >
@@ -274,7 +275,7 @@ const PermissionManager = ({ permissions }) => {
                        checked = {values[`${key}`].view }
                        onChange= {(e,{ checked }) => {
                        /** If edit is enabled then user must have view permission */
-                         if(values.staff.edit){
+                         if(values.staff.edit || values.staff.add ){
                            setFieldValue(`${key}.view`,true)
                          }else{
                            setFieldValue(`${key}.view`,checked)
@@ -286,11 +287,16 @@ const PermissionManager = ({ permissions }) => {
                      <DropDownField
                        multiple
                        selection
-                       options={superUserSet?options:getStationOptions(`${key}.view`)}
+                       options={getStationOptions(`${key}.view`)}
                        placeholder = 'Add Stations'
                        disabled = {loading  ||  !hasPermission(staff.permission[key].view) || superUserSet}
                        loading= {loading}
                        name={`${key}.view`}
+                       onChange = {(e,{ value }) => {
+                         /**If user has permission to sign the station timesheet then user must have permission to view the timesheet for that station as well */
+                         const newViewValues  = [...new Set([...values.timesheet.sign, ...value])]
+                         setFieldValue(`${key}.view`,newViewValues)
+                       }}
                      />
                     }
 
@@ -302,11 +308,18 @@ const PermissionManager = ({ permissions }) => {
                     <DropDownField
                       multiple
                       selection
-                      options={superUserSet?options:getStationOptions(`${key}.sign`)}
+                      name={`${key}.sign`}
+                      options={getStationOptions(`${key}.sign`)}
                       placeholder = 'Add Stations'
                       disabled = {loading ||  !hasPermission(staff.permission[key].sign) || superUserSet}
+                      onChange = {(e,{ value }) => {
+                        setFieldValue(`${key}.sign`,value)
+                        /**If user has permission to sign the station timesheet then user must have permission to view the timesheet for that station as well */
+                        const newViewValues  = [...new Set([...values.timesheet.view, ...value])]
+                        setFieldValue(`${key}.view`,newViewValues)
+                      }}
                       loading= {loading}
-                      name={`${key}.sign`}
+
                     />
                     }
                   </Table.Cell>
@@ -321,7 +334,7 @@ const PermissionManager = ({ permissions }) => {
         </Form>
         {dirty &&
         <>
-          <Button  onClick = {() => handleSubmit()}> Save Changes</Button>
+          <Button onClick = {() => handleSubmit()}> Save Changes</Button>
           <Button  onClick = {() => resetForm()}> Discard Changes</Button>
         </>
         }</>

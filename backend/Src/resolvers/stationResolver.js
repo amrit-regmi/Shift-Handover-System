@@ -24,9 +24,8 @@ const stationResolver = {
         }
 
         if(!(loggedInStaff.permission.admin || loggedInStaff.permission.station.add)){
-          filter.station = { $in:loggedInStaff.permission.station.edit }
+          filter._id = { $in:loggedInStaff.permission.station.edit }
         }
-
       }
       stations =  await Station.find(filter)
 
@@ -133,9 +132,11 @@ const stationResolver = {
       }
     },
 
+
     deleteStation: async(_root,args,context) => {
+      /** Only admin can delete the station*/
       const loggedInStaff = context.currentUser
-      if (!(loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.includes(args.stationId))){
+      if (!(loggedInStaff.permission.admin )){
         throw new Error('You do not have permission to delete station')
       }
       try {

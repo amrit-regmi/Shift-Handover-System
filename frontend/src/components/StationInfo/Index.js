@@ -89,7 +89,7 @@ const StationInfo = (props) => {
                 >
                   {index===2 && stationData.location}
                   {index===4 && locationPaths[index-1].toLowerCase() === 'costumers' && //If the path is costumerId then display costumer name else it must be procedure, display procdure id
-                 stationData.costumers.filter(costumer => costumer.id === path)[0].name
+                 stationData.costumers.filter(costumer => costumer.id === path)[0] && stationData.costumers.filter(costumer => costumer.id === path)[0].name
                   }
                   {
                     index !== 2 && index !== 4 &&
@@ -184,7 +184,7 @@ const StationInfo = (props) => {
               </Card.Content>
             </Card>)}
         </Card.Group>
-        {loggedInStaff && (loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.includes(stationId)) &&
+        {loggedInStaff && (loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.map(station => station._id).includes(stationId)) &&
         <Segment basic compact>
           <Button primary icon onClick = {() => setAssignCostumerModalOpen(true)}>
             <Icon name='add circle' /> Add More

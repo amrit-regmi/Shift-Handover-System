@@ -31,7 +31,9 @@ const CostumerInfo = ({ costumerData ,costumerId }) => {
       })
     },
     onCompleted: () => {
+      history.goBack()
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, costumer ${data.name} deleted` ,type: 'SUCCESS' } })
+
     },
 
     onerror: (err) => {
@@ -105,7 +107,10 @@ const CostumerInfo = ({ costumerData ,costumerId }) => {
           }
         )
       } }).then(
-      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, Station ${location? location:''} deassigned for costumer ${data.name}` ,type: 'SUCCESS' } }),
+      res =>   {
+        dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, Station ${location? location:''} deassigned for costumer ${data.name}` ,type: 'SUCCESS' } })
+        history.goBack()
+      },
       err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, Cannot deassign costumer ${data.name} ${location?'and '+location : ''}`}<br/> {err.message}</> ,type: 'ERROR' } }),
     )
   }
@@ -273,12 +278,11 @@ const CostumerInfo = ({ costumerData ,costumerId }) => {
         </Grid.Row>
 
         <Grid.Row>
-          {params.stationId && (staff && (staff.permission.admin || staff.permission.station.edit.includes (params.stationId))) &&
+          {params.stationId && (staff && (staff.permission.admin || staff.permission.station.edit.map(station => station._id).includes (params.stationId))) &&
           <Button negative
             onClick={() => {
               setConfirm({ title: `Are you sure you want to  remove costumer ${data.name} from this station ?`, fn: () => {
                 removeCostumerFromStation({ variables:{ station: params.stationId, costumer: data.id } })
-                history.goBack()
               } })
               setConfirmModalOpen(true)
             }}> Remove from Station </Button>
@@ -289,7 +293,7 @@ const CostumerInfo = ({ costumerData ,costumerId }) => {
             onClick={() => {
               setConfirm({ title: `Are you sure you want to  delete costumer ${data.name} ?` , fn: () => {
                 deleteCostumer({ variables:{ costumer: data.id } })
-                history.goBack()
+
               } })
               setConfirmModalOpen(true)
             }}> <Icon name='trash'/> Delete Costumer </Button>}

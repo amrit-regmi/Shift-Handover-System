@@ -1,27 +1,52 @@
 const Costumer = require('../models/Costumer')
 const Station = require('../models/Station')
-const { UserInputError } = require('apollo-server')
+const { UserInputError, AuthenticationError } = require('apollo-server')
 const { forEach } = require('lodash')
 const Aircraft = require('../models/Aircraft')
 
 const costumerResolver = {
   Query: {
-    allCostumers: async () => {
+    allCostumers: async (_root,_args,context) => {
+      const loggedInStaff = context.currentUser
+      /**User must be admin or have station edit right to view costumer list  */
+      if(!(loggedInStaff && (loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.length > 0)) ){
+        throw new AuthenticationError ('You do not have permission for this action ')
+      }
       const costumers =  await Costumer.find({}).populate(['stations','aircrafts'])
       return costumers
     },
-    getCostumer: async(_root,args) => {
+
+    getCostumer: async(_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      const loggedInStation = context.currentStation
+      let costumer
+
       if (args.id){
-        return  await Costumer.findById(args.id ).populate(['stations','aircrafts'])
+        costumer =  await Costumer.findById(args.id ).populate(['stations','aircrafts'])
+      }else{
+        costumer = await Costumer.findOne({ ...args }).populate(['stations','aircrafts'])
       }
-      return await Costumer.findOne({ ...args }).populate('costumers')
+      /**User must be admin or have station edit right or must be logged in as station that costumer belongs to to view costumer Info   */
+      if(
+        !((loggedInStaff && (loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.length > 0)) ||
+        (loggedInStation && loggedInStation.costumers.includes(costumer.id))
+        )){
+        throw new AuthenticationError ('You do not have permission for this action ')
+      }
+
+      return costumer
+
     }
   },
 
   Mutation: {
-    addCostumer : async (_root,args) => {
+    addCostumer : async (_root,args,context) => {
 
-
+      const loggedInStaff = context.currentUser
+      /**User must be admin to add costumer*/
+      if(!(loggedInStaff && (loggedInStaff.permission.admin )) ){
+        throw new AuthenticationError ('You do not have permission for this action ')
+      }
       const { aircrafts,stations } = { ...args }
       try{
         const costumer = new Costumer({ ...args })
@@ -49,8 +74,13 @@ const costumerResolver = {
       }
     },
 
-    addContact : async (_root,args) => {
+    addContact : async (_root,args,context) => {
       try {
+        const loggedInStaff = context.currentUser
+        /**User must be admin to make any changes to costumer*/
+        if(!(loggedInStaff && (loggedInStaff.permission.admin )) ){
+          throw new AuthenticationError ('You do not have permission for this action ')
+        }
         const costumer = await Costumer.findById(args.costumer)
         if(!costumer){
           throw new UserInputError('Costumer does not exists')
@@ -65,8 +95,13 @@ const costumerResolver = {
       }
     },
 
-    addStationsToCostumer: async (_root,args) => {
+    addStationsToCostumer: async (_root,args,context) => {
       try{
+        const loggedInStaff = context.currentUser
+        /**User must be admin to make any changes to costumer*/
+        if(!(loggedInStaff && (loggedInStaff.permission.admin )) ){
+          throw new AuthenticationError ('You do not have permission for this action ')
+        }
         const costumer = await Costumer.findById(args.costumer)
         if(!costumer){
           throw new UserInputError('Costumer does not exists')
@@ -89,8 +124,13 @@ const costumerResolver = {
 
     }
     ,
-    addAircrafts : async(_root,args) => {
+    addAircrafts : async(_root,args,context) => {
       try {
+        const loggedInStaff = context.currentUser
+        /**User must be admin to make any changes to costumer*/
+        if(!(loggedInStaff && (loggedInStaff.permission.admin )) ){
+          throw new AuthenticationError ('You do not have permission for this action ')
+        }
         const costumer = await Costumer.findById(args.costumer)
         if(!costumer){
           throw new UserInputError('Costumer does not exists')
@@ -117,8 +157,13 @@ const costumerResolver = {
 
     },
 
-    removeAircraft: async (_root,args) => {
+    removeAircraft: async (_root,args,context) => {
       try {
+        const loggedInStaff = context.currentUser
+        /**User must be admin to make any changes to costumer*/
+        if(!(loggedInStaff && (loggedInStaff.permission.admin )) ){
+          throw new AuthenticationError ('You do not have permission for this action ')
+        }
         const aircraft = await Aircraft.findByIdAndDelete(args.id)
         if(!aircraft){
           throw new UserInputError('Aircrfat does not exists')
@@ -136,7 +181,12 @@ const costumerResolver = {
 
     },
 
-    removeContact: async (_root,args) => {
+    removeContact: async (_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      /**User must be admin to make any changes to costumer*/
+      if(!(loggedInStaff && (loggedInStaff.permission.admin )) ){
+        throw new AuthenticationError ('You do not have permission for this action ')
+      }
       try{
         const costumer = await Costumer.findById(args.costumer)
         if(!costumer){
@@ -157,7 +207,12 @@ const costumerResolver = {
 
     },
 
-    removeCostumerStation: async (_root,args) => {
+    removeCostumerStation: async (_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      /**User must be admin or should have right to edit the concerned station*/
+      if(!((loggedInStaff && (loggedInStaff.permission.admin )) || (loggedInStaff.permission.station.edit. includes(args.station))) ){
+        throw new AuthenticationError ('You do not have permission for this action ')
+      }
       try{
         const costumer = await Costumer.findById(args.costumer)
         if(!costumer){
@@ -182,8 +237,13 @@ const costumerResolver = {
 
     },
 
-    deleteCostumer: async (_root,args) => {
+    deleteCostumer: async (_root,args,context) => {
       try{
+        const loggedInStaff = context.currentUser
+        /**User must be admin to make any changes to costumer*/
+        if(!(loggedInStaff && (loggedInStaff.permission.admin )) ){
+          throw new AuthenticationError ('You do not have permission for this action ')
+        }
         const costumer = await Costumer.findByIdAndDelete(args.costumer)
         if(!costumer){
           throw new UserInputError('Costumer does not exists')

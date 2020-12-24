@@ -28,19 +28,17 @@ const AdminMenuBar = ({  activeItem, setActiveItem }) => {
     menuItems.push ('AllStations')
   }
 
-  if(staff.permission.admin || staff.permission.staff.view){
+  if(staff.permission.admin || staff.permission.staff.view || staff.permission.staff.add  || staff.permission.staff.view || staff.permission.staff.edit){
     menuItems.push ('AllStaffs')
   }
 
   if(staff.permission.admin || staff.permission.timesheet.view.length > 0){
     menuItems.push ('ManageTimesheets')
-    menuItems.push ('Costumers')
   }
 
-  /*if(staff.permission.costumers && staff.permission.costumers.view ){
-
-  }*/
-
+  if(staff.permission.admin){
+    menuItems.push ('Costumers')
+  }
 
   const getMenuItems = () => {
     return menuItems.map(item =>

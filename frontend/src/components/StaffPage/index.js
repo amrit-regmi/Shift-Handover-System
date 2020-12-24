@@ -54,7 +54,14 @@ const StaffPage = ({ name ,id }) => {
 
 
   const staffCanEdit  = (staff.id !== staffId && staffId !== undefined)  && ((staff.permission && staff.permission.staff.edit) ||  staff.permission.admin || false)
-  const staffHasMangeRights =  staff.permission && (staff.permission.station.edit.length > 0 || staff.permission.station.add || staff.permission.staff.view || staff.permission.timesheet.view.length > 0
+  const staffHasMangeRights =  staff.permission && (
+    staff.permission.admin ||
+    staff.permission.station.edit.length > 0 ||
+      staff.permission.station.add ||
+      staff.permission.staff.view ||
+      staff.permission.staff.add ||
+      staff.permission.staff.edit ||
+      staff.permission.timesheet.view.length > 0
   )
 
   /**If id is passed as props then use that as staffId*/

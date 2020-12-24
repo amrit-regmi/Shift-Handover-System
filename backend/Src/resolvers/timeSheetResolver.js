@@ -8,9 +8,6 @@ const { getDatefromWeek ,getLastDateFromMonth, getMonthName, toDate, getWeek, fo
 const { v4: uuidv4 } = require('uuid')
 const _ = require('lodash')
 const { sendUserRegistrationEmail } = require('../mailer/sendUserRegistrationEmail')
-
-
-
 const timeSheetResolver = {
   Mutation: {
     addToTimeSheet: async (_root,args,context) => {
@@ -269,7 +266,7 @@ const timeSheetResolver = {
       }
 
       /**If logged staff does not have admin rights or is not requested user then only return the stations for which he has right to view/sign  */
-      if(!staff.permission.admin || staff.id !== args.staff){
+      if(!(staff.permission.admin || staff.id === args.staff || !staff.permission.timesheet.sign.length || !staff.permission.timesheet.view.length)  ){
         searchFilters.station = { $in : [...staff.permission.timesheet.view,...staff.permission.timesheet.sign] }
       }
 
@@ -325,24 +322,25 @@ const timeSheetResolver = {
         }
       }
 
-      const permittedStaitons =[...new Set( [...staff.permission.timesheet.view,...staff.permission.timesheet.sign])]
+      const permittedStations =[...new Set( [...staff.permission.timesheet.view,...staff.permission.timesheet.sign])].map(station => station.toString())
       /**If logged staff does not have admin rights or is not requested user then only return the stations for which he has right to view/sign  */
-      if(!(staff.permission.admin || staff.id === args.staff)){
-        searchFilters.station = { $in : permittedStaitons }
+      if(!(staff.permission.admin || staff.id === args.staff[0] ) ){ //If its a request by staff from personal page than args.staff will have only one item
+        searchFilters.station = { $in : permittedStations }
+
       }
 
 
+
       if(args.stations && args.stations.length > 0 ) {
-        const notPermitted = args.station.find(station => !permittedStaitons.includes(station))
+        const notPermitted = args.stations.find(station => !permittedStations.includes(station))
         /**Only allow permitted stations to be searched */
         if(notPermitted && (!staff.permission.admin || staff.id !== args.staff)){
           throw new Error (`You do not have rights to view timesheet for ${notPermitted} `)
         }
 
         searchFilters.station = { $in : args.stations }
+
       }
-
-
       const timesheets = await TimeSheet.find( searchFilters
       ).populate({ path:'shiftReport staff station' , populate: { path: 'station' } }).lean()
 
@@ -422,8 +420,6 @@ const timeSheetResolver = {
 
       const orderedTimeSheets = {}
       _(mod1).keys().sort().reverse().each((key) => orderedTimeSheets[key] = mod1[key])
-
-      console.log(orderedTimeSheets)
 
       return orderedTimeSheets
     }

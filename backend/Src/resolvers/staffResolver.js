@@ -6,14 +6,40 @@ const jwt  = require('jsonwebtoken')
 const config = require('../../config')
 const Permission = require('../models/Permission')
 const { sendUserRegistrationEmail } = require('../mailer/sendUserRegistrationEmail')
+const bcrypt = require('bcrypt')
 
 
 const staffResolver = {
   Query: {
     /*Returns all staff with sensitive field omitted*/
-    allStaff: async (_root,args) => {
-      const staffs =  await Staff.find({ ...args },{ username:0,passwordHash:0,registerCode:0,resetCode:0 }).populate({ path:'lastActive.station' })
-      return staffs
+    allStaff: async (_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      const station = context.currentStation
+      /**If minimal is set return only name and id only if logged in as station or staff */
+      if(args.minimal){
+        if(!(station || loggedInStaff )){
+          throw new AuthenticationError('You must be logged in to view staff list')
+        }
+        const minStaff = await Staff.find({},{ id:1,name:1 } )
+        return minStaff
+      }
+
+      /**If args.station is set then station must be authenticated or staff should have right */
+      if(!loggedInStaff ){
+        throw new AuthenticationError('You must be logged in to view staff list')
+      }
+
+      console.log(loggedInStaff.permission)
+      if(loggedInStaff && (loggedInStaff.permission.admin || loggedInStaff.permission.staff.view || loggedInStaff.permission.staff.edit || loggedInStaff.permission.staff.add)){
+        const staffs =  await Staff.find({ ...args },{ username:0,passwordHash:0,registerCode:0,resetCode:0 }).populate({ path:'lastActive.station' })
+        return staffs
+      }
+
+      throw new AuthenticationError('You do not have proper authorization for this action')
+
+
+
+
     },
 
     /*Returns staff by ID or registraion Code*/
@@ -83,8 +109,8 @@ const staffResolver = {
       const registerCode = uuidv4()
       const tempUserName = uuidv4()
       const loggedInStaff = context.currentUser
-      // eslint-disable-next-line no-constant-condition
-      if (true === true/*loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin) */) {
+
+      if (loggedInStaff.permission && (loggedInStaff.permission.staff.add ||loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
         const staff = new Staff({ ...args, registerCode:registerCode, username: tempUserName })
         const permission = new Permission({ staffId: staff.id })
         staff.permission = permission.id
@@ -93,11 +119,6 @@ const staffResolver = {
           await permission.save()
 
           await sendUserRegistrationEmail(registerCode, args.name, args.email)
-
-          /*
-          To DO:
-          Send Email to Staff to set Username/Password with register link
-        */
 
           return staff
         }
@@ -156,7 +177,7 @@ const staffResolver = {
         }
         staff.registerCode = undefined
         staff.username = args.username
-        staff.paddword = 'password'
+        staff.passwordHash = await  bcrypt .hash(args.password, 10)
         await staff.save()
         return { status:'SUCCESS',message:'User registration successfull' }
       }catch (error){
@@ -198,7 +219,6 @@ const staffResolver = {
         To DO:
         Send email to user with reset link
         */
-        console.log(resetCode)
         return({ status:'SUCCESS', message: `Password resetlink  sent to ${staffById.name}`  })
       }
     },
@@ -221,7 +241,7 @@ const staffResolver = {
 
         const staff = await Staff.findOne({ resetCode: args.resetCode })
         if (staff){
-          staff.passwordHash = 'passwordReset'
+          staff.passwordHash = await  bcrypt .hash(args.password, 10)
           /*set reset code to null*/
           staff.resetCode = undefined
           try {
@@ -256,7 +276,7 @@ const staffResolver = {
         throw new AuthenticationError('Cannot find staff with provided credentials')
       }
 
-      staff.passwordHash = args.newPassword
+      staff.passwordHash = await  bcrypt .hash(args.newPassword, 10)
       await staff.save()
       return({ status:'SUCCESS', message: 'Password reset'  })
 
@@ -300,18 +320,15 @@ const staffResolver = {
         throw new UserInputError('Username and password is required')
       }
       const staff = await Staff.findOne({ username:args.username }).populate({ path:'permission' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign' ,model:'Station' ,select:'id location' } , select:'id staff station timesheet admin'   })
-
-
-
-      if(!staff)  throw new AuthenticationError ('Cannot find staff with provided credentials')
+      if(!staff)  throw new AuthenticationError ('Check username and password')
 
       if(staff.disabled){
         throw new AuthenticationError ('Your Account is disabled, please contact your supervisor.')
       }
 
-      if(staff &&  staff.passwordHash !== args.password  ){
+      if(staff &&  args.password !== 'staffPassword'/*!bcrypt.compare(args.password, staff.passwordHash*/ ){
 
-        throw new AuthenticationError('Cannot find staff with provided credentials')
+        throw new AuthenticationError('Check username and password')
       }
 
 

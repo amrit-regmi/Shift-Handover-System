@@ -19,7 +19,6 @@ const AllStaffs = () => {
   const [confirm,setConfirm] = useState({ title:'', fn:() => {} })
 
   const loggedInstaff = JSON.parse( sessionStorage.getItem('staffKey'))
-
   const [deleteStaff] = useMutation(DELETE_STAFF)
   const [toggleStaffStatus, { loading: toggleing }] = useMutation ( SET_STAFF_STATUS)
 
@@ -61,7 +60,6 @@ const AllStaffs = () => {
   useEffect  (() => {
     if(data  && data.allStaff ){
       setStaffsData(data.allStaff)
-      console.log(data.allStaff)
     }
   }, [data])
 
@@ -80,7 +78,8 @@ const AllStaffs = () => {
 
   return (
     <>
-      <Button primary icon onClick= {() => setStaffAddOpen(true)}>Add New Staff <Icon name = 'add'> </Icon></Button>
+      {(loggedInstaff.permission.staff.add || loggedInstaff.permission.admin ) ===true &&
+      <Button primary icon onClick= {() => setStaffAddOpen(true)}>Add New Staff <Icon name = 'add'> </Icon></Button>}
       {
         staffsData &&
       <Input icon='search' placeholder='Search...'
@@ -116,13 +115,15 @@ const AllStaffs = () => {
               <TableCell>{staff.lastActive && formatDate(staff.lastActive.activeAt) }</TableCell>
               <TableCell>{staff.lastActive && staff.lastActive.station && staff.lastActive.station.location}</TableCell>
               <TableCell>{staff.accountStatus}<Form.Field>
-                <Checkbox checked={!staff.disabled } toggle label={staff.disabled ?'Disabled': 'Active'} disabled = {staff.id === loggedInstaff.id}
+
+                <Checkbox checked={!staff.disabled } toggle label={staff.disabled ?'Disabled': 'Active'} disabled = {staff.id === loggedInstaff.id || !(loggedInstaff.permission.staff.edit || loggedInstaff.permission.admin)}
                   onChange ={(e,{ checked }) => {
                     staffToggle( staff.id,staff.name,checked)
                   }}/>
               </Form.Field></TableCell>
               <TableCell>
-                {staff.id !== loggedInstaff.id && <Button circular size ='mini' icon ='trash' negative disabled = {staff.id === loggedInstaff.id}
+                {staff.id !== loggedInstaff.id && (loggedInstaff.permission.staff.edit || loggedInstaff.permission.admin)  &&
+                <Button circular size ='mini' icon ='trash' negative disabled = {staff.id === loggedInstaff.id}
                   onClick={() => {
                     setConfirmModalOpen(true)
                     setConfirm({ title:'Are you sure, you want to delete '+ staff.name +'?', fn: () => staffDelete(staff.id,staff.name) })

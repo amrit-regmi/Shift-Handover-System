@@ -1,7 +1,7 @@
 
 const staffQuery = `
 extend type Query {
-  allStaff(currentStation:String,contractType: String ) : [Staff]
+  allStaff(currentStation:String, contractType: String , minimal: Boolean) : [Staff]
   getStaff(id:String,registerCode:String): Staff
   verifyUsername( username: String!):ResponseMessage
 

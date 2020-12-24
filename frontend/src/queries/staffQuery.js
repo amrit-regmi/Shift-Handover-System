@@ -46,10 +46,10 @@ query fetchStaff($registerCode:String,){
 `
 
 export const GET_ALL_STAFF_MINIMAL = gql`
-  query{ allStaff {
+  query allStaffMinimal ($minimal: Boolean = true) { 
+    allStaff (minimal :$minimal){
     id
-    name
-    
+    name   
   }}
 `
 

@@ -6,7 +6,7 @@ import ReportViewModal from '../ShiftReport/ReportViewModal'
 import TimeSheetRow from './TImeSheetRow'
 
 
-const TimeSheetsReport = ({ startDate,endDate,data, staffId, setAllApproved ,title })  => {
+const TimeSheetsReport = ({ startDate,endDate,data, staffId, title })  => {
   const [openReport,setOpenReport]= useState({ id:'', open: false })
 
   /** sets the calender from start date and end dates so the empty dates will also be displayed on report*/

@@ -13,8 +13,6 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
 
   const permission = staff.permission && staff.permission.timesheet
 
-  console.log(timeSheet)
-
   const startTime = timeSheet.startTime
   const endTime = timeSheet.endTime
   const station = timeSheet.shiftReport && timeSheet.shiftReport.station.location

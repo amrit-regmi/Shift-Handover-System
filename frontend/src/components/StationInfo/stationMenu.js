@@ -53,7 +53,7 @@ const StationMenu = ({ station ,activeItem, setActiveItem ,setActiveCostumer }) 
         onClick={handleMenuClick}
       />
 
-      {staff && (staff.permission.admin || staff.permission.station.edit.includes(station.id) ) &&
+      {staff && (staff.permission.admin || staff.permission.station.edit.map(station => station._id).includes(station.id) ) &&
       <Menu.Item
         name='Settings'
         active = {activeItem === 'Settings'}

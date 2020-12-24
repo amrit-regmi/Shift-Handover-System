@@ -11,6 +11,7 @@ import AddShiftsModal from './AddShiftsModal'
 import ResetStationKeyModal from './ResetStationKeyModal'
 
 const Settings = (props) => {
+  const loggedInStaff = JSON.parse( sessionStorage.getItem('staffKey'))
   const [,dispatch] = useContext(NotificationContext)
   const[confirmModalOpen, setConfirmModalOpen] = useState(false)
   const[addShiftsModalOpen,setAddShiftsModalOpen] = useState(false)
@@ -152,12 +153,13 @@ const Settings = (props) => {
         </Grid.Row>
 
       </Grid>
-      <Button
-        negative
-        onClick={
-          () => {
-            setConfirmModalOpen(true)
-            setConfirm({ title:' Are you sure you want to delete this station' , fn :() => deleteStation() }) }}> DELETE STATION </Button>
+      {
+        loggedInStaff.permission.admin && <Button
+          negative
+          onClick={
+            () => {
+              setConfirmModalOpen(true)
+              setConfirm({ title:' Are you sure you want to delete this station' , fn :() => deleteStation() }) }}> DELETE STATION </Button>}
       {confirmModalOpen &&
         <ConfirmModal open= {confirmModalOpen} confirm= {confirm} setOpen= {setConfirmModalOpen} ></ConfirmModal>
       }

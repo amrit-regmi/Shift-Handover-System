@@ -40,7 +40,7 @@ const generateUserRegistrationEmail = (registerId, name) => {
                               <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{action_url}}" style="height:45px;v-text-anchor:middle;width:200px;" arcsize="7%" stroke="f" fill="t">
                               <v:fill type="tile" color="#414EF9" />
                               <w:anchorlock/>
-                              <center style="color:#ffffff;font-family:sans-serif;font-size:15px;">Verify Email</center>
+                              <center style="color:#ffffff;font-family:sans-serif;font-size:15px;">Get Started</center>
                             </v:roundrect><![endif]-->
                               <a href='http://${hostname}/Register/${registerId}' class="button button--blue linkColorWhite" >Get Started</a>
                             </div>
@@ -75,10 +75,10 @@ const generateUserRegistrationEmail = (registerId, name) => {
                 <table class="email-footer" align="center" width="570" cellpadding="0" cellspacing="0">
                   <tr>
                     <td class="content-cell">
-                      <p class="sub center">
-                        Canvas Labs, Inc.
-                        <br>325 9th St, San Francisco, CA 94103
-                      </p>
+                    <p class="sub center">
+                    Template Aircraft Maintentce Company
+                    <br>Airport Road 1 , 01760 Helsinki , Finland
+                  </p>
                     </td>
                   </tr>
                 </table>

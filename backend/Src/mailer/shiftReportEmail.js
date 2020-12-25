@@ -236,9 +236,12 @@ const generateShiftReportEmail = (shiftReportData) => {
 }
 
 const sendUShiftReportEmail = async (shiftReportData,emails) => {
+  if(!emails.length){
+    throw new Error('Verification email could not be sent, mailing group is not set')
+  }
   try{
     const m =  await  transporter.sendMail({
-      to: 'rit.regmi@gmail.com',
+      to: emails.toString(),
       subject:`Shift Report from ${shiftReportData.station.location} ${shiftReportData.shift} shift - ${shiftReportData.startTime}`,
       html: generateShiftReportEmail(shiftReportData) })
     return m

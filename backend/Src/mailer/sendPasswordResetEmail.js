@@ -1,8 +1,7 @@
 const config = require('../../config')
-const getStyle = require('./style')
-const transporter = require('./transporter')
+const  style = require('./style').getBasicStyle()
 
-const style = getStyle()
+const transporter = require('./transporter')
 const hostname = config.FQDN || 'localhost:3000'
 const generatePasswordResetEmail = (resetCode, name) => {
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -11,8 +10,9 @@ const generatePasswordResetEmail = (resetCode, name) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Complete Registraion </title>
+    ${style}
   </head>
-  ${style}
+  
   <body>
     <table class="email-wrapper" width="100%" cellpadding="0" cellspacing="0">
       <tr>
@@ -41,9 +41,9 @@ const generatePasswordResetEmail = (resetCode, name) => {
                               <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{action_url}}" style="height:45px;v-text-anchor:middle;width:200px;" arcsize="7%" stroke="f" fill="t">
                               <v:fill type="tile" color="#414EF9" />
                               <w:anchorlock/>
-                              <center style="color:#ffffff;font-family:sans-serif;font-size:15px;">Verify Email</center>
+                              <center style="color:#ffffff;font-family:sans-serif;font-size:15px;">Reset Password</center>
                             </v:roundrect><![endif]-->
-                              <a href='http://${hostname}/Reset-Password/${resetCode}' class="button button--blue linkColorWhite" >Get Started</a>
+                              <a href='http://${hostname}/Reset-Password/${resetCode}' class="button button--blue linkColorWhite" >Reset Password</a>
                             </div>
                           </td>
                         </tr>
@@ -76,10 +76,10 @@ const generatePasswordResetEmail = (resetCode, name) => {
                 <table class="email-footer" align="center" width="570" cellpadding="0" cellspacing="0">
                   <tr>
                     <td class="content-cell">
-                      <p class="sub center">
-                        Canvas Labs, Inc.
-                        <br>325 9th St, San Francisco, CA 94103
-                      </p>
+                    <p class="sub center">
+                    Template Aircraft Maintentce Company
+                    <br>Airport Road 1 , 01760 Helsinki , Finland
+                  </p>
                     </td>
                   </tr>
                 </table>
@@ -93,7 +93,7 @@ const generatePasswordResetEmail = (resetCode, name) => {
   </html>`
 }
 
-const sendPaswordResetEmail = async (resetCode, name ,email) => {
+const sendPasswordResetEmail = async (resetCode, name ,email) => {
   try{
     const m =  await  transporter.sendMail({
       from:' rit.regmi@gmail.com',
@@ -109,4 +109,4 @@ const sendPaswordResetEmail = async (resetCode, name ,email) => {
 }
 
 
-module.exports = { sendPaswordResetEmail }
+module.exports = { sendPasswordResetEmail }

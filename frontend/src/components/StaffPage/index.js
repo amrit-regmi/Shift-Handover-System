@@ -2,6 +2,7 @@ import React,{ useEffect, useState } from 'react'
 import { Link, useHistory, useLocation, useParams } from 'react-router-dom'
 import { Breadcrumb, BreadcrumbDivider, BreadcrumbSection } from 'semantic-ui-react'
 import ManageTimeSheets from '../AdminPages/ManageTimeSheets'
+import PasswordResetPage from './PasswordResetPage'
 import Profile from './Profile'
 import RegisterPage from './RegisterPage'
 import StaffMenuBar from './StaffMenuBar'
@@ -45,9 +46,15 @@ const StaffPage = ({ name ,id }) => {
       <RegisterPage setName={setLoggedInStaffName}></RegisterPage></>
   }
 
+  if(locationPaths[1].toLowerCase() === 'reset-password'){
+    page = 'reset-password'
+    return<>
+      <PasswordResetPage></PasswordResetPage></>
+  }
 
-  /**If user is not logged in and is not requesting to register */
-  if(!staff && page !== 'register'){
+
+  /**If user is not logged in and is not requesting to register or reset password  */
+  if(!staff && !( page === 'register' || page === 'reset-password')){
     history.push('/staffLogin')
     return null
   }

@@ -75,6 +75,10 @@ const  AppRouter = () =>   {
           <StaffPage></StaffPage>
         </Route>
 
+        <Route path = "/Reset-Password/:resetCode">
+          <StaffPage></StaffPage>
+        </Route>
+
         <Route path = "/">
           <StationLoginPage ></StationLoginPage>
         </Route>

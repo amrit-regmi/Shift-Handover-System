@@ -5,9 +5,10 @@ const { UserInputError, AuthenticationError } = require('apollo-server')
 const config = require('../../config')
 const jwt  = require('jsonwebtoken')
 const { getDatefromWeek ,getLastDateFromMonth, getMonthName, toDate, getWeek, formatDate } = require('../utils/helper')
-const { v4: uuidv4 } = require('uuid')
+const { v4: uuidv1 } = require('uuid')
 const _ = require('lodash')
 const { sendUserRegistrationEmail } = require('../mailer/sendUserRegistrationEmail')
+const bcrypt = require('bcrypt')
 const timeSheetResolver = {
   Mutation: {
     addToTimeSheet: async (_root,args,context) => {
@@ -102,7 +103,7 @@ const timeSheetResolver = {
           staff = await Staff.findOne({ email: args.email })
           if(!staff) throw new UserInputError('Provided email address is not linked to any user')
           if(staff){
-            const resetCode = uuidv4()
+            const resetCode = uuidv1()
             staff.resetCode = resetCode
             try {
               await staff.save()
@@ -117,7 +118,7 @@ const timeSheetResolver = {
         /**If register,create a user sign the timesheet with  the user and send register code */
         if(args.additionalAction === 'register'){
           if(!args.name &&  !args.email ) throw new UserInputError('Username and email must be provided')
-          const registerCode = uuidv4()
+          const registerCode = uuidv1()
           staff = new Staff({ name:args.name, email:args.email,registerCode:registerCode })
           try {
             await staff.save()
@@ -135,7 +136,7 @@ const timeSheetResolver = {
 
           if(!staff ) throw new UserInputError('Cannot authenticate. check credentials')
 
-          if(args.username && staff.username !== args.username && staff.passwordHash !== args.password) throw new UserInputError('Cannot authenticate. Check username and password')
+          if(args.username && staff.username !== args.username && !bcrypt.compare(args.password, staff.passwordHash )) throw new UserInputError('Cannot authenticate. Check username and password')
           if(args.idCardCode && staff.idCardCode !== args.idCardCode ) throw new UserInputError('Cannot authenticate with this idcard ')
         }
       }

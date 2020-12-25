@@ -2,7 +2,7 @@ const config = require('../../config')
 const style = require('./style').getBasicStyle()
 
 const transporter = require('./transporter')
-const hostname = config.FQDN || 'localhost:3000'
+const hostname = config.FQDN
 const generateUserRegistrationEmail = (registerId, name) => {
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
   <html xmlns="http://www.w3.org/1999/xhtml">

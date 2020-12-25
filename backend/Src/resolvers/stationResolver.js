@@ -259,8 +259,9 @@ const stationResolver = {
     loginToStation : async (_root,args) => {
       const station = await Station.findById(args.id ).populate({ path:'costumers', populate:({ path:'aircrafts' }) })
 
-      if(!(station && args.password ==='stationkey')){
-        throw new UserInputError('Wrong Credentials')
+
+      if(!(station && bcrypt.compare(args.password, station.stationKey ))){
+        throw new UserInputError('Please check staton key')
       }
 
       const stationToken = {

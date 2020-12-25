@@ -9,7 +9,6 @@ const staffType =  `
     contractType:String
     lastActive: LastActive
     username:String
-    passwordHash: String
     registerCode:String
     resetCode: String
     permission:Permission

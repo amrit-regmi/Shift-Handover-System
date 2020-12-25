@@ -6,6 +6,7 @@ import { Form, FormGroup, Segment,Label } from 'semantic-ui-react'
 //import { GET_ALL_STAFF_MINIMAL } from '../../../queries/staffQuery'
 import { formatDate, getMonthOptions, getWeekOptions,getWeekNumber } from '../../utils/DateHelper'
 import { GET_ALL_STAFF_MINIMAL } from '../../queries/staffQuery'
+import { ALL_STATION } from '../../queries/stationQuery'
 
 const TimeSheetsFilter = ({ setFilter }) => {
   const loggedInStaff = JSON.parse( sessionStorage.getItem('staffKey'))
@@ -27,6 +28,23 @@ const TimeSheetsFilter = ({ setFilter }) => {
   const [filterStatus,setFilterStatus] = useState('')
 
   const [staffOptions,setStaffOptions] = useState([])
+
+  const [stationOptions,setStationOptions] = useState(loggedInStaff.permission.timesheet.view.map((station,index ) => {
+    return { key: index, value:station._id, text: station.location }})
+  ) //Setting the permitted station list
+
+  /**If staff has admin rights then all station should be displayed in options */
+  const [getAllStations,{ loading: stationLoading, data: stationData  }] = useLazyQuery(ALL_STATION )
+  useEffect(() => {
+    if(stationData && stationData.allStations){
+      const stOpt=  stationData.allStations.map((station,i) => {
+        return { key: i, value:station.id, text: station.location }
+      })
+      setStationOptions(stOpt)
+    }
+
+
+  }, [stationData])
 
   const [getAllStaffs,{ loading: staffLoading, data: staffData }] = useLazyQuery(GET_ALL_STAFF_MINIMAL)
 
@@ -56,9 +74,6 @@ const TimeSheetsFilter = ({ setFilter }) => {
     }
   },[basePage, loggedInStaff.id, params])
 
-
-  const stationOptions = loggedInStaff.permission && loggedInStaff.permission.timesheet.view.map((station,index ) => {
-    return { key: index, value:station._id, text: station.location }})
 
   return (
 
@@ -136,10 +151,17 @@ const TimeSheetsFilter = ({ setFilter }) => {
             </Form.Dropdown >
             <Form.Dropdown
               label= 'Station'
+              loading= {stationLoading}
               options={stationOptions}
               value= {stations}
               selection multiple clearable
               placeholder='All'
+              onFocus= {() => {
+                if(loggedInStaff.permission.admin) {
+                  getAllStations()
+                }
+              }
+              }
               onChange = {(e,{ value }) => setStations(value)}></Form.Dropdown>
 
             <Form.Dropdown label= 'Status'

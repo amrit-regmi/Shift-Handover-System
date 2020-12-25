@@ -20,6 +20,7 @@ query fetchReport($id:String, $station: String, $flag: String){
         id
       }
       tasks {
+        id
         aircraft {
           registration
           id
@@ -29,7 +30,6 @@ query fetchReport($id:String, $station: String, $flag: String){
         }
         taskCategory
         description
-        id
         status
         updates {
           action

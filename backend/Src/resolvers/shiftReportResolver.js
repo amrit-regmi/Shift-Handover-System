@@ -77,9 +77,7 @@ const shiftReportResolver = {
           const dateSplit = splittedDateTime[0].split('-')
           const timeSplit = splittedDateTime[1].split(':')
 
-          console.log(entry)
           const activeAtUTC = new Date (Date.UTC(dateSplit[2],dateSplit[1]-1,dateSplit[0],timeSplit[0],timeSplit[1]))
-          console.log(entry.staff, { lastActive: { station: entry.station , activeAt:  activeAtUTC } } )
 
           await Staff.findByIdAndUpdate(entry.staff, { lastActive: { station: entry.station , activeAt:  activeAtUTC } } )
 
@@ -182,7 +180,9 @@ const shiftReportResolver = {
         const newReport = await  ShiftReport.populate( shiftReport,
           [
             {
-              path:'station'
+              path:'station',
+              select: ['id','location']
+
             },
             {
               path:'staffAndTime',
@@ -203,7 +203,7 @@ const shiftReportResolver = {
 
 
         try {
-          await sendUShiftReportEmail(newReport,newReport.station.mailingList)
+          await sendUShiftReportEmail(newReport, newReport.station.mailingList)
         // eslint-disable-next-line no-empty
         } catch (error) {
         }
@@ -257,24 +257,31 @@ const shiftReportResolver = {
           [
             {
               path:'station'
+              ,
+              select: ['id','location']
             },
             {
               path:'staffAndTime',
+              select:['id','endTime','startTime', 'staffAndTime'],
               populate:{
-                path:'staff'
-              }
+                path:'staff',
+                select: ['name']
+              },
+
             },
             {
               path:'tasks' ,
+              select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
               populate:{
                 path:'aircraft updates',
+                select:['registration','id','costumer','action','handoverId','note'],
                 populate:{
-                  path: 'costumer handoverId'
+                  path: 'costumer handoverId',
+                  select:['name','id','shift'],
                 }
               },
             }
           ])
-
 
         /**Testing email send */
         //await sendUShiftReportEmail(shiftReport,shiftReport.station.mailingList)

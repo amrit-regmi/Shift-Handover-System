@@ -41,7 +41,7 @@ const Profile = (props) => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, password reset code sent to users email' ,type: 'SUCCESS' } })
     },
 
-    onerror: (err) => {
+    onError: (err) => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to reset'}<br/> {err.message}</> ,type: 'ERROR' } })
     }
   })
@@ -50,7 +50,7 @@ const Profile = (props) => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, new register code sent to users email' ,type: 'SUCCESS' } })
     },
 
-    onerror: (err) => {
+    onError: (err) => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to send new register code'}<br/> {err.message}</> ,type: 'ERROR' } })
     }
   })

@@ -23,7 +23,7 @@ const PermissionManager = ({ permissions }) => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, permission changed' ,type: 'SUCCESS' } })
     },
 
-    onerror: (err) => {
+    onError: (err) => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to change permission'}<br/> {err.message}</> ,type: 'ERROR' } })
     }
   })

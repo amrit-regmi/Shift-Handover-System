@@ -43,7 +43,7 @@ const generatePasswordResetEmail = (resetCode, name) => {
                               <w:anchorlock/>
                               <center style="color:#ffffff;font-family:sans-serif;font-size:15px;">Reset Password</center>
                             </v:roundrect><![endif]-->
-                              <a href='http://${hostname}/Reset-Password/${resetCode}' class="button button--blue linkColorWhite" >Reset Password</a>
+                              <a href='${hostname}/Reset-Password/${resetCode}' class="button button--blue linkColorWhite" >Reset Password</a>
                             </div>
                           </td>
                         </tr>
@@ -56,7 +56,7 @@ const generatePasswordResetEmail = (resetCode, name) => {
                           <td>
                             <p class="sub">If you’re having trouble clicking the button, copy and paste the URL below into your web browser.
                             </p>
-                            <p class="sub"><a href='http://${hostname}/Reset-Password/${resetCode}'>'http://${hostname}/Reset-Password/${resetCode}'</a></p>
+                            <p class="sub"><a href='${hostname}/Reset-Password/${resetCode}'>${hostname}/Reset-Password/${resetCode}</a></p>
                           </td>
                         </tr>
               <tr>
@@ -96,7 +96,6 @@ const generatePasswordResetEmail = (resetCode, name) => {
 const sendPasswordResetEmail = async (resetCode, name ,email) => {
   try{
     const m =  await  transporter.sendMail({
-      from:' rit.regmi@gmail.com',
       to: email ,
       subject:'Reset account password' ,
       html: generatePasswordResetEmail(resetCode,name) })

@@ -42,7 +42,7 @@ const generateUserRegistrationEmail = (registerId, name) => {
                               <w:anchorlock/>
                               <center style="color:#ffffff;font-family:sans-serif;font-size:15px;">Get Started</center>
                             </v:roundrect><![endif]-->
-                              <a href='http://${hostname}/Register/${registerId}' class="button button--blue linkColorWhite" >Get Started</a>
+                              <a href='${hostname}/Register/${registerId}' class="button button--blue linkColorWhite" >Get Started</a>
                             </div>
                           </td>
                         </tr>
@@ -55,7 +55,7 @@ const generateUserRegistrationEmail = (registerId, name) => {
                           <td>
                             <p class="sub">If you’re having trouble clicking the button, copy and paste the URL below into your web browser.
                             </p>
-                            <p class="sub"><a href='http://${hostname}/Register/${registerId}'>http://${hostname}/Register/${registerId}</a></p>
+                            <p class="sub"><a href='${hostname}/Register/${registerId}'>${hostname}/Register/${registerId}</a></p>
                           </td>
                         </tr>
               <tr>
@@ -95,7 +95,6 @@ const generateUserRegistrationEmail = (registerId, name) => {
 const sendUserRegistrationEmail = async (registerId, name ,email) => {
   try{
     const m =  await  transporter.sendMail({
-      from:' rit.regmi@gmail.com',
       to: email ,
       subject:'Complete Account Registration' ,
       html: generateUserRegistrationEmail(registerId,name) })

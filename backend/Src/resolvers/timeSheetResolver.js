@@ -335,7 +335,7 @@ const timeSheetResolver = {
       if(args.stations && args.stations.length > 0 ) {
         const notPermitted = args.stations.find(station => !permittedStations.includes(station))
         /**Only allow permitted stations to be searched */
-        if(notPermitted && (!staff.permission.admin || staff.id !== args.staff)){
+        if(notPermitted && (!(staff.permission.admin || staff.id === args.staff))){
           throw new Error (`You do not have rights to view timesheet for ${notPermitted} `)
         }
 
@@ -346,6 +346,10 @@ const timeSheetResolver = {
       ).populate({ path:'shiftReport staff station' , populate: { path: 'station' } }).lean()
 
       let mod1 = timesheets.reduce((aggregatedTimesheet,c) => {
+
+        if(!c.staff){
+          return aggregatedTimesheet
+        }
 
         let periodTitle = ''
 

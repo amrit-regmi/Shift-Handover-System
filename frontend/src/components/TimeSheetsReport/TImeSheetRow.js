@@ -1,4 +1,4 @@
-import {  gql, useMutation } from '@apollo/client'
+import {  useMutation } from '@apollo/client'
 import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Table,Button, Popup, Header, Message,  Segment,Form } from 'semantic-ui-react'
@@ -178,7 +178,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
                * Add Button,
                * visible only if data staff is loggedin Staff or  logged in staff has permission and no record exists for  that day
                */
-            isEmptyRow  && permission && (  permission.sign.length >0 || staff.id === staffId ) &&
+            isEmptyRow  && permission && (  staff.permission.admin || permission.sign.length >0 || staff.id === staffId ) &&
               <Button icon='add' size='mini' circular onClick = {() => {
                 setAdd(true)
                 setOpen(true)
@@ -205,7 +205,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
                  *    record is not already approved
                  *
                  */
-                timeSheet.status !== 'APPROVED' && ((permission.sign.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0 )) &&
+                timeSheet.status !== 'APPROVED' && ( staff.permission.admin || (permission.sign.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0 )) &&
                   <Popup
                     trigger=  {<Button icon='edit' size='mini' circular onClick = {() => {
                       setAdd(false)
@@ -225,7 +225,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
                    *    and
                    *    record is not already approved
                    */
-                permission.sign.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0  &&  staff.id !== staffId &&
+                ( (staff.permission.admin || permission.sign.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0)  &&  staff.id !== staffId) &&
                   <>
                     <Popup
                       trigger=  { <Button  color ={timeSheet.status === 'APPROVED'?'green':'grey'} icon='check' size='mini' circular onClick = {() => {
@@ -282,7 +282,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
                 *    record is not already approved
                 */
 
-                timeSheet.status !== 'APPROVED' &&((permission.sign.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0)   || staff.id === staffId  ) &&
+                timeSheet.status !== 'APPROVED' &&((staff.permission.admin || permission.sign.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0)   || staff.id === staffId  ) &&
                 <Popup as={Message} warning
                   trigger=  { <Button  color = 'red' icon='trash' size='mini' circular />}
                   content={

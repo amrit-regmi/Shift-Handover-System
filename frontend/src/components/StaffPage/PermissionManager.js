@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
-import { Button, Checkbox, Form, Header,Table, TableBody } from 'semantic-ui-react'
+import { Button, Checkbox, Form, Header,Message,Table, TableBody } from 'semantic-ui-react'
 import _ from 'lodash'
 import { ALL_STATION } from '../../queries/stationQuery'
 import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
@@ -186,6 +186,11 @@ const PermissionManager = ({ permissions }) => {
             }
           }}/>
 
+        {
+          dirty && <Message warning >Remember to save the changes for changes to take effect </Message>
+        }
+
+
 
         <Form as='table' loading={loading || pLoading} className='ui celled padded table' onSubmit={handleSubmit}>
           <Table.Header>
@@ -334,8 +339,8 @@ const PermissionManager = ({ permissions }) => {
         </Form>
         {dirty &&
         <>
-          <Button onClick = {() => handleSubmit()}> Save Changes</Button>
-          <Button  onClick = {() => resetForm()}> Discard Changes</Button>
+          <Button positive onClick = {() => handleSubmit()}> Save Changes</Button>
+          <Button  negative onClick = {() => resetForm()}> Discard Changes</Button>
         </>
         }</>
       }

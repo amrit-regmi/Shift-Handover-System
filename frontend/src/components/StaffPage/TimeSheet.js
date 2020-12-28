@@ -17,8 +17,8 @@ const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,times
   const { error,loading,data } = useQuery(GET_TIMESHEETS, { variables:queryParams })
 
   useEffect(() => {
-    if (data && data.getStaff )
-      setStaffName(data.getStaff.name)
+    if (data)
+      setStaffName(data.getStaffName)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[data])

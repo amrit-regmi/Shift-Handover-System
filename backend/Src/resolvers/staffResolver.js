@@ -30,7 +30,6 @@ const staffResolver = {
         throw new AuthenticationError('You must be logged in to view staff list')
       }
 
-      console.log(loggedInStaff.permission)
       if(loggedInStaff && (loggedInStaff.permission.admin || loggedInStaff.permission.staff.view || loggedInStaff.permission.staff.edit || loggedInStaff.permission.staff.add)){
         const staffs =  await Staff.find({ ...args },{ username:0,passwordHash:0,registerCode:0,resetCode:0 }).populate({ path:'lastActive.station' })
         return staffs
@@ -41,6 +40,17 @@ const staffResolver = {
 
 
 
+    },
+
+    getStaffName: async (_root,args,context) => {
+      const loggedInStaff = context.currentUser
+      const station = context.currentStation
+      if(!(station || loggedInStaff )){
+        throw new AuthenticationError('You must be logged in to view staff list')
+      }
+      const minStaff = await Staff.findById(args.id)
+      if(minStaff) return minStaff.name
+      return 'Unknown'
     },
 
     /*Returns staff by ID or registraion Code*/

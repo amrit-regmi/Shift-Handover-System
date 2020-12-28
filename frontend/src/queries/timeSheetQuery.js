@@ -21,6 +21,7 @@ gql `query getTimesheetByUser($staff: String!, $filterDuration: String! ,$number
         title
       }
       staff{
+        id
         name
         reqHours
         contractType
@@ -42,10 +43,9 @@ gql `query getTimesheetByUser($staff: String!, $filterDuration: String! ,$number
 
   },
 
-  getStaff(
+  getStaffName(
     id: $staff
-    ){    
-  name}
+    )
 
 }`
 
@@ -64,9 +64,8 @@ query getAllTimeSheets(
     stations:$stations
     filterStatus: $filterStatus
     )
-  getStaff(
+  getStaffName(
       id: $staffId
-      ){    
-    name}
+      )
    
 }`

@@ -25,8 +25,7 @@ const TimeSheetsOverview = ({ setStaffName  }) => {
     stations:[],
     filterStatus: '' })
 
-  const variables  = { ...filter
-  }
+  const variables  = { ...filter }
 
   if(filter.staff.length === 1){
     variables.staffId = filter.staff[0]
@@ -35,8 +34,8 @@ const TimeSheetsOverview = ({ setStaffName  }) => {
   const { loading,data } = useQuery(GET_ALL_TIMESHEETS,{ variables: variables,skip: params.period })
 
   useEffect (() => {
-    if(data && data.getStaff){
-      setStaffName(data.getStaff.name)
+    if(data ){
+      setStaffName(data.getStaffName)
     }
   },[data, setStaffName])
 
@@ -81,12 +80,12 @@ const TimeSheetsOverview = ({ setStaffName  }) => {
         </TableHeader>
         <TableBody>
           {data && data.getAllTimeSheets && _.map(data.getAllTimeSheets, (staffs,period) =>
-            _.map(staffs,(staff,name) =>
-              <TableRow key={name} positive= {staff.itemsPending?false:true} negative= {staff.itemsPending?true:false}>
+            _.map(staffs,(staff,id) =>
+              <TableRow key={id} positive= {staff.itemsPending?false:true} negative= {staff.itemsPending?true:false}>
                 {!params.staffId   && basePage.toLowerCase() !== 'mypage' &&
-                <TableCell><Link to={`/Manage/ManageTimesheets/${staff.id}`} onClick={() => {
+                <TableCell><Link to={`/Manage/ManageTimesheets/${id}`} onClick={() => {
 
-                }}> {name}</Link></TableCell> }
+                }}> {staff.name}</Link></TableCell> }
                 <TableCell>{period}</TableCell>
                 <TableCell>{
                   _.reduce(staff.station,(p,c,key) => {
@@ -98,7 +97,7 @@ const TimeSheetsOverview = ({ setStaffName  }) => {
                   },'')}
                 </TableCell>
                 <TableCell>{staff.totHours}</TableCell>
-                <TableCell><Link to={`${location.pathname}/${params.staffId?'':`${staff.id}/`}${period}`}
+                <TableCell><Link to={`${location.pathname}/${params.staffId?'':`${id}/`}${period}`}
                   onClick={() => {
 
                   }}>{staff.itemsPending ?  `${staff.itemsPending}  Items Pending`: 'All Approved' } </Link></TableCell>

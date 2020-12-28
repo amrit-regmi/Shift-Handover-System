@@ -14,15 +14,17 @@ const timeSheetResolver = {
     addToTimeSheet: async (_root,args,context) => {
       const staff = context.currentUser
       let timeSheet
+
       /**If args.id is set  then it is treated as update request*/
       if(args.id){
         timeSheet = await TimeSheet.findById(args.id)
         if(!timeSheet){
           throw new UserInputError('Cannot find timesheet')
         }
-        /**If the user updating the timesheet is different then the logged in user check for permission */
-        if( !timeSheet.staff.equals(staff.id) && !staff.permission.timesheet.sign){
-          throw new AuthenticationError('Permission denied')
+
+        /**Check if the user has righ to modify timesheet. only admin, staff with signing rights for station or self can modify timesheet */
+        if(!(staff.permission.admin || staff.permission.timesheet.sign.includes(timeSheet.station) || timeSheet.staff.equals(staff.id) )){
+          throw new AuthenticationError( 'User doesnot have rights to modify records to specified station')
         }
 
         if(args.startTime) timeSheet.startTime = args.startTime
@@ -30,18 +32,19 @@ const timeSheetResolver = {
         if(args.break) timeSheet.break = args.break
         if(args.remarks) timeSheet.remarks = [...timeSheet.remarks,...args.remarks]
       }
+
       /**If args.id is not set  then it is treated as add request*/
       if(!args.id){
-        /**If the user adding to the timesheet is different then the logged in user check for permission  */
-        if( !args.staff === staff.id){
-          if(!staff.permission.timesheet.sign.includes(args.station)){
-            throw new AuthenticationError( 'User doesnot have rights to add timesheet to specified station')
-          }
-        }
         /**If not start Time and endtime */
         if(!(args.startTime && args.endTime && args.shift && args.station)){
           throw new UserInputError('Required fields are missing')
         }
+
+        /**Check if the user has righ to modify timesheet. only admin, staff with signing rights for station or self can modify timesheet */
+        if(!(staff.permission.admin || staff.permission.timesheet.sign.includes(args.station) || args.staff === staff.id.toString() )){
+          throw new AuthenticationError( 'User doesnot have rights to add records to specified station')
+        }
+
         /**If handoverId is  set then it must match with station and shift */
         if(args.handover )
         {
@@ -171,9 +174,10 @@ const timeSheetResolver = {
     approveTimeSheet: async(_root,args,context) => {
       const staff = context.currentUser
 
+
       const timesheet = await TimeSheet.findById(args.id)
-      if(!staff.permission.timesheet.sign.includes(timesheet.station)){
-        throw AuthenticationError('You do not have rights to sign this timesheet')
+      if(!(staff.permission.timesheet.sign.includes(timesheet.station) || staff.permission.admin ) || timesheet.staff.equals(staff.id) ){
+        throw new AuthenticationError('You do not have rights to sign this timesheet')
       }
 
       if(args.status === 'APPROVED'){
@@ -203,7 +207,7 @@ const timeSheetResolver = {
       const staff = context.currentUser
       const timesheet = await TimeSheet.findById(args.id)
 
-      if(!(staff.permission.timesheet.sign.includes(timesheet.station) || timesheet.staff.equals(staff.id))){
+      if(!(staff.permission.admin || staff.permission.timesheet.sign.includes(timesheet.station) || timesheet.staff.equals(staff.id))){
         throw new AuthenticationError('You do not have rights to delete this timesheet')
       }
       await timesheet.remove()
@@ -215,8 +219,8 @@ const timeSheetResolver = {
     requestClarification: async (_root,args,context) => {
       const staff = context.currentUser
       const timesheet = await TimeSheet.findById(args.id)
-
-      if(!(staff.permission.timesheet.sign.includes(timesheet.station) || timesheet.staff.equals(staff.id))){
+      /** One should have rights to sign the timesheet and should be requesting clearification on own timesheet */
+      if(!(staff.permission.timesheet.sign.includes(timesheet.station) || staff.permission.admin ) || timesheet.staff.equals(staff.id) ){
         throw new AuthenticationError('You do not have rights to modify this timesheet')
       }
 
@@ -267,19 +271,19 @@ const timeSheetResolver = {
       }
 
       /**If logged staff does not have admin rights or is not requested user then only return the stations for which he has right to view/sign  */
-      if(!(staff.permission.admin || staff.id === args.staff || !staff.permission.timesheet.sign.length || !staff.permission.timesheet.view.length)  ){
+      if(!(staff.permission.admin || staff.id.toString() === args.staff) && (staff.permission.timesheet.sign.length || staff.permission.timesheet.view.length)){
         searchFilters.station = { $in : [...staff.permission.timesheet.view,...staff.permission.timesheet.sign] }
       }
 
       const timesheets = await TimeSheet.find( searchFilters
       ).populate({ path:'shiftReport staff station' , populate: { path: 'station' } })
+
       return timesheets
     },
 
     getAllTimeSheets: async (_root,args, context) => {
       const staff = context.currentUser
       const searchFilters = {}
-
       if(args.staff && args.staff.length > 0){
         searchFilters.staff = { $in: args.staff }
       }
@@ -342,6 +346,7 @@ const timeSheetResolver = {
         searchFilters.station = { $in : args.stations }
 
       }
+
       const timesheets = await TimeSheet.find( searchFilters
       ).populate({ path:'shiftReport staff station' , populate: { path: 'station' } }).lean()
 
@@ -350,6 +355,7 @@ const timeSheetResolver = {
         if(!c.staff){
           return aggregatedTimesheet
         }
+
 
         let periodTitle = ''
 
@@ -367,16 +373,16 @@ const timeSheetResolver = {
           aggregatedTimesheet[ periodTitle] = {}
         }
 
-        if(!aggregatedTimesheet[ periodTitle] [c.staff.name]){
+        if(!aggregatedTimesheet[ periodTitle] [c.staff._id]){
 
-          aggregatedTimesheet[ periodTitle] [c.staff.name] = {
-            id:'',
+          aggregatedTimesheet[ periodTitle] [c.staff._id] = {
+            name:'',
             station: {},
             itemsPending: 0,
             totHours:0,
           }
         }
-        const station  =  aggregatedTimesheet[ periodTitle][c.staff.name].station
+        const station  =  aggregatedTimesheet[ periodTitle][c.staff._id].station
 
         const stationName  = c.station && c.station.location || 'UNKNOWN'
         if(station[stationName]){
@@ -388,7 +394,7 @@ const timeSheetResolver = {
 
 
 
-        let itemsPending = aggregatedTimesheet[ periodTitle][c.staff.name].itemsPending
+        let itemsPending = aggregatedTimesheet[ periodTitle][c.staff._id].itemsPending
 
         if( c.status !=='APPROVED') {
           itemsPending = itemsPending +1
@@ -396,10 +402,10 @@ const timeSheetResolver = {
 
 
         const tot =  (((toDate(c.endTime) - toDate(c.startTime) )/ (60*1000*60)) - (c.break || 0)/60).toFixed(1)
-        const totHours = parseFloat(aggregatedTimesheet[ periodTitle][c.staff.name].totHours) +parseFloat(tot)
+        const totHours = parseFloat(aggregatedTimesheet[ periodTitle][c.staff._id].totHours) +parseFloat(tot)
 
-        aggregatedTimesheet[ periodTitle][c.staff.name] = {
-          id: c.staff._id,
+        aggregatedTimesheet[ periodTitle][c.staff._id] = {
+          name: c.staff.name,
           station : station ,
           itemsPending : itemsPending,
           totHours: totHours

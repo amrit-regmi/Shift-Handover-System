@@ -4,7 +4,7 @@ import { DateInputField } from '../StationReportPage/NewReportForm/FormFields'
 import { operateDate, formatDate, toDate } from '../../utils/DateHelper'
 import { FieldArray, Formik } from 'formik'
 import { validateStartEndTime } from '../StationReportPage/NewReportForm/validator'
-import _ from 'lodash'
+import _, { forEach } from 'lodash'
 import { ALL_STATION } from '../../queries/stationQuery'
 import { GET_SHIFTREPORT_ID } from '../../queries/shiftReportQuery'
 import { UPDATE_TIMESHEET } from '../../mutations/timeSheetMutation'
@@ -18,8 +18,6 @@ const  TimeSheetEditModel = (props) => {
   const params= useParams()
   const self=  JSON.parse( sessionStorage.getItem('staffKey'))
   const { loading,data } = useQuery(ALL_STATION,{ skip: props.add === false  })
-
-
   const [getShiftReport,{ loading:shiftReportLoading, data:shiftReportData }] = useLazyQuery(GET_SHIFTREPORT_ID)
   const [updateTimeSheet,{ loading: updateTimeSheetLoading }] = useMutation(UPDATE_TIMESHEET,{
     onError: (error) => {
@@ -31,14 +29,29 @@ const  TimeSheetEditModel = (props) => {
   const [stationOptions, setStationOptions] = useState([])
   const [newRemarkField,setNewRemarkField] = useState(false)
 
+
+  const selfHasPermissionToAddEdit  = (station) => {
+    if(self.permission.admin ||
+      self.permission.timesheet.sign.map(station => station._id).includes(station.id) ||
+      self.id === props.staffId){ // If viewing own timesheet or station is on timeshitsignpermission list or user is admin
+      return true
+    }
+
+    return false
+  }
+
+
   useEffect(() => {
     if(data){
       const stations = data.allStations
-      const stationOptions = stations.map((station,index) => {
+      const permittedStations =  stations.filter ( station => selfHasPermissionToAddEdit (station))
+      const stationOptions = permittedStations.map((station,index) => {
         return { key:index, value: station.id, text: station.location }
       })
+
       setStationOptions(stationOptions)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   },[data])
 
 
@@ -303,7 +316,7 @@ const  TimeSheetEditModel = (props) => {
         >
 
 
-          {({ values,handleSubmit,setFieldValue }) =>
+          {({ values,handleSubmit,setFieldValue,dirty }) =>
 
             <Form size='large' style={{ marginBottom:'5rem' }} onSubmit = { handleSubmit} >
 
@@ -311,6 +324,7 @@ const  TimeSheetEditModel = (props) => {
 
                 < DateInputField
                   label= 'Start Time'
+                  readOnly = {!props.add && (props.status === 'APPROVED' || !selfHasPermissionToAddEdit(props.station))}
                   dateTimeFormat = 'DD-MM-YYYY HH:mm'
                   name ='startTime'
                   maxDate = {operateDate(Date.now(),30,'m','sub')}
@@ -321,6 +335,7 @@ const  TimeSheetEditModel = (props) => {
 
                 < DateInputField
                   label = 'End Time'
+                  readOnly = {!props.add && !(props.status === 'APPROVED' || !selfHasPermissionToAddEdit(props.station))}
                   dateTimeFormat = 'DD-MM-YYYY HH:mm'
                   name='endTime'
                   maxDate = {
@@ -332,6 +347,7 @@ const  TimeSheetEditModel = (props) => {
 
                 <InputField
                   inputlabel= 'Break'
+                  readOnly = {!props.add && (props.status === 'APPROVED' || !selfHasPermissionToAddEdit(props.station))}
                   label = 'Minutes '
                   labelPosition='right corner'
                   name= 'break'
@@ -419,8 +435,8 @@ const  TimeSheetEditModel = (props) => {
                     <RemarkField key= {index} name={`remarks.${index}`} value={remark}></RemarkField>
                   )}
 
-                  { /**If TImesheet is approved, it cannot be modified */
-                    props.status !== 'APPROVED' &&
+                  { /**If TImesheet is approved or user doesnot have permission , it cannot be modified */
+                    props.status !== 'APPROVED' && (props.add || selfHasPermissionToAddEdit (props.station) )  &&
                     <Form.Button type='button'
                       onClick= {(e) => {
                         e.preventDefault()
@@ -444,7 +460,7 @@ const  TimeSheetEditModel = (props) => {
                 </>
                 }
               </FieldArray>
-              { props.status !== 'APPROVED' &&
+              { props.status !== 'APPROVED' && dirty && selfHasPermissionToAddEdit(props.station) &&
               <Button type='submit' floated='right' positive>Save</Button>
               }
               <Button type='button' floated='right' negative onClick={() => closeModel()}>Cancel</Button>

@@ -12,10 +12,9 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
   const params= useParams()
 
   const permission = staff.permission && staff.permission.timesheet
-
   const startTime = timeSheet.startTime
   const endTime = timeSheet.endTime
-  const station = timeSheet.shiftReport && timeSheet.shiftReport.station.location
+  const station = (timeSheet.shiftReport && timeSheet.shiftReport.station.location) ||  (timeSheet.station && timeSheet.station.location)
   const shift = (timeSheet.shiftReport && timeSheet.shiftReport.shift) || timeSheet.shift
   const  breakt = timeSheet.break
   const totalHours = timeSheet.total
@@ -32,17 +31,21 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
   const [mutatedeleteTimesheet,{ loading:deleteLoading }] = useMutation(DELETE_TIMESHEET)
   const [requestClarification,{ loading:clarifyLoading }] = useMutation(REQUEST_CLARIFICATION)
 
+
+  if (!staffId){
+    staffId = staff.id
+  }
+
   const deleteTimeSheet = () => {
     mutatedeleteTimesheet(
       { variables:{ id: timeSheet.id },
         update: (store,response) => {
           if(response.data.deleteTimeSheet && response.data.deleteTimeSheet.status === 'SUCCESS') {
+            store.evict({
+              id: `TimeSheet:${timeSheet.id}`
+            })
             store.modify({
               fields:{
-                getTimeSheetByUser({ DELETE }){
-                  return DELETE
-                },
-
                 getAllTimeSheets(existingTimeSheetRefs, { readField }){
                   const period = params.period
                   if(!period){
@@ -70,8 +73,6 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
                   return modify
                 }
               },
-
-              broadcast: false
 
             })
 
@@ -109,10 +110,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
 
               const approved = response.data.approveTimeSheet.status
               const modify = _.cloneDeep(existingTimeSheetRefs)
-
-              console.log('before',modify[period][timeSheet.staff.name].itemsPending)
-
-              modify[period][timeSheet.staff.name].itemsPending = approved==='APPROVED'? modify[period][timeSheet.staff.name].itemsPending-1: (modify[period][timeSheet.staff.name].itemsPending)+1
+              modify[period][timeSheet.staff.id].itemsPending = approved==='APPROVED'? modify[period][timeSheet.staff.id].itemsPending-1: (modify[period][timeSheet.staff.id].itemsPending)+1
 
 
               return modify
@@ -205,7 +203,7 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
                  *    record is not already approved
                  *
                  */
-                timeSheet.status !== 'APPROVED' && ( staff.permission.admin || (permission.sign.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0 )) &&
+                timeSheet.status !== 'APPROVED' && ( staff.permission.admin || (permission.sign.filter(station => timeSheet.station && station._id === timeSheet.station.id ).length !== 0 || staff.id === staffId )) &&
                   <Popup
                     trigger=  {<Button icon='edit' size='mini' circular onClick = {() => {
                       setAdd(false)
@@ -308,20 +306,22 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
 
 
       </Table.Cell>
-      <TimeSheetEditModel
-        staffId = {staffId}
-        id= {timeSheet.id}
-        openReport={openReport}
-        date = {date}
-        open={open}
-        status ={timeSheet.status}
-        setOpen= {setOpen}
-        startTime= {startTime}
-        endTime= {endTime}
-        break= {breakt}
-        add= {add}
-        remarks= {remarks} >
-      </TimeSheetEditModel>
+      { open &&
+       <TimeSheetEditModel
+         staffId = {staffId}
+         id= {timeSheet.id}
+         openReport={openReport}
+         date = {date}
+         open={open}
+         station = {timeSheet.station}
+         status ={timeSheet.status}
+         setOpen= {setOpen}
+         startTime= {startTime}
+         endTime= {endTime}
+         break= {breakt}
+         add= {add}
+         remarks= {remarks} >
+       </TimeSheetEditModel>}
     </Table.Row>)
 
 }

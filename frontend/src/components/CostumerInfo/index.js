@@ -20,6 +20,7 @@ const CostumerInfo = ({ costumerData ,costumerId }) => {
   const [addContactModalOpen,setAddContactModalOpen] = useState(false)
 
   const params = useParams()
+  console.log(params)
   const history = useHistory()
   const { loading: costumerLoading ,error: costumerError, data: fetchedData } = useQuery(GET_COSTUMER,{ variables:{ id: params.costumerId ||costumerId }, skip: costumerData })
 

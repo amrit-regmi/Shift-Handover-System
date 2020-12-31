@@ -1,19 +1,18 @@
 import { useMutation, useQuery } from '@apollo/client'
 import { FieldArray, Formik } from 'formik'
-import _, { forEach } from 'lodash'
+import { forEach } from 'lodash'
 import React, { useContext, useEffect, useState } from 'react'
-import { Button, Dimmer, Form, Grid, Header, Icon, List, Loader, Modal,ModalContent, ModalHeader, Segment } from 'semantic-ui-react'
+import { Button, Dimmer, Form, Grid, Header, Icon, Loader, Modal,ModalContent, ModalHeader } from 'semantic-ui-react'
 import { NotificationContext } from '../../contexts/NotificationContext'
 import { ADD_STATION } from '../../mutations/stationMutation'
 import { ALL_COSTUMERS } from '../../queries/costumerQuey'
-import { ALL_STATION } from '../../queries/stationQuery'
 import { InputField, TimeInputField } from '../StationReportPage/NewReportForm/FormFields'
-import { validateEmail, validateName } from '../StationReportPage/NewReportForm/validator'
+import { validateEmail } from '../StationReportPage/NewReportForm/validator'
 import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
 const NewStationModel = (props) => {
 
   const [,dispatch] = useContext(NotificationContext)
-  const [addStationMutation,{ loading,error }] = useMutation(ADD_STATION)
+  const [addStationMutation,{ loading }] = useMutation(ADD_STATION)
   const [countryList,setCountryList]=  useState([])
   const [costumerList,setCostumerList] = useState([])
 
@@ -79,7 +78,7 @@ const NewStationModel = (props) => {
 
       }
     }).then(
-      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, ${values.location} added to station list` ,type: 'SUCCESS' } }),
+      () =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, ${values.location} added to station list` ,type: 'SUCCESS' } }),
       err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, ${values.location} cannot be added to station list`}<br/> {err.message}</> ,type: 'ERROR' } }),
       props.setOpen(false),
     )
@@ -241,7 +240,7 @@ const NewStationModel = (props) => {
                           link
                           name ="cancel"
                           color='red'
-                          onClick={ (e) => remove(index)
+                          onClick={ () => remove(index)
                           }/>}
 
                       </Grid.Row>
@@ -251,7 +250,7 @@ const NewStationModel = (props) => {
                       icon
                       size ='mini'
                       primary
-                      onClick={ (e) => push ({ name:'', startTime:'' })
+                      onClick={ () => push ({ name:'', startTime:'' })
                       }>
                       <Icon name="plus circle"/> Add
                     </Button>

@@ -3,8 +3,6 @@ import React ,{  } from 'react'
 import { Loader, Header, Modal } from 'semantic-ui-react'
 import { GET_SHIFT_REPORT } from '../../queries/shiftReportQuery'
 
-import _ from 'lodash'
-
 import ShiftReport from '.'
 
 

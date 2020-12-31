@@ -149,7 +149,7 @@ const timeSheetResolver = {
         staff = await Staff.findOne({ username:args.username })
         if(!staff)  throw new AuthenticationError ('Cannot find staff with provided credentials')
 
-        if(staff &&  staff.passwordHash !== args.password  ){
+        if(staff && !bcrypt.compare(args.password, staff.passwordHash )  ){
 
           throw new AuthenticationError('Cannot find staff with provided credentials')
         }

@@ -17,7 +17,7 @@ const  TimeSheetEditModel = (props) => {
   const[,dispatch] = useContext(NotificationContext)
   const params= useParams()
   const self=  JSON.parse( sessionStorage.getItem('staffKey'))
-  const { loading,data } = useQuery(ALL_STATION,{ skip: props.add === false  })
+  const { loading,data } = useQuery(ALL_STATION,{ skip: props.add === false  }) //Station list is required only when adding new record
   const [getShiftReport,{ loading:shiftReportLoading, data:shiftReportData }] = useLazyQuery(GET_SHIFTREPORT_ID)
   const [updateTimeSheet,{ loading: updateTimeSheetLoading }] = useMutation(UPDATE_TIMESHEET,{
     onError: (error) => {
@@ -32,7 +32,7 @@ const  TimeSheetEditModel = (props) => {
 
   const selfHasPermissionToAddEdit  = (station) => {
     if(self.permission.admin ||
-      self.permission.timesheet.sign.map(station => station._id).includes(station.id) ||
+      self.permission.timesheet.sign.map(station => station._id).includes(station && station.id) ||
       self.id === props.staffId){ // If viewing own timesheet or station is on timeshitsignpermission list or user is admin
       return true
     }
@@ -42,7 +42,7 @@ const  TimeSheetEditModel = (props) => {
 
 
   useEffect(() => {
-    if(data){
+    if(data && data.allStations){
       const stations = data.allStations
       const permittedStations =  stations.filter ( station => selfHasPermissionToAddEdit (station))
       const stationOptions = permittedStations.map((station,index) => {

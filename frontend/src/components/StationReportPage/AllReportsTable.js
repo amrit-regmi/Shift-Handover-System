@@ -17,7 +17,7 @@ const AllReportsTable = () => {
 
   let transformData
   if(data) {
-    transformData = data.getReportList
+    transformData = { ...data.getReportList }
     transformData = _.groupBy(transformData, report => report.startTime.split(' ')[0] )
     transformData = _.mapValues(transformData, date => _.groupBy(date,report => report.station.location))
 

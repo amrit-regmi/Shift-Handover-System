@@ -34,8 +34,12 @@ query fetchReport($id:String, $station: String, $flag: String){
         updates {
           action
           handoverId {
+            startTime
             id
             shift
+            station{
+              location
+            }
           }
           note
         }

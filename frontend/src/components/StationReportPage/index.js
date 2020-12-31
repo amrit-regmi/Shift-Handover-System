@@ -43,7 +43,7 @@ const StationReportPage = () => {
 
   const useMultipleQuery = () => {
     const res1 = useQuery(GET_SHIFT_REPORT,{
-      variables:queryParams,
+      variables:queryParams, skip : activeItem !== 'lastShiftReport',
       onError: () => notificationDispatch({ type:'ADD_NOTIFICATION',  payload:{ content: errorReport.message ,type: 'ERROR' } }) })
     const res2 = useQuery(GET_STATION,{ variables:{ id: id } })
     return [res1, res2]

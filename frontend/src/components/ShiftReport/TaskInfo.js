@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Segment,Label,Icon } from 'semantic-ui-react'
 import _ from 'lodash'
+import TaskModal from './TaskModal'
 
 const TaskInfo = ({ task , handoverId }) => {
+  const [openDetail, setOpenDetail] = useState(false)
   const updateOnthisHandover = _.find(task.updates, ['handoverId',{ 'id':handoverId }] )
-  return (
+  return (<>
     <Segment >
       {
         !updateOnthisHandover.action.includes('TASK_CREATED') &&
@@ -39,12 +41,15 @@ const TaskInfo = ({ task , handoverId }) => {
       { /** If task is not new then show toggle update history button */
         !updateOnthisHandover.action.includes('TASK_CREATED') && task.updates.length > 1 &&
       <Label as="a" size='mini' onClick = {() => {
-        /**TO BE IMPLEMENTED  */
+        setOpenDetail(true)
       }}> <Icon name ="history"/> Action History   </Label>
       }
 
       <Segment style= {{ 'paddingTop': 0,'paddingLeft': 0 }}basic compact>{task.description}   </Segment>
-    </Segment>)
+
+
+    </Segment>
+    <TaskModal open= {openDetail} setOpen = {setOpenDetail} task= {task} viewingOnHanodover = {handoverId}> </TaskModal></>)
 }
 
 export default TaskInfo

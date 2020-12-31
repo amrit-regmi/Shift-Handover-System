@@ -22,6 +22,7 @@ const TaskForms = ({ tasksIdentifier,tasks,taskCategory,onRemove,aircraftId }) =
       {tasks && tasks.map((task,index) =>
         <TaskForm key={index}
           label= {index}
+          task = {task}
           name={`tasks.${tasksIdentifier}.${index}`}
           //The input Field is disabled if the task is open or deferred from previous shifts implied by task.id field
           disabled = {task.id && (task.status === 'DEFERRED' || task.status==='OPEN')}

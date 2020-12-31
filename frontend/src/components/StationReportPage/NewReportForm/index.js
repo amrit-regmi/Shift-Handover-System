@@ -90,11 +90,10 @@ const NewReportForm = ({ setActiveItem }) => {
     let costumerList = []
 
     // eslint-disable-next-line array-callback-return
-
     reportData && reportData.tasks && reportData.tasks.map(task =>  {
       if( (task.status==='DEFERRED' || task.status==='OPEN') ){
         // Initial field for deferred or open tasks
-        const simplifiedTask = { id:task.id, description:task.description, status:task.status ,updates: task.updates ,action:'', newNote:'',taskCategory:task.taskCategory }
+        const simplifiedTask = { id:task.id, aircraft:task.aircraft, description:task.description, status:task.status ,updates: task.updates ,action:'', newNote:'',taskCategory:task.taskCategory }
 
         //From the last shift report if the task is aircraft tasks aircraft has open tasks it is checked by default and cannot be disabled
         if(task.aircraft) {

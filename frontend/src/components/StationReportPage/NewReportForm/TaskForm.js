@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import { useFormikContext } from 'formik'
-import { Label, Icon, Divider,Form,Button,Accordion } from 'semantic-ui-react'
+import { Label, Icon, Divider,Form,Button } from 'semantic-ui-react'
 import ErrorMessage from './ErrorMessage'
 import { TextAreaField } from './FormFields'
+import TaskModal from '../../ShiftReport/TaskModal'
 
 
-export const TaskForm = ({ label,onRemove,disabled,children,name, ...props }) => {
+export const TaskForm = ({ label,onRemove,disabled,children,name,task }) => {
   const { setFieldValue,getFieldProps,setFieldTouched, getFieldMeta } = useFormikContext()
-
+  const [openDetail, setOpenDetail] = useState(false)
   const removeButtonClick = ( e ) => {
     e.preventDefault()
     onRemove()
@@ -94,42 +95,28 @@ export const TaskForm = ({ label,onRemove,disabled,children,name, ...props }) =>
   }
 
   const TaskStatusBar = () => {
+    const prevShiftLabel = <Label  size='mini' basic >Task from previous shifts </Label>
+    const notesLabel = taskNotes && taskNotes.trim()?
+      <Label size='mini' basic color="blue" as='a' onClick = {() => {
+        if(taskAction && taskAction !== 'NOTES_ADDED')toggleNotes()}
+      }>Notes Added </Label>:''
 
-    if( taskAction && taskAction !== 'NOTES_ADDED'){
-      return (
-        <div style={{ padding:'0.3125em 1.5em' }}>
-          <Label  size='mini' basic >Task from previous shifts </Label>
-
-          {taskNotes && taskNotes.trim() && <Label size='mini' basic color="blue" as='a' onClick = {() => toggleNotes() }>Notes Added </Label>}
-          <Label size='mini' basic color="green" >{taskAction} </Label>
-
-          <Label as="a" size='mini' basic color='yellow'
-            onClick = {(e) => undoButtonClick(e)}> <Icon name='undo'/> Undo Action </Label>
-
-        </div>)
-    }
 
     return (
       <div style={{ padding:'0.3125em 1.5em' }}>
-        <Label  size='mini' basic >Task from previous shifts </Label>
-
-        {taskNotes && taskNotes.trim() && <Label size='mini' basic color="blue" >Notes Added </Label>}
-        <Label  size='mini' basic color="purple" >Open </Label>
-
+        {prevShiftLabel}
+        {notesLabel}
         {disabled && taskStatus === 'DEFERRED' &&
-        <Label size='mini' basic color="red" >Action Required </Label>}
+              <Label size='mini' basic color="red" >Action Required </Label>}
+        {taskAction && taskAction !== 'NOTES_ADDED' &&
+              <Label as="a" size='mini' basic color='yellow'
+                onClick = {(e) => undoButtonClick(e)}> <Icon name='undo'/> Undo Action
+              </Label>
+        }
+
+
       </div>)
-
-
   }
-
-
-
-
-  const rootPanels = [
-    { key: 'panel-1', title: 'Updates', content: 'These are updates' },
-  ]
-
 
   return(
     <>
@@ -140,11 +127,10 @@ export const TaskForm = ({ label,onRemove,disabled,children,name, ...props }) =>
 
       <Form.Group style={{ marginBottom:'0px' }}>
 
+
         <label style={{ display: 'inline-block', padding: '0.9375em 0px 0px 0.3125em', width:'1.5625em' }}>{label+1}</label>
 
         <TextAreaField  name= {`${name}.description`} readOnly={disabled} rows ='1' width='16'></TextAreaField>
-
-
 
         <Button
           type='button'
@@ -180,7 +166,15 @@ export const TaskForm = ({ label,onRemove,disabled,children,name, ...props }) =>
 
 
       <div style={{ margin:'0px 3.125em 0.625em 1.5em' }}>
-        <Accordion  panels={rootPanels} />
+        <Label style={{ backgroundColor:'transparent',color:'#2185d0' }} as="a" size='medium'  onClick = {() => {
+          setOpenDetail(true)
+          console.log('click')
+        }}> View Action History   <Icon  link name ="history"/> </Label>
+
+        {openDetail &&
+          <TaskModal open= {openDetail} setOpen = {setOpenDetail} task= {task}> </TaskModal>
+        }
+
         <ErrorMessage name = {`${name}.action`} pointing='below' ></ErrorMessage>
         <div>
           <Button size='mini'

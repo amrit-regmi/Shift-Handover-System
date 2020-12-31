@@ -1,14 +1,23 @@
-import { gql, useMutation } from '@apollo/client'
-import React, { useContext } from 'react'
+import { gql, useLazyQuery, useMutation } from '@apollo/client'
+import React, { useContext, useEffect, useState } from 'react'
 import { ADD_AIRCRFAT } from '../../mutations/costumerMutation'
 import { forEach } from 'lodash'
 import { Button, Form, Modal } from 'semantic-ui-react'
 import { Formik } from 'formik'
 import { InputField } from '../StationReportPage/NewReportForm/FormFields'
 import { NotificationContext } from '../../contexts/NotificationContext'
+import { VERIFY_REGISTRATION } from '../../queries/costumerQuey'
 
 const AddAircraftModal = ({ open ,setOpen ,costumer }) => {
   const [,dispatch] = useContext(NotificationContext)
+  const [checkAircraftRegistration,{ loading,data }] = useLazyQuery(VERIFY_REGISTRATION)
+  const [duplicateError,setDuplicateError] = useState([])
+  useEffect(() => {
+    if(data){
+      setDuplicateError(data.verifyAircraftRegistration)
+    }
+  }, [data])
+
   const [addAircrafts] = useMutation (ADD_AIRCRFAT,{
     update:(store,{ data: { addAircrafts } }) => {
 
@@ -48,6 +57,7 @@ const AddAircraftModal = ({ open ,setOpen ,costumer }) => {
     }
   })
 
+
   return(
 
     <Formik
@@ -59,13 +69,26 @@ const AddAircraftModal = ({ open ,setOpen ,costumer }) => {
 
         const errors = {}
         if( values.aircrafts.length ){
+          if(!values.aircrafts.match(/^[a-zA-Z, ]+$/)){
+            errors.aircrafts = 'Invalid character detected, check again'
+          }
+
           const errAircraft =[]
           forEach(values.aircrafts.split(','), aircraft => {
-            if(aircraft.trim().length < 3) errAircraft.push(aircraft.toUpperCase())
+            if(aircraft.trim().length < 3) errAircraft.push(aircraft.trim().toUpperCase())
           })
           if (errAircraft.length ){
             errors.aircrafts = `${errAircraft.toString()} invalid Aircraft Registration, should at least 3 characters`
           }
+
+          /**If no any error then check if the registration is unique */
+          if(!errors.aircrafts){
+            checkAircraftRegistration({ variables:{ registrations: values.aircrafts } })
+            if(duplicateError.length){
+              errors.aircrafts = `Registration ${duplicateError.toString()} already exists.`
+            }
+          }
+
         }else{
           errors.aircrafts = 'Enter at least one Aircraft'
         }
@@ -92,7 +115,7 @@ const AddAircraftModal = ({ open ,setOpen ,costumer }) => {
             </Form>
           </Modal.Content>
           <Modal.Actions>
-            <Button type='submit' positive onClick= { (e) => {
+            <Button type='submit' loading={loading} disabled={loading} positive onClick= { (e) => {
               e.preventDefault()
               handleSubmit()
             }

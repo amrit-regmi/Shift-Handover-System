@@ -17,6 +17,12 @@ query fetchAllCostumers ($detailed: Boolean = false) {
   }
 `
 
+export const VERIFY_REGISTRATION = gql`
+query verifyReg ($registrations:String!){
+  verifyAircraftRegistration(registrations: $registrations)
+}
+`
+
 export const GET_COSTUMER = gql ` 
 query getCostumerId ($id:String){
   getCostumer(

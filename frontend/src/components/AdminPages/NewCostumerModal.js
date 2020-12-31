@@ -1,11 +1,12 @@
 import { useMutation, useLazyQuery, gql } from '@apollo/client'
 import { FieldArray, Formik } from 'formik'
-import { cloneDeep, forEach } from 'lodash'
+import { forEach } from 'lodash'
 import React, { useContext, useEffect, useState } from 'react'
 import { Button, Dimmer, Form, Grid, Header, Icon, Loader, Modal,ModalContent, ModalHeader } from 'semantic-ui-react'
 import { NotificationContext } from '../../contexts/NotificationContext'
 import { ADD_COSTUMER } from '../../mutations/costumerMutation'
-import { ALL_STATION, GET_STATION } from '../../queries/stationQuery'
+import { VERIFY_REGISTRATION } from '../../queries/costumerQuey'
+import { ALL_STATION } from '../../queries/stationQuery'
 import { InputField } from '../StationReportPage/NewReportForm/FormFields'
 import { validateEmail } from '../StationReportPage/NewReportForm/validator'
 import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
@@ -13,8 +14,16 @@ const NewCostumerModel = (props) => {
   const [,dispatch] = useContext(NotificationContext)
   const [stationOptions,setStationOptions]=  useState([])
   const[addCostumerMutation, { loading,error }] = useMutation(ADD_COSTUMER)
-
   const [loadStations, { loading:stationLoading, data: stationData }] = useLazyQuery(ALL_STATION)
+
+  const [checkAircraftRegistration,{ loading:aircraftCheckLoading,data:aircraftCheckData }] = useLazyQuery(VERIFY_REGISTRATION)
+  const [duplicateAircraftError,setDuplicateAircraftError] = useState([])
+  useEffect(() => {
+    if(aircraftCheckData){
+      setDuplicateAircraftError(aircraftCheckData.verifyAircraftRegistration)
+    }
+  }, [aircraftCheckData,])
+
 
   useEffect(() => {
     if(stationData && stationData.allStations){
@@ -33,22 +42,17 @@ const NewCostumerModel = (props) => {
       update: (store,{ data: { addCostumer } }) => {
 
         forEach( addCostumer.stations, station => {
-          try { /** Append costumer to corresponding stations in cache */
-            const { getStation: data } = cloneDeep(store.readQuery({
-              query: GET_STATION,
-              variables: { id: station.id } }))
-
-            store.writeQuery({
-              query: GET_STATION,
-              variables: { id: station.id } ,
-              data: {
-                ...data,costumers :[...data.costumers, addCostumer]
+          store.modify({
+            id: `Station:${station.id}`,
+            fields:{
+              costumers(existingCostumerRefs, { readField }) {
+                if(existingCostumerRefs.some(ref => readField('id',ref) === addCostumer.id)){
+                  return existingCostumerRefs
+                }
+                return [...existingCostumerRefs, { '__ref':`Station:${addCostumer.id}` }]
               }
-            })
-          }
-          catch (e) {
-            /**No query found */
-          }
+            }
+          })
 
         })
 
@@ -85,7 +89,7 @@ const NewCostumerModel = (props) => {
 
       }
     }).then(
-      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, costumer ${values.name} added` ,type: 'SUCCESS' } }),
+      () =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, costumer ${values.name} added` ,type: 'SUCCESS' } }),
       err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, Cannot add costumer ${values.name}`}<br/> {err.message}</> ,type: 'ERROR' } }),
       props.setOpen(false)
     )
@@ -124,14 +128,29 @@ const NewCostumerModel = (props) => {
           errors.contract = 'Please specify contract type ex: Ad-HOC, LongTerm , Seasonal etc.'
         }
 
-        if( values.aircrafts ){
+        if( values.aircrafts.length ){
+          if(!values.aircrafts.match(/^[a-zA-Z, ]+$/)){
+            errors.aircrafts = 'Invalid character detected, check again'
+          }
+
           const errAircraft =[]
           forEach(values.aircrafts.split(','), aircraft => {
-            if(aircraft.trim().length < 3) errAircraft.push(aircraft.toUpperCase())
+            if(aircraft.trim().length < 3) errAircraft.push(aircraft.trim().toUpperCase())
           })
           if (errAircraft.length ){
             errors.aircrafts = `${errAircraft.toString()} invalid Aircraft Registration, should at least 3 characters`
           }
+
+          /**If no any error then check if the registration is unique */
+          if(!errors.aircrafts){
+            checkAircraftRegistration({ variables:{ registrations: values.aircrafts } })
+            if(duplicateAircraftError.length){
+              errors.aircrafts = `Registration ${duplicateAircraftError.toString()} already exists.`
+            }
+          }
+
+        }else{
+          errors.aircrafts = 'Enter at least one Aircraft'
         }
 
         if(values.keyContacts.length){
@@ -251,7 +270,7 @@ const NewCostumerModel = (props) => {
           <Modal.Actions>
             <Button   negative onClick={() => props.setOpen (false)}>Cancel</Button>
             {dirty &&
-            <Button  positive onClick= {(e) => {
+            <Button  loading = {aircraftCheckLoading} disabled={aircraftCheckLoading} positive onClick= {(e) => {
               e.preventDefault()
               handleSubmit()
             }}>Save</Button>}

@@ -55,7 +55,7 @@ const costumerResolver = {
         if(args.aircrafts.length){
 
           const aircrfatsToInsert = args.aircrafts.map(aircraft => {
-            return { registration:aircraft , costumer: costumer.id }
+            return { registration:aircraft.trim().toUpperCase() , costumer: costumer.id }
           })
           insertedAircrafts =   await Aircraft.insertMany( aircrfatsToInsert,{ ordered:false })
         }

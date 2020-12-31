@@ -69,4 +69,21 @@ const stationSchema = new mongoose.Schema({
 })
 
 stationSchema.plugin(uniqueValidator)
+
+stationSchema.post(['deleteOne','findOneAndDelete','remove'], { document:false, query: true } , async function() {
+  const id = this.getFilter()['_id']
+  const Costumer = require('./Costumer')
+  await Costumer.updateMany({ stations :  id },{ $pull: { stations:  id } })
+
+  const ShiftReport = require('./ShiftReport')
+  const sr = await ShiftReport.deleteMany({ station: id })
+  console.log(`Deleted Station ${id} and ${sr.n} shift Reports` )
+})
+
+stationSchema.post('save',async function() {
+  const Costumer = require('./Costumer')
+  await Costumer.updateMany({ _id:{ $in: this.costumers } }, { $addToSet:{ stations: this._id } })
+  console.log(`Created Station ${this.id} and updated relevent costumers`)
+})
+
 module.exports =  mongoose.model('Station',stationSchema)

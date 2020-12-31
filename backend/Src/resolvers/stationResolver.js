@@ -87,19 +87,11 @@ const stationResolver = {
       const { stationKey,...inputargs } = { ...args }
       const key = await  bcrypt.hash(stationKey, 10)
       const station = new Station({ ...inputargs, stationKey: key })
-      const costumers = args.costumers
+      //const costumers = args.costumers
       try{
         await station.save()
-        await Costumer.bulkWrite(
-          costumers.map((costumer) => ({
-            updateOne: {
-              filter: { id:costumer },
-              update: { $addToSet:{ stations:  ObjectId(station.id ) }
-              }
-            }
-          }))
-        )
-
+        /**Update station detail to Costumers */
+        //await Costumer.updateMany({ _id:{ $in: station.sostumers } }, { $addToSet:{ stations: station.id } })
         return station
       } catch(err) {
         throw new UserInputError(err.message)
@@ -141,6 +133,11 @@ const stationResolver = {
       }
       try {
         await Station.findByIdAndDelete(args.stationId)
+        /**Bulk Removal of all station reports from station is handled b Station Schema Post Hook */
+
+        /**Remove station data from costumer */
+        await Costumer.updateMany({ stations :  args.stationId },{ $pull: { stations: args.stationId } })
+
         return ({ type:'SUCCESS', message:'Station Removed' })
 
       } catch (error) {

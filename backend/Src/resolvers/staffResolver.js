@@ -318,8 +318,20 @@ const staffResolver = {
         if(!args.id){
           throw new UserInputError('Missing required Fields')
         }
-        await Staff.findByIdAndDelete(args.id)
+        const staff = Staff.findById(args.id)
+        /**Non admin staff shouldnot be able to delete admin staff  */
+        if(!loggedInStaff.permission.admin){
+          if(staff.permission.admin){
+            throw new AuthenticationError('You not have no rights delete Admin User ')
+          }
+        }
+
+        await Staff.deleteOne(args.id)
+        /** Bulk Removal of Staff TimeSheet and Permission  will be handled by Staff Schema post Hook*/
+
         return({ status:'SUCCESS', message: 'Staff Deleted'  })
+
+
       }
       else{
         throw new AuthenticationError('You not have rights fot this action ')

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const uniqueValidator = require('mongoose-unique-validator')
 
+
 const staffSchema = new mongoose.Schema({
   name: {
     type:String,
@@ -88,5 +89,19 @@ staffSchema.virtual('reqHours').get(function() {
 staffSchema.set('toJSON', { virtuals:true })
 staffSchema.set('toObject', { virtuals:true })
 staffSchema.plugin(uniqueValidator)
+
+/**After Staff is removed ,Remove related Permissions and TImesheet Records as well */
+staffSchema.post(['deleteOne','findOneAndDelete','remove'], { document:false, query: true },async function() {
+  const id = this.getFilter()['_id']
+  console.log(`Removed staff ${id} ` )
+
+  const Permission = require('./Permission')
+  await Permission.findOneAndDelete({ staffId: id })
+  console.log(`Removed Permission document for staff ${id} ` )
+
+  const TimeSheet = require('./TimeSheet')
+  const t = await TimeSheet.deleteMany({ staff:id })
+  console.log(`Removed ${t.n} Timesheet record assosciated with staff ${id} ` )
+})
 
 module.exports =  mongoose.model('Staff', staffSchema)

@@ -7,7 +7,7 @@ import { NotificationContext } from '../../contexts/NotificationContext'
 import { ADD_STATION } from '../../mutations/stationMutation'
 import { ALL_COSTUMERS } from '../../queries/costumerQuey'
 import { ALL_STATION } from '../../queries/stationQuery'
-import { InputField } from '../StationReportPage/NewReportForm/FormFields'
+import { InputField, TimeInputField } from '../StationReportPage/NewReportForm/FormFields'
 import { validateEmail, validateName } from '../StationReportPage/NewReportForm/validator'
 import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
 const NewStationModel = (props) => {
@@ -97,7 +97,7 @@ const NewStationModel = (props) => {
     email: '',
     phone: '',
     costumers:[],
-    shifts:[],
+    shifts:[{ name:'',startTime:'' }],
     stationKey:'',
     stationKeyConfirm:''
   }
@@ -105,7 +105,6 @@ const NewStationModel = (props) => {
     <Formik
       initialValues = { initVal }
       onSubmit= {(values) => {
-        console.log(values)
         addStation(values)
       }}
       validate = {(values) => {
@@ -130,9 +129,36 @@ const NewStationModel = (props) => {
         if( !values.email  || validateEmail(values.email)){
           errors.email = 'Email is required and must be valid'
         }
-        if( !values.phone ){
-          errors.phone = 'Phone is required'
+
+        if(values.shifts.length){
+          forEach(values.shifts, (shift,index) => {
+            if(!shift.name){
+              if (!errors.shifts) errors.shifts=[]
+              if (!errors.shifts[index] ) errors.shifts[index] = {}
+              errors.shifts[index].name = 'Please provide shift name'
+            }
+
+            if(!shift.startTime){
+              if (!errors.shifts) errors.shifts=[]
+              if (!errors.shifts[index] ) errors.shifts[index] = {}
+
+              errors.shifts[index].startTime = 'Shift start time is required'
+            }
+
+            if(shift.startTime){
+              if(!shift.startTime.match(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/)){
+                if (!errors.shifts) errors.shifts=[]
+                if (!errors.shifts[index] ) errors.shifts[index] = {}
+
+                errors.shifts[index].startTime = 'Shift start should be on format HH:mm'
+              }
+            }
+
+          }
+          )
         }
+
+
         if( !values.stationKey || (values.stationKey && values.stationKey.length < 8)){
           errors.stationKey = 'Station key is required and should be at least 8 charter long'
         }
@@ -149,7 +175,7 @@ const NewStationModel = (props) => {
           closeIcon
           closeOnEscape={false}
           closeOnDimmerClick={false}
-          open = {props.open}
+          open = {props.open }
           onClose= {() =>  props.setOpen(false)}
           onOpen= {() => props.setOpen (true)}
         >
@@ -202,21 +228,23 @@ const NewStationModel = (props) => {
                   <InputField name='phone' label='Phone' type='tel'  width='8'/>
                 </Grid.Row>
 
-                <Grid.Row><Header as ='h3'>Working Shift</Header></Grid.Row>
+                <Grid.Row ><Header as ='h3'>Working Shift</Header></Grid.Row>
                 <FieldArray  name={'shifts'}>
                   {({ push,remove }) => (<>
-                    { values.shifts.length > 0 && values.shifts.map((shift,index) => <Grid.Row key ={index} style={{ padding:0 }}>
-                      <Form.Group widths='13'><InputField name={`shifts[${index}].name`} label='Name' /><InputField name={`shifts[${index}].startTime`} label='StartTime'/>
-                        <Button
-                          type='button'
-                          icon
-                          size ='mini'
-                          primary
+                    { values.shifts.length > 0 && values.shifts.map((shift,index) =>
+                      <Grid.Row columns='2' key ={index} style={{ padding:0 }}>
+
+                        <InputField name={`shifts[${index}].name`} label='Name' width='5' />
+                        <TimeInputField name={`shifts[${index}].startTime`} label placeholder='Start Time' ></TimeInputField>
+                        {index !== 0 &&
+                        <Icon
+                          link
+                          name ="cancel"
+                          color='red'
                           onClick={ (e) => remove(index)
-                          }>
-                          <Icon name="plus circle"/> Add
-                        </Button> </Form.Group>
-                    </Grid.Row>
+                          }/>}
+
+                      </Grid.Row>
                     )}
                     <Button
                       type='button'

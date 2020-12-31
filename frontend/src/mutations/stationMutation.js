@@ -6,7 +6,7 @@ export const LOGIN_TO_STATION = gql`
 `
 
 export const ADD_STATION = gql`
-  mutation addStation ($location:String! , $address: AddressInput! , $phone: String! ,$email: String!, $shifts: [ShiftInfoInput], $costumers: [String], $stationKey:String! ){
+  mutation addStation ($location:String! , $address: AddressInput! , $phone: String! ,$email: String!, $shifts: [ShiftInfoInput!]!, $costumers: [String], $stationKey:String! ){
     addStation(
       location:$location
       address:$address

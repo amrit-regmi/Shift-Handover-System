@@ -4,7 +4,7 @@ const stationMutation = `
       location: String!
       address: AddressInput!
       costumers: [String]
-      shifts: [ShiftInfoInput]
+      shifts: [ShiftInfoInput!]!
       email: String!
       phone: String!
       stationKey: String!

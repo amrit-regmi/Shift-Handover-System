@@ -101,7 +101,7 @@ const shiftReportResolver = {
               const existingTask = await Task.findById(task.id).exec()
 
               /** If task is from the current handover - task will have one update with current handoverId and taskcreated action*/
-              if(existingTask.updates && existingTask.updates.length === 1 && existingTask.updates[0].handoverId=== shiftReport.id && existingTask.updates[0].action==='TASK_CREATED'  ){
+              if(existingTask.updates && existingTask.updates.length === 1 && existingTask.updates[0].handoverId=== shiftReport.id  ){
                 if(task.description ) existingTask.description = task.description
                 if(task.action )existingTask.status = task.action
               }
@@ -122,7 +122,7 @@ const shiftReportResolver = {
                   shiftReport.tasks = [...shiftReport.tasks, (task.id)]
                 }
 
-                const newUpdate = { action: task.action, handoverId: shiftReport.id, note : task.newNotes }
+                const newUpdate = { action: task.action, handover: shiftReport.id, note : task.newNote }
 
                 /**Add updates to task */
                 if(!existingTask.updates) {
@@ -152,7 +152,7 @@ const shiftReportResolver = {
                 task.status = task.action
               }
 
-              task.updates = [{ handoverId: shiftReport.id, action: `TASK_CREATED_${task.action}` , note: task.newNotes }]
+              task.updates = [{ handoverId: shiftReport.id, action: `TASK_CREATED_${task.action}` }]
               /**Remove action field */
               delete task.action
               return task
@@ -177,25 +177,35 @@ const shiftReportResolver = {
         shiftReport.flag = 'MOST_RECENTLY_COMPLETED'
         await shiftReport.save()
 
-        const newReport = await  ShiftReport.populate( shiftReport,
+        const newReport = await   ShiftReport.populate( shiftReport,
           [
             {
-              path:'station',
+              path:'station'
+              ,
               select: ['id','location']
-
             },
             {
               path:'staffAndTime',
+              select:['id','endTime','startTime', 'staffAndTime'],
               populate:{
-                path:'staff'
-              }
+                path:'staff',
+                select: ['name']
+              },
+
             },
             {
               path:'tasks' ,
+              select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
               populate:{
                 path:'aircraft updates',
+                select:['registration','id','costumer','action','handoverId','note'],
                 populate:{
-                  path: 'costumer handoverId'
+                  path: 'costumer handoverId',
+                  select:['name','id','shift' ,'station' ,'startTime'],
+                  populate:{
+                    path: 'station',
+                    select:['id', 'location'],
+                  }
                 }
               },
             }
@@ -277,7 +287,11 @@ const shiftReportResolver = {
                 select:['registration','id','costumer','action','handoverId','note'],
                 populate:{
                   path: 'costumer handoverId',
-                  select:['name','id','shift'],
+                  select:['name','id','shift' ,'station' ,'startTime'],
+                  populate:{
+                    path: 'station',
+                    select:['id', 'location'],
+                  }
                 }
               },
             }
@@ -302,7 +316,39 @@ const shiftReportResolver = {
         if(loggedInStaff && (loggedInStaff.permission.admin  || (loggedInStaff.permission.station.edit.length > 0))){
           let allReports
           if (loggedInStaff.permission.admin){
-            allReports = await ShiftReport.find({}).populate('station')
+            allReports = await ShiftReport.find({}).populate(
+              [
+                {
+                  path:'station'
+                  ,
+                  select: ['id','location']
+                },
+                {
+                  path:'staffAndTime',
+                  select:['id','endTime','startTime', 'staffAndTime'],
+                  populate:{
+                    path:'staff',
+                    select: ['name']
+                  },
+
+                },
+                {
+                  path:'tasks' ,
+                  select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
+                  populate:{
+                    path:'aircraft updates',
+                    select:['registration','id','costumer','action','handoverId','note'],
+                    populate:{
+                      path: 'costumer handoverId',
+                      select:['name','id','shift' ,'station' ,'startTime'],
+                      populate:{
+                        path: 'station',
+                        select:['id', 'location'],
+                      }
+                    }
+                  },
+                }
+              ])
           }
           else{
             allReports = await ShiftReport.find({ station: { $in: loggedInStaff.permission.station.edit } }).populate('station')
@@ -316,13 +362,77 @@ const shiftReportResolver = {
         throw new AuthenticationError('Invalid authentication')
       }
 
-      const shiftReports = await ShiftReport.find({ station:args.stationId }).populate('station')
+      const shiftReports = await ShiftReport.find({ station:args.stationId }).populate(
+        [
+          {
+            path:'station'
+            ,
+            select: ['id','location']
+          },
+          {
+            path:'staffAndTime',
+            select:['id','endTime','startTime', 'staffAndTime'],
+            populate:{
+              path:'staff',
+              select: ['name']
+            },
+
+          },
+          {
+            path:'tasks' ,
+            select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
+            populate:{
+              path:'aircraft updates',
+              select:['registration','id','costumer','action','handoverId','note'],
+              populate:{
+                path: 'costumer handoverId',
+                select:['name','id','shift' ,'station' ,'startTime'],
+                populate:{
+                  path: 'station',
+                  select:['id', 'location'],
+                }
+              }
+            },
+          }
+        ])
       return shiftReports
 
     },
 
     getShiftReportByShift: async(_root,args,_context) => {
-      const report = await ShiftReport.findOne(args).populate('station')
+      const report = await ShiftReport.findOne(args).populate(
+        [
+          {
+            path:'station'
+            ,
+            select: ['id','location']
+          },
+          {
+            path:'staffAndTime',
+            select:['id','endTime','startTime', 'staffAndTime'],
+            populate:{
+              path:'staff',
+              select: ['name']
+            },
+
+          },
+          {
+            path:'tasks' ,
+            select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
+            populate:{
+              path:'aircraft updates',
+              select:['registration','id','costumer','action','handoverId','note'],
+              populate:{
+                path: 'costumer handoverId',
+                select:['name','id','shift' ,'station' ,'startTime'],
+                populate:{
+                  path: 'station',
+                  select:['id', 'location'],
+                }
+              }
+            },
+          }
+        ])
       return report
 
     }

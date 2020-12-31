@@ -4,7 +4,7 @@ const _  = require('lodash')
 
 const permissionResolver = {
   Mutation: {
-    changePermission: async (root,args,context) => {
+    changePermission: async (_root,args,context) => {
       const { id,...updates }= { ...args }
 
       const loggedInStaff = context.currentUser

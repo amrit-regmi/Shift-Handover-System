@@ -36,10 +36,14 @@ const taskSchema = new mongoose.Schema({
     note:{
       type:String
     }
-
-
   }]
 
+})
+
+taskSchema.post(['deleteOne','findOneAndDelete','remove'], { document:false, query: true },async function() {
+  const id = this.getFilter()['_id']
+  const ShiftReport = require('./ShiftReport')
+  await ShiftReport.updateMany({ tasks: id }, { $pull: { tasks:id } })
 })
 
 module.exports = mongoose.model('Task',taskSchema)

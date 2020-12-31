@@ -1,8 +1,9 @@
-const Costumer = require('../models/Costumer')
 const Station = require('../models/Station')
+const Costumer = require('../models/Costumer')
 const { UserInputError, AuthenticationError } = require('apollo-server')
 const { forEach } = require('lodash')
 const Aircraft = require('../models/Aircraft')
+//const Task = require('../models/Task')
 
 const costumerResolver = {
   Query: {
@@ -47,14 +48,13 @@ const costumerResolver = {
       if(!(loggedInStaff && (loggedInStaff.permission.admin )) ){
         throw new AuthenticationError ('You do not have permission for this action ')
       }
-      const { aircrafts,stations } = { ...args }
       try{
         const costumer = new Costumer({ ...args })
 
         let insertedAircrafts =[]
-        if(aircrafts.length){
+        if(args.aircrafts.length){
 
-          const aircrfatsToInsert = aircrafts.map(aircraft => {
+          const aircrfatsToInsert = args.aircrafts.map(aircraft => {
             return { registration:aircraft , costumer: costumer.id }
           })
           insertedAircrafts =   await Aircraft.insertMany( aircrfatsToInsert,{ ordered:false })
@@ -63,12 +63,8 @@ const costumerResolver = {
 
         await costumer.save()
 
-        if(stations.length){
-          forEach(stations, async station => {
-            await Station.findByIdAndUpdate( station ,{ $push:{ costumers: costumer.id } })
-          })
-        }
         return  Costumer.populate(costumer,({ path:'stations aircrafts' }))
+
       } catch(err) {
         throw new UserInputError(err.message)
       }
@@ -81,15 +77,15 @@ const costumerResolver = {
         if(!(loggedInStaff && (loggedInStaff.permission.admin )) ){
           throw new AuthenticationError ('You do not have permission for this action ')
         }
-        const costumer = await Costumer.findById(args.costumer)
+        const costumer = await Costumer.findByIdAndUpdate(args.costumer,{ $push: { keyContacts :{ $each: args.keyContacts } } },{ new:true })
+
         if(!costumer){
           throw new UserInputError('Costumer does not exists')
         }
-        costumer.keyContacts = [...costumer.keyContacts, ...args.keyContacts]
-        await costumer.save()
 
         return costumer.keyContacts
       }
+
       catch(err){
         throw new UserInputError(err.message)
       }
@@ -102,22 +98,26 @@ const costumerResolver = {
         if(!(loggedInStaff && (loggedInStaff.permission.admin )) ){
           throw new AuthenticationError ('You do not have permission for this action ')
         }
-        const costumer = await Costumer.findById(args.costumer)
+
+        console.log(args)
+
+        if(!args.stations.length){
+          throw new UserInputError('Station list cannot be empty')
+        }
+
+        const costumer = await Costumer.findByIdAndUpdate(args.costumer, { $addToSet: { stations: { $each: args.stations } } },{ new:true })
+
         if(!costumer){
           throw new UserInputError('Costumer does not exists')
         }
 
-        costumer.stations = [...new Set([...costumer.stations,... args.stations])]
-
-        await costumer.save()
-
-        if(args.stations.length){
-          forEach(args.stations, async station => {
-            await Station.findByIdAndUpdate( station ,{ $push:{ costumers: costumer.id } })
-          })
-        }
+        /**Update the stations to include costumers */
+        forEach(args.stations, async station => {
+          await Station.findByIdAndUpdate( station ,{ $push:{ costumers: costumer.id } })
+        })
 
         return Costumer.populate(costumer,'stations')
+
       }catch(err){
         throw new UserInputError(err.message)
       }
@@ -131,25 +131,28 @@ const costumerResolver = {
         if(!(loggedInStaff && (loggedInStaff.permission.admin )) ){
           throw new AuthenticationError ('You do not have permission for this action ')
         }
+
+        if(!args.registration.length ) {
+          throw new UserInputError('Aircraft List Cannot be Empty')
+        }
+
         const costumer = await Costumer.findById(args.costumer)
+
         if(!costumer){
           throw new UserInputError('Costumer does not exists')
         }
+
         let aircrafts = []
-        if(args.registration.length ) {
-          const aircrfatsToInsert = args.registration.map(aircraft => {
-            return { registration:aircraft.trim() , costumer: costumer.id }
-          })
-          aircrafts = await Aircraft.insertMany(aircrfatsToInsert,{ ordered:false })
-        }
 
-        costumer.aircrafts = [...costumer.aircrafts,...aircrafts]
-        await costumer.save()
-
-        const aircraftsMod = await Aircraft.find({
-          '_id': { $in : aircrafts }
+        const aircrfatsToInsert = args.registration.map(aircraft => {
+          return { registration:aircraft.trim() , costumer: costumer.id }
         })
-        return aircraftsMod
+
+        aircrafts = await Aircraft.insertMany(aircrfatsToInsert,{ ordered:false })
+
+        await costumer.updateOne({ $addToSet: { aircrafts: { $each: aircrafts } } },{ new:true })
+
+        return aircrafts
 
       } catch (e) {
         throw new UserInputError(e.message)
@@ -165,13 +168,11 @@ const costumerResolver = {
           throw new AuthenticationError ('You do not have permission for this action ')
         }
         const aircraft = await Aircraft.findByIdAndDelete(args.id)
+
         if(!aircraft){
           throw new UserInputError('Aircrfat does not exists')
         }
-        const costumer = await Costumer.findById(aircraft.costumer)
-        if(costumer){
-          costumer.aircrafts = costumer.aircrafts.filter( ac => ac.id.toString() !== args.id)
-        }
+
         return({ status:'SUCCESS', message: ' Aircraft Removed'  })
 
 
@@ -188,16 +189,10 @@ const costumerResolver = {
         throw new AuthenticationError ('You do not have permission for this action ')
       }
       try{
-        const costumer = await Costumer.findById(args.costumer)
+        const costumer = await Costumer.findByIdAndUpdate(args.costumer, { $pull: { keyContacts: { _id: args.id } } })
         if(!costumer){
           throw new UserInputError('Costumer does not exists')
         }
-
-        costumer.keyContacts = costumer.keyContacts.filter(contact => {
-          return contact.id.toString() !== args.id
-        })
-
-        await costumer.save()
 
         return({ status:'SUCCESS', message: 'Contact Removed'  })
 
@@ -207,6 +202,7 @@ const costumerResolver = {
 
     },
 
+    /**Deassosite station from costumer */
     removeCostumerStation: async (_root,args,context) => {
       const loggedInStaff = context.currentUser
       /**User must be admin or should have right to edit the concerned station*/
@@ -219,15 +215,13 @@ const costumerResolver = {
           throw new UserInputError('Costumer does not exists')
         }
 
-        costumer.stations = costumer.stations.filter (station => station.toString() !== args.station)
-        await costumer.save()
+        const s = await Station.findByIdAndUpdate(args.station,{ $pull:{ costumers: args.costumer } })
 
-        const station = await Station.findById(args.station)
-        if(!station){
+        if(!s){
           throw new UserInputError('Specified station does not exist')
         }
-        station.costumers = station.costumers.filter( costumer => costumer.toString() !== args.costumer)
-        await station.save({ validateBeforeSave: false })
+
+        await costumer.updateOne(args.costumer,{ $pull:{ stations: args.station } })
 
         return({ status:'SUCCESS', message: 'Station Removed'  })
 
@@ -245,19 +239,9 @@ const costumerResolver = {
           throw new AuthenticationError ('You do not have permission for this action ')
         }
         const costumer = await Costumer.findByIdAndDelete(args.costumer)
+
         if(!costumer){
           throw new UserInputError('Costumer does not exists')
-        }
-
-        if(costumer.stations.length > 0 ){
-
-          await Promise.all(
-            costumer.stations.map ( async station => {
-              const st = await Station.findById(station)
-              st.costumers =  st.costumers.filter( costumer => costumer.toString() !== args.costumer)
-              await st.save({ validateBeforeSave: false })
-            })
-          )
         }
 
         return({ status:'SUCCESS', message: 'Successfully Removed Costumer'  })

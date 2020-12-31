@@ -5,11 +5,16 @@ module.exports = {
     'es2020': true,
     'jest':true
   },
-  'extends': 'eslint:recommended',
+  'extends':[
+    'eslint:recommended',
+    'plugin:import/errors',
+    'plugin:import/warnings'
+  ],
   'parserOptions': {
     'ecmaVersion': 11
   },
   'rules': {
+    'import/no-cycle': ['error', { maxDepth: '∞' }],
     'indent': [
       'error',
       2

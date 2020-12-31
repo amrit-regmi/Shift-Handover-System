@@ -11,7 +11,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint ."
+    "lint": "eslint ./src"
   },
   "repository": {
     "type": "git",
@@ -56,6 +56,7 @@
     "uuid": "^8.3.0"
   },
   "devDependencies": {
-    "eslint": "^7.8.0"
+    "eslint": "^7.8.0",
+    "eslint-plugin-import": "^2.22.1"
   }
 }

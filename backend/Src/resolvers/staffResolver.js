@@ -222,9 +222,15 @@ const staffResolver = {
      * Generate the password reset link and send email to linked email address
     */
 
-    resetPasswordReq: async (_root,args) => {
+    resetPasswordReq: async (_root,args,context) => {
       if(args.id && args.id!== null && args.id !== undefined){
         const resetCode = uuidv1()
+        const loggedInStaff = context.currentUser
+
+        if(! (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)){
+          throw new AuthenticationError('User do not have permission for this action')
+        }
+
         try{  const staffById = await Staff.findByIdAndUpdate(args.id,{ resetCode:resetCode })
           await sendPasswordResetEmail(resetCode,staffById.name,staffById.email)
           return({ status:'SUCCESS', message: `Password resetlink  sent to ${staffById.name}`  })
@@ -237,7 +243,6 @@ const staffResolver = {
 
     /**
      * If resetCode is set then checks and update the password
-     * if password is set and user is verified sets new password
     */
 
     resetPassword: async (_root,args) => {
@@ -284,11 +289,15 @@ const staffResolver = {
       }
       const staff = await Staff.findById(args.id)
 
-      if( !staff || (staff && staff.passwordHash !== args.password)){
-        throw new AuthenticationError('Cannot find staff with provided credentials')
+      if(!staff)  throw new AuthenticationError ('Check username and password')
+
+      const passwordMatch = await bcrypt.compare(args.password, staff.passwordHash )
+
+      if(!passwordMatch){
+        throw new AuthenticationError('Check username and password')
       }
 
-      staff.passwordHash = await  bcrypt .hash(args.newPassword, 10)
+      staff.passwordHash = await  bcrypt.hash(args.newPassword, 10)
       await staff.save()
       return({ status:'SUCCESS', message: 'Password reset'  })
 
@@ -350,10 +359,11 @@ const staffResolver = {
         throw new AuthenticationError ('Your Account is disabled, please contact your supervisor.')
       }
 
-      if(staff &&  !bcrypt.compare(args.password, staff.passwordHash )){
-
+      const passwordMatch = await bcrypt.compare(args.password, staff.passwordHash )
+      if(!passwordMatch){
         throw new AuthenticationError('Check username and password')
       }
+
 
 
 

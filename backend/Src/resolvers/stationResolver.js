@@ -98,7 +98,7 @@ const stationResolver = {
       }
     },
 
-
+    /**Adddign Costumers from available costumer list to  given station */
     assignCostumers: async(_root,args,context) => {
       const loggedInStaff = context.currentUser
       if (!(loggedInStaff.permission.admin || loggedInStaff.permission.station.edit.includes(args.stationId))){
@@ -134,9 +134,6 @@ const stationResolver = {
       try {
         await Station.findByIdAndDelete(args.stationId)
         /**Bulk Removal of all station reports from station is handled b Station Schema Post Hook */
-
-        /**Remove station data from costumer */
-        await Costumer.updateMany({ stations :  args.stationId },{ $pull: { stations: args.stationId } })
 
         return ({ type:'SUCCESS', message:'Station Removed' })
 
@@ -256,8 +253,12 @@ const stationResolver = {
     loginToStation : async (_root,args) => {
       const station = await Station.findById(args.id ).populate({ path:'costumers', populate:({ path:'aircrafts' }) })
 
+      if(!station){
+        throw new UserInputError('Please check staton name')
+      }
 
-      if(!(station && bcrypt.compare(args.password, station.stationKey ))){
+      const passwordMatch  = await bcrypt.compare(args.password, station.stationKey )
+      if(!passwordMatch){
         throw new UserInputError('Please check staton key')
       }
 

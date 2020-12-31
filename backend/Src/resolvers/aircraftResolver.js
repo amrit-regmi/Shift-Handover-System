@@ -1,4 +1,3 @@
-const { forEach } = require('lodash')
 const Aircraft = require('../models/Aircraft')
 const aircraftResolver = {
   Query: {

@@ -59,6 +59,23 @@ const TimeSheetsFilter = ({ setFilter }) => {
 
   }, [staffData])
 
+
+  /**Fix for dates interval that falls on year change */
+  useEffect (() => {
+    if(period ==='week' && today.getMonth() === 0 && number > 38 ){
+      setYear(today.getFullYear() -1 )
+      return
+    }
+    if(today.getMonth() < 3 && period ==='month' && number > 6 && number !== 1 ){
+      console.log(number)
+      setYear(today.getFullYear() -1 )
+      return
+    }
+
+    setYear(today.getFullYear())
+  }, [today, number, period]
+  )
+
   useEffect(() => {
     setFilter({ staff, period ,stations ,groupBy ,from ,to , number, year, filterStatus })
   },[staff, period, stations, groupBy, from, to, number, year, filterStatus, setFilter])
@@ -131,13 +148,6 @@ const TimeSheetsFilter = ({ setFilter }) => {
                   selection compact
                   onChange ={(e,{ value }) => {
                     setNumber(value)
-                    if( period === 'week' && value > getWeekNumber(today)) {
-                      setYear(today.getFullYear -1)
-                    }
-                    if(period === 'month' && value > today.getMonth()) {
-                      setYear(today.getFullYear -1)
-                    }
-
                   }}></Form.Dropdown>
               </>
             }

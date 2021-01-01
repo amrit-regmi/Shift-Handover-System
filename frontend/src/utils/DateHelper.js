@@ -184,8 +184,10 @@ export const getMonthOptions = (duration) => {
   const options = [...new Array(duration)].map((v,i) => {
     return (
       { key:i ,
-        text: getMonthName(currentMonth - i), value: currentMonth -1 < 0 ? 11 + currentMonth -i  : currentMonth -i }
+        text: getMonthName(currentMonth-i ) ,
+        value:  currentMonth -i < 0 ? 12 + currentMonth -i  : currentMonth -i }
     ) })
+  console.log(options)
   return options
 }
 

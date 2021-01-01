@@ -48,8 +48,6 @@ const NewReportForm = ({ setActiveItem }) => {
           data
         }
       )
-
-      console.log(result,data)
     },
 
     onCompleted: () => {

@@ -1,7 +1,7 @@
 import { useMutation } from '@apollo/client'
 import { Formik } from 'formik'
 import _ from 'lodash'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 import { Button, Dimmer, Form, Grid, Loader, Modal,ModalContent, ModalHeader } from 'semantic-ui-react'
 import { NotificationContext } from '../../contexts/NotificationContext'
 import { STAFF_EDIT } from '../../mutations/staffMutation'

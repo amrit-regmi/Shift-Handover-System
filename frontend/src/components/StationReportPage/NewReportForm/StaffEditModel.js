@@ -1,25 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { Modal,Grid,Header,Form ,Divider,Segment ,Icon,Button,Message, FormGroup, FormField, Dimmer,Loader } from 'semantic-ui-react'
+import { Modal,Grid,Header,Form ,Divider,Segment ,Icon,Button,Message, Dimmer,Loader } from 'semantic-ui-react'
 import { DateInputField, InputField } from './FormFields'
 import { operateDate, formatDate } from '../../../utils/DateHelper'
-import { DateTimeInput } from 'semantic-ui-calendar-react'
 import { useFormikContext, Formik } from 'formik'
-import { validateEmail, validateName, validateStartEndTime } from './validator'
+import { validateStartEndTime } from './validator'
 import { SIGN_OFF_SHIFT } from '../../../mutations/timeSheetMutation'
 import { useMutation } from '@apollo/client'
-import _ from 'lodash'
-//import { remove } from '../../../../../backend/Src/models/Staff'
 
 
 const  StaffEditModel = ({ setOpen,open, fieldName, removeClick ,removeStaff ,setRemoveStaff }) => {
 
   const{ getFieldMeta,setFieldValue } = useFormikContext()
 
-  const [signOff,{ loading, error, data }] = useMutation(SIGN_OFF_SHIFT,{
-    onError: (error) => {
-      console.log(error)
-    }
-  })
+  const [signOff,{ loading, error, data }] = useMutation(SIGN_OFF_SHIFT)
 
   const shiftStartTime = getFieldMeta(`${fieldName}.startTime`).value
   const shiftEndTime = getFieldMeta(`${fieldName}.endTime`).value
@@ -73,8 +66,6 @@ const  StaffEditModel = ({ setOpen,open, fieldName, removeClick ,removeStaff ,se
   const submit = async (values) => {
     let signOffData
     signOffData = { startTime:values.startTime ,endTime: values.endTime ,break: values.breakt, username: username, password: password, additionalAction: removeStaff?'remove':'update',id:getFieldMeta(`${fieldName}`).value.id }
-
-    console.log(signOffData)
     await signOff({ variables:signOffData })
   }
 
@@ -143,7 +134,7 @@ const  StaffEditModel = ({ setOpen,open, fieldName, removeClick ,removeStaff ,se
         >
 
 
-          {({ values,handleSubmit,errors,touched }) =>
+          {({ handleSubmit }) =>
 
             <Form size='large' onSubmit = { handleSubmit} >
               <Form.Group >

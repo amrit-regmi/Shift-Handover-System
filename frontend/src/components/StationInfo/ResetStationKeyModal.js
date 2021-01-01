@@ -66,8 +66,6 @@ const ResetStationKeyModal = (props) => {
 
           }
           onSubmit= {(values) => {
-
-            console.log('Calles')
             changekey({ variables:{ stationId:props.station.id, stationKey: values.newKey } })
 
           }}

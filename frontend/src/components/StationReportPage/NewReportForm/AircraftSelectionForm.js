@@ -55,7 +55,6 @@ const AircraftSelectionForm = ({ costumers,setCheckedAircrafts,checkedAircrafts,
                   setConfirmOpen({ open:false })
                 }}
                 onConfirm = { () => {
-                  console.log('called me')
                   setFieldValue(`tasks.${confirmOpen.aircraft}`,null)
                   setCheckedAircrafts({ ...checkedAircrafts,[confirmOpen.aircraft]:{ 'checked':false } })
                   setConfirmOpen({ open:false })

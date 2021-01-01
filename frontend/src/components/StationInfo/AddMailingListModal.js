@@ -65,7 +65,6 @@ const AddMailingListModal = ({ open ,setOpen ,station }) => {
         }else{
           errors.emails = 'Enter at least one Email'
         }
-        console.log(errors)
         return errors
       }
       }

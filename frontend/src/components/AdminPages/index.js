@@ -8,6 +8,7 @@ import AdminMenuBar from './AdminMenuBar'
 import ManageTimeSheets from './ManageTimeSheets'
 import Costumers from './Costumers'
 import CostumerInfo from '../CostumerInfo'
+import ShiftReportsList from '../ShiftReportsList'
 //import AllStaffs from '../../AdminPages/AllStaffs'
 //import AllStations from '../../AdminPages/AllStations'
 
@@ -33,6 +34,13 @@ const AdminPages = () => {
       {/**If submenu is timesheetsoverview and staffId is set Or current page is managetimesheets or  timesheetsoverview*/
         activeItem && activeItem.toLowerCase() === 'managetimesheets' &&
         <ManageTimeSheets />
+      }
+
+      { /**If current page is shiftReports and staffId value is not set */
+        activeItem.toLowerCase() === 'shiftreports' &&
+      <>
+        <ShiftReportsList/>
+      </>
       }
 
       { /**If current page is allStaffs and staffId value is not set */

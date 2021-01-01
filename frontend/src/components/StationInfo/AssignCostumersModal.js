@@ -47,7 +47,6 @@ const AssignCostumersModal = ({ open ,setOpen ,station }) => {
       )
     },
     onCompleted: ( response) => {
-      console.log(response)
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, costumers assigned to station' ,type: 'SUCCESS' } })
       setOpen(false)
     },

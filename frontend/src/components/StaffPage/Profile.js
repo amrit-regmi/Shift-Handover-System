@@ -36,7 +36,7 @@ const Profile = (props) => {
 
 
 
-  const [resetPassword,{ loading: rpLoading,error:rpError }] = useMutation(RESET_PASSWORD_REQ,{
+  const [resetPassword,{ loading: rpLoading }] = useMutation(RESET_PASSWORD_REQ,{
     onCompleted: () => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, password reset code sent to users email' ,type: 'SUCCESS' } })
     },
@@ -45,7 +45,7 @@ const Profile = (props) => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to reset'}<br/> {err.message}</> ,type: 'ERROR' } })
     }
   })
-  const [resetRegisterCode,{ loading: rcLoading,error:rcError }] = useMutation(RESET_REGISTER_CODE,{
+  const [resetRegisterCode,{ loading: rcLoading }] = useMutation(RESET_REGISTER_CODE,{
     onCompleted: () => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, new register code sent to users email' ,type: 'SUCCESS' } })
     },
@@ -66,10 +66,6 @@ const Profile = (props) => {
 
   },[data, props])
 
-  if ( rpError || rcError) {
-    console.log( rpError, rcError)
-  }
-
 
   if (loading) {
     return (
@@ -78,7 +74,6 @@ const Profile = (props) => {
   }
 
   if (error) {
-    console.log(error)
     return (
       <Header as ='h5'>Something Went Wrong, Please try again</Header>
     )

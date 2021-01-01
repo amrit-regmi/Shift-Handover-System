@@ -22,7 +22,6 @@ const Costumers = () => {
   }
 
   if(error){
-    console.log(error)
     return <Header as='h4'>Something went wrong</Header>
   }
 

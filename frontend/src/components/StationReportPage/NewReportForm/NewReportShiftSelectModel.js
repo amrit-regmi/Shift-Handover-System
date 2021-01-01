@@ -50,7 +50,6 @@ const NewReportShiftSelectModel = ({ stationId  }) => {
 
       /**setInitialReport*/
     }
-    console.log(importFromExitingShift)
 
   }
 

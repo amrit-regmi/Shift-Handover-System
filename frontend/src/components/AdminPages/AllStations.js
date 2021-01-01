@@ -24,7 +24,6 @@ const AllStations = () => {
   }
 
   if(error){
-    console.log(error)
     return <Segment >Something Went Wrong </Segment>
   }
 

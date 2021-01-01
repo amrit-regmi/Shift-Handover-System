@@ -13,7 +13,7 @@ const StationLoginPage = () => {
   const [radioButton, setRadioButton] = useState({})
   const [stationKey,setStationKey]= useState('')
   const [remember, setRemember] = useState(false)
-  const { loading, error, data } =  useQuery(ALL_STATION,{ notifyOnNetworkStatusChange: true })
+  const { loading, data } =  useQuery(ALL_STATION,{ notifyOnNetworkStatusChange: true })
 
   /**
    * loginStation mutation hook

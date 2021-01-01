@@ -1,8 +1,8 @@
 import { useMutation } from '@apollo/client'
 import { Formik } from 'formik'
 import _ from 'lodash'
-import React, { useContext, useEffect } from 'react'
-import { Button, Dimmer, Form, Grid, Icon, List, Loader, Modal,ModalContent, ModalHeader, Segment } from 'semantic-ui-react'
+import React, { useContext } from 'react'
+import { Button, Dimmer, Form, Grid, Icon, Loader, Modal,ModalContent, ModalHeader } from 'semantic-ui-react'
 import { NotificationContext } from '../../contexts/NotificationContext'
 import { STAFF_ADD } from '../../mutations/staffMutation'
 import { InputField } from '../StationReportPage/NewReportForm/FormFields'
@@ -11,7 +11,7 @@ import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
 const NewStaffModel = (props) => {
   const [,dispatch]= useContext(NotificationContext)
 
-  const [addStaffMutation,{ loading,error }] = useMutation(STAFF_ADD)
+  const [addStaffMutation,{ loading }] = useMutation(STAFF_ADD)
 
   const addStaff = (values) => {
     addStaffMutation({
@@ -32,7 +32,7 @@ const NewStaffModel = (props) => {
         })
       }
     }).then(
-      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, new staff ${values.name} created` ,type: 'SUCCESS' } }),
+      () =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, new staff ${values.name} created` ,type: 'SUCCESS' } }),
       err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, Cannot create new staff  staff ${values.name}`}<br/> {err.message}</> ,type: 'ERROR' } }),
       props.setOpen(false)
     )
@@ -73,7 +73,7 @@ const NewStaffModel = (props) => {
 
       }}
     >
-      {({ values,handleSubmit,setFieldValue,dirty }) =>
+      {({ handleSubmit,setFieldValue,dirty }) =>
         <Modal
           closeIcon
           closeOnEscape={false}

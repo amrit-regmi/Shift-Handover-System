@@ -20,7 +20,7 @@ const AllStaffs = () => {
 
   const loggedInstaff = JSON.parse( sessionStorage.getItem('staffKey'))
   const [deleteStaff] = useMutation(DELETE_STAFF)
-  const [toggleStaffStatus, { loading: toggleing }] = useMutation ( SET_STAFF_STATUS)
+  const [toggleStaffStatus] = useMutation ( SET_STAFF_STATUS)
 
 
   const staffDelete = (id,name) => {
@@ -32,7 +32,7 @@ const AllStaffs = () => {
         })
       }
     }).then(
-      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, staff ${name} deleted` ,type: 'SUCCESS' } }),
+      () =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, staff ${name} deleted` ,type: 'SUCCESS' } }),
       err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, Cannot delete staff ${name}`}<br/> {err.message}</> ,type: 'ERROR' } })
     )
   }
@@ -51,7 +51,7 @@ const AllStaffs = () => {
         })
       }
     }).then(
-      res =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, staff ${name} set ${toggle?'active':'disabled'}` ,type: 'SUCCESS' } }),
+      () =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: `Success, staff ${name} set ${toggle?'active':'disabled'}` ,type: 'SUCCESS' } }),
       err =>  dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, Cannot toggle status for  staff ${name}`}<br/> {err.message}</> ,type: 'ERROR' } })
     )
   }

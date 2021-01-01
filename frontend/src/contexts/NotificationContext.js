@@ -10,8 +10,6 @@ export const REMOVE_NOTIFICATION = 'REMOVE_NOTIFICATION'
 
 
 export const notificationReducer = (state ,action) => {
-  console.log('this is initialized')
-  console.log(action.type)
   switch (action.type){
   case ADD_NOTIFICATION:
     return [

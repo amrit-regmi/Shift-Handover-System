@@ -13,7 +13,9 @@ import { DropDownField } from '../TimeSheetsReport/TimeSheetEditFields'
 const NewCostumerModel = (props) => {
   const [,dispatch] = useContext(NotificationContext)
   const [stationOptions,setStationOptions]=  useState([])
-  const[addCostumerMutation, { loading,error }] = useMutation(ADD_COSTUMER)
+
+  const[addCostumerMutation, { loading }] = useMutation(ADD_COSTUMER)
+
   const [loadStations, { loading:stationLoading, data: stationData }] = useLazyQuery(ALL_STATION)
 
   const [checkAircraftRegistration,{ loading:aircraftCheckLoading,data:aircraftCheckData }] = useLazyQuery(VERIFY_REGISTRATION)
@@ -94,12 +96,6 @@ const NewCostumerModel = (props) => {
       props.setOpen(false)
     )
   }
-
-
-  if(error){
-    console.log(error)
-  }
-
 
   const initVal = {
     name: '',

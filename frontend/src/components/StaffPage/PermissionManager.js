@@ -260,7 +260,6 @@ const PermissionManager = ({ permissions }) => {
                       name={`${key}.add`}
                       checked = {values[`${key}`].add }
                       onChange= {(e,{ checked }) => {
-                        console.log(`${key}.add`,checked)
                         setFieldValue(`${key}.add`,checked)
                         if(key === 'staff' && checked){
                           /**If staff has add permission then must have view permission by default */

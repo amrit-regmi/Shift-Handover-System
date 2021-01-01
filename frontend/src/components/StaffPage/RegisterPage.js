@@ -1,19 +1,24 @@
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
 import { Formik } from 'formik'
 import _ from 'lodash'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { Button, Form, Header, Icon, Input, Label,  Message, Segment } from 'semantic-ui-react'
+import { NotificationContext } from '../../contexts/NotificationContext'
 import { COMPLETE_REGISTRATION } from '../../mutations/staffMutation'
 import { GET_STAFF_REG,VERIFY_USERNAME } from '../../queries/staffQuery'
 import { InputField } from '../StationReportPage/NewReportForm/FormFields'
 const RegisterPage = ({ setName }) => {
-
+  const [,dispatch] = useContext(NotificationContext)
   const params= useParams()
   const history = useHistory()
 
   const { loading,error,data } = useQuery(GET_STAFF_REG, { variables: { registerCode: params.registerCode }, skip: !params.registerCode  })
-  const [completeRegistration,{ loading:regstrationLoading,error:registrationError,data:registrationData }] = useMutation(COMPLETE_REGISTRATION)
+  const [completeRegistration,{ loading:regstrationLoading,data:registrationData }] = useMutation(COMPLETE_REGISTRATION,{
+    onError: (err) => {
+      dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{'Error, failed to register'}<br/> {err.message}</> ,type: 'ERROR' }
+      })}
+  })
   const [validateUsernameQuery,{ loading:usernameLoading,data:usernameData }] = useLazyQuery(VERIFY_USERNAME)
   const [usernameVerified,setUsernameVerified] = useState({ verified:false })
 
@@ -29,11 +34,6 @@ const RegisterPage = ({ setName }) => {
 
   if(!params.registerCode){
     return <Header>Registration code mising or invalid</Header>
-  }
-
-  if(error || registrationError){
-    console.log(error)
-
   }
 
   if(registrationData && registrationData.registerStaff.status === 'SUCCESS'){

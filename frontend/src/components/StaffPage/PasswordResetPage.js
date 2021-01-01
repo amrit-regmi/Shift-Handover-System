@@ -14,7 +14,7 @@ const PasswordResetPage = () => {
 
   sessionStorage.removeItem('staffKey') //Logout any logged in staff
 
-  const [resetPassword,{ loading,error }] = useMutation(RESET_PASSWORD,{
+  const [resetPassword,{ loading }] = useMutation(RESET_PASSWORD,{
     onCompleted: () => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content:'Success, password reset. you can now login',type: 'SUCCESS' } })
       history.push('/staffLogin')
@@ -33,8 +33,6 @@ const PasswordResetPage = () => {
     password:'',
     confirmPassword:''
   }
-
-
 
   return(
     <Segment basic loading ={loading}>

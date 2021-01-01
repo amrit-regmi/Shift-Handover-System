@@ -13,11 +13,7 @@ const  StaffAddModel = ({ setOpen,open ,e }) => {
 
   const{ getFieldMeta,setFieldValue } = useFormikContext()
 
-  const [signOff,{ loading, error, data }] = useMutation(SIGN_OFF_SHIFT,{
-    onError: (error) => {
-      console.log(error)
-    }
-  })
+  const [signOff,{ loading, error, data }] = useMutation(SIGN_OFF_SHIFT)
 
   const shiftStartTime = getFieldMeta('startTime').value
   const shiftEndTime = getFieldMeta('endTime').value
@@ -98,7 +94,6 @@ const  StaffAddModel = ({ setOpen,open ,e }) => {
     }else {
       signOffData = { startTime:values.startTime ,endTime: values.endTime ,break:parseInt(breakt), username: username, password: password }
     }
-    console.log(signOffData)
     await signOff({ variables:signOffData })
   }
 
@@ -223,13 +218,11 @@ const  StaffAddModel = ({ setOpen,open ,e }) => {
               if(usernameError) errors.fullname = usernameError
 
             }
-            console.log(errors)
             return errors
           } }
 
           onSubmit = {(values) =>
           {
-            console.log(values ,'submitted')
             submit(values)}
           }
 

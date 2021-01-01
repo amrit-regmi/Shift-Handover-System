@@ -1,5 +1,5 @@
 import React,{ Fragment, useState } from 'react'
-import { Button, Header, Table } from 'semantic-ui-react'
+import { Header, Table } from 'semantic-ui-react'
 import { toDate } from '../../utils/DateHelper'
 import _ from 'lodash'
 import ReportViewModal from '../ShiftReport/ReportViewModal'

@@ -9,7 +9,7 @@ import { InputField } from '../StationReportPage/NewReportForm/FormFields'
 const PasswordChangeModel = (props) => {
 
   const [,dispatch] = useContext(NotificationContext)
-  const [changePassword,{ loading,error }] = useMutation(CHANGE_PASSWORD,{
+  const [changePassword,{ loading }] = useMutation(CHANGE_PASSWORD,{
     onCompleted: () => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: 'Success, password cahanged' ,type: 'SUCCESS' } })
       props.setOpen(false)
@@ -67,7 +67,6 @@ const PasswordChangeModel = (props) => {
             if(values.newPassword !== values.confirmPassword){
               errors.confirmPassword = 'New password and confirm password must match'
             }
-            console.log(errors)
             return errors
           }
 

@@ -98,7 +98,9 @@ export const TaskForm = ({ label,onRemove,disabled,children,name,task }) => {
     const prevShiftLabel = <Label  size='mini' basic >Task from previous shifts </Label>
     const notesLabel = taskNotes && taskNotes.trim()?
       <Label size='mini' basic color="blue" as='a' onClick = {() => {
-        if(taskAction && taskAction !== 'NOTES_ADDED')toggleNotes()}
+        if(taskAction && taskAction !== 'NOTES_ADDED'){
+          toggleNotes()}
+      }
       }>Notes Added </Label>:''
 
 
@@ -106,12 +108,15 @@ export const TaskForm = ({ label,onRemove,disabled,children,name,task }) => {
       <div style={{ padding:'0.3125em 1.5em' }}>
         {prevShiftLabel}
         {notesLabel}
-        {disabled && taskStatus === 'DEFERRED' &&
+        {disabled && taskStatus === 'DEFERRED' && !taskAction &&
               <Label size='mini' basic color="red" >Action Required </Label>}
-        {taskAction && taskAction !== 'NOTES_ADDED' &&
-              <Label as="a" size='mini' basic color='yellow'
-                onClick = {(e) => undoButtonClick(e)}> <Icon name='undo'/> Undo Action
-              </Label>
+        {taskAction &&
+       <>
+         <Label size='mini' basic color="green" >{taskAction} </Label>
+         <Label as="a" size='mini' basic color='yellow'
+           onClick = {(e) => undoButtonClick(e)}> <Icon name='undo'/> Undo Action
+         </Label>
+       </>
         }
 
 
@@ -168,10 +173,10 @@ export const TaskForm = ({ label,onRemove,disabled,children,name,task }) => {
       <div style={{ margin:'0px 3.125em 0.625em 1.5em' }}>
         <Label style={{ backgroundColor:'transparent',color:'#2185d0' }} as="a" size='medium'  onClick = {() => {
           setOpenDetail(true)
-          console.log('click')
         }}> View Action History   <Icon  link name ="history"/> </Label>
 
-        {openDetail &&
+        {
+          openDetail &&
           <TaskModal open= {openDetail} setOpen = {setOpenDetail} task= {task}> </TaskModal>
         }
 

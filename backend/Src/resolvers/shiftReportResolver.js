@@ -12,16 +12,24 @@ const shiftReportResolver = {
   Mutation: {
     submitShiftReport: async(_root,args,context) => {
       const currentStation = context.currentStation
-      if (!(currentStation && currentStation.id !== args.id )) {
+
+      //console.log(args)
+
+      if (!(currentStation && currentStation.id.toString() === args.station )) {
         throw new AuthenticationError('Invalid authentication')
       }
 
       try{
         let shiftReport
         /**If submitting the saved shift report then report will have Id */
-        shiftReport = await ShiftReport.findById(args.id)
 
-        /**If shift report doesnot already have the required fileds and the required fields are not provided  while submit throws error */
+        if (args.id ){
+          shiftReport = await ShiftReport.findById(args.id)
+        }
+
+        /**
+         * THIS IS NOT IMPLEMENTED
+         * If shift report doesnot already have the required fileds and the required fields are not provided  while submit throws error
         if(shiftReport ) {
           if(args.startTime){
             shiftReport.startTime = args.startTime
@@ -33,7 +41,7 @@ const shiftReportResolver = {
             throw new UserInputError('Required arguments missing')
           }
 
-        }
+        }*/
 
         /**If new shift report */
         if(!shiftReport){
@@ -94,7 +102,6 @@ const shiftReportResolver = {
 
           const tasks = await Promise.all(args.tasks.map(async task => {
 
-
             /**If task has id field means task already exists on db */
             if(task.id){
               //console.log(task)
@@ -117,12 +124,12 @@ const shiftReportResolver = {
                 }
                 /**Adding task to shift report */
                 if(!shiftReport.tasks) {
-                  shiftReport.tasks = [task.Id]
+                  shiftReport.tasks = [task.id]
                 }else{
                   shiftReport.tasks = [...shiftReport.tasks, (task.id)]
                 }
 
-                const newUpdate = { action: task.action, handover: shiftReport.id, note : task.newNote }
+                const newUpdate = { action: task.action, handoverId: shiftReport.id, note : task.newNote }
 
                 /**Add updates to task */
                 if(!existingTask.updates) {
@@ -177,7 +184,7 @@ const shiftReportResolver = {
         shiftReport.flag = 'MOST_RECENTLY_COMPLETED'
         await shiftReport.save()
 
-        const newReport = await   ShiftReport.populate( shiftReport,
+        /*const newReport = await   ShiftReport.populate( shiftReport,
           [
             {
               path:'station'
@@ -209,16 +216,16 @@ const shiftReportResolver = {
                 }
               },
             }
-          ])
+          ])*/
 
 
         try {
-          await sendUShiftReportEmail(newReport, newReport.station.mailingList)
+          await sendUShiftReportEmail(shiftReport, shiftReport.station.mailingList)
         // eslint-disable-next-line no-empty
         } catch (error) {
         }
 
-        return newReport
+        return shiftReport
 
       }catch(err){
         throw new Error(err.message)
@@ -263,7 +270,7 @@ const shiftReportResolver = {
           shiftReport = await ShiftReport.findOne({ ...args })
         }
 
-        shiftReport = await  ShiftReport.populate( shiftReport,
+        /*shiftReport = await  ShiftReport.populate( shiftReport,
           [
             {
               path:'station'
@@ -295,10 +302,11 @@ const shiftReportResolver = {
                 }
               },
             }
-          ])
+          ])*/
 
         /**Testing email send */
         //await sendUShiftReportEmail(shiftReport,shiftReport.station.mailingList)
+
         return shiftReport
       }
       catch(err) {
@@ -316,7 +324,7 @@ const shiftReportResolver = {
         if(loggedInStaff && (loggedInStaff.permission.admin  || (loggedInStaff.permission.station.edit.length > 0))){
           let allReports
           if (loggedInStaff.permission.admin){
-            allReports = await ShiftReport.find({}).populate(
+            allReports = await ShiftReport.find({}) /*.populate(
               [
                 {
                   path:'station'
@@ -348,10 +356,10 @@ const shiftReportResolver = {
                     }
                   },
                 }
-              ])
+              ])*/
           }
           else{
-            allReports = await ShiftReport.find({ station: { $in: loggedInStaff.permission.station.edit } }).populate('station')
+            allReports = await ShiftReport.find({ station: { $in: loggedInStaff.permission.station.edit } })
           }
           return allReports
         }
@@ -362,7 +370,7 @@ const shiftReportResolver = {
         throw new AuthenticationError('Invalid authentication')
       }
 
-      const shiftReports = await ShiftReport.find({ station:args.stationId }).populate(
+      const shiftReports = await ShiftReport.find({ station:args.stationId })/*.populate(
         [
           {
             path:'station'
@@ -394,13 +402,13 @@ const shiftReportResolver = {
               }
             },
           }
-        ])
+        ])*/
       return shiftReports
 
     },
 
     getShiftReportByShift: async(_root,args,_context) => {
-      const report = await ShiftReport.findOne(args).populate(
+      const report = await ShiftReport.findOne(args) /*.populate(
         [
           {
             path:'station'
@@ -432,7 +440,7 @@ const shiftReportResolver = {
               }
             },
           }
-        ])
+        ])*/
       return report
 
     }

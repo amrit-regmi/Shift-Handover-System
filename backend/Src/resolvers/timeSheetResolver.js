@@ -346,9 +346,14 @@ const timeSheetResolver = {
         searchFilters.station = { $in : args.stations }
 
       }
+      let timesheets
+      try {
+        timesheets = await TimeSheet.find( searchFilters
+        ).populate({ path:'staff station' , populate: { path: 'station' } }).lean()
 
-      const timesheets = await TimeSheet.find( searchFilters
-      ).populate({ path:'shiftReport staff station' , populate: { path: 'station' } }).lean()
+      } catch (e) {
+        throw new Error(e)
+      }
 
       let mod1 = timesheets.reduce((aggregatedTimesheet,c) => {
 

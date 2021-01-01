@@ -1,3 +1,4 @@
+const { isArray } = require('lodash')
 const mongoose = require('mongoose')
 
 const shiftReportSchema = new mongoose.Schema({
@@ -39,5 +40,52 @@ const shiftReportSchema = new mongoose.Schema({
   stationKey: String,
 })
 
+
+shiftReportSchema.post(['save','findOne', 'find'] ,{ query:true,document:true } ,async function(docs){
+  const populateFn = async (doc) => {
+    await doc.populate(
+      [
+        {
+          path:'station',
+          select: ['id','location']
+        },
+        {
+          path:'staffAndTime',
+          select:['id','endTime','startTime', 'staffAndTime'],
+          populate:{
+            path:'staff',
+            select: ['name']
+          },
+
+        },
+        {
+          path:'tasks' ,
+          select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
+          populate:{
+            path:'aircraft updates',
+            select:['registration','id','costumer','action','handoverId','note'],
+            populate:{
+              path: 'costumer handoverId',
+              select:['name','id','shift' ,'station' ,'startTime'],
+              populate:{
+                path: 'station',
+                select:['id', 'location'],
+              }
+            }
+          },
+        }
+      ]
+    ).execPopulate()
+  }
+
+  if(isArray(docs)){
+    for (let doc of docs) {
+      await populateFn(doc)
+    }
+  }else{
+    await populateFn(docs)
+  }
+
+})
 
 module.exports = mongoose.model('ShiftReport', shiftReportSchema)

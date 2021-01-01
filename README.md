@@ -68,4 +68,12 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
 |17.12.2020 | 6 | Station Pages - Add/Remove mailingList/shifts , DeleteStation , Assign Costumers , ResetStationKey Implemneted | 
 |21.12.2020 | 6 | Node Mailer Implemented - Staff registration link and timesheet report are now sent to email |
 |22.12.2020 | 6 | Permissions for stations and timesheets implemented on backend and frontend / Add more email notoficatiions / Updated report page to include station info / added more details to timesheet signing
-|24.12.2020 | 6 | Bug Fixes, Staff / Costumer Permission / Permission panel update
+|24.12.2020 | 6 | Bug Fixes, Staff / Costumer Permission / Permission panel update |
+|25.12.2020 - 02.01.2021 | 15 | 
+- Password Reset Page/ Link Implemented 
+- Task Info Page Implemented
+- Fixed Various Permissions 
+- Studied and implemented mongoose pre/post hook in some modals
+- After new year some some components with date got broken, traced and fixeed those bugs
+- All reports page implemted for administrator
+- Various other bug fixes

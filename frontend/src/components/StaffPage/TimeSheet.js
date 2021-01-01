@@ -3,7 +3,7 @@ import React ,{ useEffect, useState } from 'react'
 import { Loader, Header, Segment,Dropdown, Button ,Form, Popup } from 'semantic-ui-react'
 
 import { GET_TIMESHEETS } from '../../queries/timeSheetQuery'
-import { getWeekNumber, getDatefromWeek, getMonthOptions, getWeekOptions, getMonthName  } from '../../utils/DateHelper'
+import { getWeekNumber, getDatefromWeek, getMonthOptions, getWeekOptions, getMonthName, getFilterYear  } from '../../utils/DateHelper'
 import TimeSheetsReport from '../TimeSheetsReport'
 
 const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,timesheetOnly }) => {
@@ -11,26 +11,10 @@ const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,times
   const [selectBy,setSelectBy] = useState (period || 'week')
   const today = new Date()
   const [number,setNumber] = useState (selected || getWeekNumber(today))
-  const [year,setYear] = useState(selectedYear || today.getFullYear())
-  const queryParams = { staff: staffId || staff.id , filterDuration: selectBy  , number:number, year: year }
+
+  const queryParams = { staff: staffId || staff.id , filterDuration: selectBy  , number:number, year: getFilterYear(selectBy,number) }
 
   const { error,loading,data } = useQuery(GET_TIMESHEETS, { variables:queryParams })
-
-  /**Fix for dates interval that falls on year change */
-  useEffect (() => {
-    if(!selectedYear){
-      if(today.getMonth() === 0 && number > 38 ){
-        setYear(today.getFullYear() -1 )
-        return
-      }
-      if(today.getMonth() < 3 && selectBy ==='month' && number > 6 && number !== 0 ){
-        setYear(today.getFullYear() -1 )
-        return
-      }
-
-      setYear(today.getFullYear())}
-  }, [today, number, selectBy, selectedYear]
-  )
 
   useEffect(() => {
     if (data)
@@ -43,11 +27,13 @@ const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,times
   /**Get startDate of timeSheet Report */
   const filterStartDate  =  () => {
     let sdate
+    const year = getFilterYear(selectBy,number)
     if(selectBy==='month'){
       sdate = new Date(year,number,1)
     } else {
       sdate  = getDatefromWeek(number,year)
     }
+
     sdate = new Date(Date.UTC( sdate.getFullYear(), sdate.getMonth(), sdate.getDate()))
     return (sdate)
   }
@@ -55,6 +41,7 @@ const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,times
   /**Get startDate of timeSheet Report */
   const filterEndDate  =  () => {
     let ed
+    const year = getFilterYear(selectBy,number)
     if(selectBy==='month'){
       ed = new Date(year,number+1,0)
     } else {
@@ -128,7 +115,7 @@ const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,times
                 </Form.Field>
               </Form.Group>
             </> }
-          <TimeSheetsReport staffId={staffId} startDate={start} endDate= {end} data={data} title = {`Timesheet ${selectBy === 'month'? getMonthName(number):  `Week ${number},` } ${year} `}></TimeSheetsReport>
+          <TimeSheetsReport staffId={staffId} startDate={start} endDate= {end} data={data} title = {`Timesheet ${selectBy === 'month'? getMonthName(number):  `Week ${number},` } ${getFilterYear(selectBy,number)} `}></TimeSheetsReport>
 
 
           { staffId === staff.id &&

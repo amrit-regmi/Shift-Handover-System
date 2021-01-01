@@ -4,7 +4,7 @@ const Staff = require('../models/Staff')
 const { UserInputError, AuthenticationError } = require('apollo-server')
 const config = require('../../config')
 const jwt  = require('jsonwebtoken')
-const { getDatefromWeek ,getLastDateFromMonth, getMonthName, toDate, getWeek, formatDate } = require('../utils/helper')
+const { getDatefromWeek ,getLastDateFromMonth, getMonthName, toDate, getWeek, formatDate ,getWeekStartDate } = require('../utils/helper')
 const { v4: uuidv1 } = require('uuid')
 const _ = require('lodash')
 const { sendUserRegistrationEmail } = require('../mailer/sendUserRegistrationEmail')
@@ -367,7 +367,8 @@ const timeSheetResolver = {
         const d = new Date(c.date)
 
         if(args.period === 'week' || args.groupBy === 'week'){
-          periodTitle = `Week ${getWeek(d)} ${d.getFullYear()}`
+          periodTitle = `Week ${getWeek(d)} ${getWeekStartDate(d).getFullYear()}`
+          //console.log(d, periodTitle)
         }
         else
         {

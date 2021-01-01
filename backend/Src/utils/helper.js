@@ -104,7 +104,7 @@ const toDate = (stringDate) => {
   return ndate
 
 }
-
+/**Gets week fom given date  int  */
 const getWeek= (dt) => {
   var tdt = new Date(dt.valueOf())
   var dayn = (dt.getDay() + 6) % 7
@@ -118,6 +118,12 @@ const getWeek= (dt) => {
   return 1 + Math.ceil((firstThursday - tdt) / 604800000)
 }
 
+/**Gets start day of the week for given date */
+const getWeekStartDate = (dt) => {
+  const weekStartDate = new Date((new Date(dt)).setDate(dt.getDate() - dt.getDay()+1))
+  return weekStartDate
+}
+
 /**
  *
  * @param {int javascript date} dateToFormat
@@ -126,8 +132,9 @@ const formatDate = (dateToFormat) => {
 
   const date = new Date(dateToFormat)
 
+
   return (`${(date.getDate()).toString().padStart(2,0)}-${(date.getMonth()+1).toString().padStart(2,0)}-${date.getFullYear()} ${(date.getHours()).toString().padStart(2,0)}:${(date.getMinutes()).toString().padStart(2,0)}`)
 
 }
 
-module.exports = { isExpired,generateShiftReportId,sleep, getLastDateFromMonth, getDatefromWeek ,getMonthName ,toDate ,getWeek,formatDate }
+module.exports = { isExpired,generateShiftReportId,sleep, getLastDateFromMonth, getDatefromWeek ,getMonthName ,toDate ,getWeek,formatDate ,getWeekStartDate }

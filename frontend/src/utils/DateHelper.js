@@ -187,7 +187,6 @@ export const getMonthOptions = (duration) => {
         text: getMonthName(currentMonth-i ) ,
         value:  currentMonth -i < 0 ? 12 + currentMonth -i  : currentMonth -i }
     ) })
-  console.log(options)
   return options
 }
 
@@ -215,6 +214,42 @@ export const getWeekOptions = (duration) => {
     }
   }
   return options
+
+}
+
+/**
+ *
+ * @param {String} filterBy filter by week or month accepts string 'week' or 'month'
+ * @param {Int} number week number or Javascript MonthNumber
+ * @returns {Int} year
+ */
+
+export const getFilterYear = (filterBy, number) => {
+
+  let year
+  const today = new Date()
+
+  if(filterBy ==='week' ){
+    const currentWeek = getWeekNumber(today)
+    if( number > currentWeek){
+      year = today.getFullYear() -1
+    }
+    if(number <= currentWeek){
+      const weekStartDate = new Date((new Date()).setDate(today.getDate() - today.getDay()+1))
+      year = weekStartDate.getFullYear()
+    }
+
+    return year
+
+  }
+
+  if(filterBy ==='month' && number > today.getMonth() ){
+    year = today.getFullYear() -1
+    return year
+  }
+
+  year = today.getFullYear()
+  return year
 
 }
 

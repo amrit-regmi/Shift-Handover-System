@@ -19,7 +19,6 @@ const TimeSheetsFilter = ({ setFilter }) => {
   const [from,setFrom] = useState(formatDate(new Date(today.getFullYear(), today.getMonth() -3, 1 )).split(' ')[0])
   const [to,setTo] = useState(formatDate(today).split(' ')[0])
   const [number,setNumber] = useState(getWeekNumber(today))
-  const [year,setYear] = useState(today.getFullYear())
 
   const location = useLocation ()
   const basePage =  location.pathname.split('/')[2]
@@ -60,25 +59,9 @@ const TimeSheetsFilter = ({ setFilter }) => {
   }, [staffData])
 
 
-  /**Fix for dates interval that falls on year change */
-  useEffect (() => {
-    if(period ==='week' && today.getMonth() === 0 && number > 38 ){
-      setYear(today.getFullYear() -1 )
-      return
-    }
-    if(today.getMonth() < 3 && period ==='month' && number > 6 && number !== 1 ){
-      console.log(number)
-      setYear(today.getFullYear() -1 )
-      return
-    }
-
-    setYear(today.getFullYear())
-  }, [today, number, period]
-  )
-
   useEffect(() => {
-    setFilter({ staff, period ,stations ,groupBy ,from ,to , number, year, filterStatus })
-  },[staff, period, stations, groupBy, from, to, number, year, filterStatus, setFilter])
+    setFilter({ staff, period ,stations ,groupBy ,from ,to , number,  filterStatus })
+  },[staff, period, stations, groupBy, from, to, number, filterStatus, setFilter])
 
   useEffect(() => {
     if(params.staffId ){

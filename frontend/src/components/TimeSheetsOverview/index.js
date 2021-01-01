@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import  _  from 'lodash'
 import { Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, Loader } from 'semantic-ui-react'
-import { formatDate, getWeekNumber,getMonthInt } from '../../utils/DateHelper'
+import { formatDate, getWeekNumber,getMonthInt, getFilterYear } from '../../utils/DateHelper'
 import TimeSheet from '../StaffPage/TimeSheet'
 import { GET_ALL_TIMESHEETS } from '../../queries/timeSheetQuery'
 import TimeSheetsFilter from './TimeSheetsFilter'
@@ -21,7 +21,6 @@ const TimeSheetsOverview = ({ setStaffName  }) => {
     to:formatDate(today).split(' ')[0],
     number:getWeekNumber(today),
     groupBy:'week',
-    year:today.getFullYear(),
     stations:[],
     filterStatus: '' })
 
@@ -30,6 +29,8 @@ const TimeSheetsOverview = ({ setStaffName  }) => {
   if(filter.staff.length === 1){
     variables.staffId = filter.staff[0]
   }
+
+  variables.year = getFilterYear(filter.period, filter.number)
 
   const { loading,data } = useQuery(GET_ALL_TIMESHEETS,{ variables: variables,skip: params.period })
 

@@ -236,7 +236,7 @@ const generateShiftReportEmail = (shiftReportData) => {
 }
 
 const sendUShiftReportEmail = async (shiftReportData,emails) => {
-  if(!emails.length){
+  if(!emails || emails.length){
     throw new Error('Verification email could not be sent, mailing group is not set')
   }
   try{

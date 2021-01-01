@@ -40,6 +40,10 @@ const AdminMenuBar = ({  activeItem, setActiveItem }) => {
     menuItems.push ('Costumers')
   }
 
+  if(staff.permission.admin || staff.permisison.station.edit.length){
+    menuItems.push ('ShiftReports')
+  }
+
   const getMenuItems = () => {
     return menuItems.map(item =>
       <Menu.Item  key={ item} name = {item} active = {activeItem ===  item }

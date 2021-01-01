@@ -65,6 +65,11 @@ const  AppRouter = () =>   {
           <AdminPages/>
         </Route>
 
+        {/**Routing for /Manage/ShiftReports */}
+        <Route path = {['/Manage/ShiftReports']}>
+          <AdminPages/>
+        </Route>
+
         {/**Routing for Manage Page */}
         <Redirect from="/Manage" to="/Manage/MyPage/Profile"/>
         <Route path = '/Manage'>

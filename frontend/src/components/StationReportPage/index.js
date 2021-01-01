@@ -9,9 +9,9 @@ import Context from './Context'
 import reducer from './stationReducer'
 import { GET_STATION } from '../../queries/stationQuery'
 import NewReportForm from './NewReportForm'
-import AllReportsTable from './AllReportsTable'
 import { NotificationContext } from '../../contexts/NotificationContext'
 import StationInfo from '../StationInfo/Index'
+import ShiftReportsList from '../ShiftReportsList'
 
 
 const StationReportPage = () => {
@@ -86,7 +86,7 @@ const StationReportPage = () => {
           <ShiftReport reportData= {dataReport && dataReport.getShiftReport}  />
         }
         { activeItem === 'browseAllReports' &&
-          <AllReportsTable  />
+          <ShiftReportsList  />
         }
 
         {activeItem === 'startNewReport'&&

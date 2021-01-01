@@ -12,7 +12,13 @@ const shiftReportQuery = `
       date: Date!
     ):ShiftReport
 
-    getReportList(stationId:String):[ShiftReport]
+    getReportList(
+      stations:[String!]!
+      filterBy: String!
+      year:Int!,
+      number:Int!
+
+      ):[ShiftReport]
   }
 
 `

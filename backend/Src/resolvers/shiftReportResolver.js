@@ -2,11 +2,13 @@ const ShiftReport =  require('../models/ShiftReport')
 const TimeSheet = require('../models/TimeSheet')
 const Task = require('../models/Task')
 const { UserInputError,AuthenticationError } = require('apollo-server')
+const { getDatefromWeek ,getLastDateFromMonth } = require('../utils/helper')
 const _ = require('lodash')
 const config = require('../../config')
 const jwt  = require('jsonwebtoken')
 const { sendUShiftReportEmail } = require('../mailer/shiftReportEmail')
 const Staff = require('../models/Staff')
+const { Error } = require('mongoose')
 
 const shiftReportResolver = {
   Mutation: {
@@ -184,40 +186,6 @@ const shiftReportResolver = {
         shiftReport.flag = 'MOST_RECENTLY_COMPLETED'
         await shiftReport.save()
 
-        /*const newReport = await   ShiftReport.populate( shiftReport,
-          [
-            {
-              path:'station'
-              ,
-              select: ['id','location']
-            },
-            {
-              path:'staffAndTime',
-              select:['id','endTime','startTime', 'staffAndTime'],
-              populate:{
-                path:'staff',
-                select: ['name']
-              },
-
-            },
-            {
-              path:'tasks' ,
-              select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
-              populate:{
-                path:'aircraft updates',
-                select:['registration','id','costumer','action','handoverId','note'],
-                populate:{
-                  path: 'costumer handoverId',
-                  select:['name','id','shift' ,'station' ,'startTime'],
-                  populate:{
-                    path: 'station',
-                    select:['id', 'location'],
-                  }
-                }
-              },
-            }
-          ])*/
-
 
         try {
           await sendUShiftReportEmail(shiftReport, shiftReport.station.mailingList)
@@ -270,177 +238,60 @@ const shiftReportResolver = {
           shiftReport = await ShiftReport.findOne({ ...args })
         }
 
-        /*shiftReport = await  ShiftReport.populate( shiftReport,
-          [
-            {
-              path:'station'
-              ,
-              select: ['id','location']
-            },
-            {
-              path:'staffAndTime',
-              select:['id','endTime','startTime', 'staffAndTime'],
-              populate:{
-                path:'staff',
-                select: ['name']
-              },
-
-            },
-            {
-              path:'tasks' ,
-              select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
-              populate:{
-                path:'aircraft updates',
-                select:['registration','id','costumer','action','handoverId','note'],
-                populate:{
-                  path: 'costumer handoverId',
-                  select:['name','id','shift' ,'station' ,'startTime'],
-                  populate:{
-                    path: 'station',
-                    select:['id', 'location'],
-                  }
-                }
-              },
-            }
-          ])*/
-
-        /**Testing email send */
-        //await sendUShiftReportEmail(shiftReport,shiftReport.station.mailingList)
-
         return shiftReport
       }
       catch(err) {
         throw new Error(err)
-        //console.log(err)
       }
     },
 
     getReportList : async (_root,args,context) => {
+
       const currentStation = context.currentStation
+      const loggedInStaff = context.currentUser
 
-      if (!args.stationId){
-        const loggedInStaff = context.currentUser
-        /**Only staff with station edit or admin permission can view all shiftreports for all station */
-        if(loggedInStaff && (loggedInStaff.permission.admin  || (loggedInStaff.permission.station.edit.length > 0))){
-          let allReports
-          if (loggedInStaff.permission.admin){
-            allReports = await ShiftReport.find({}) /*.populate(
-              [
-                {
-                  path:'station'
-                  ,
-                  select: ['id','location']
-                },
-                {
-                  path:'staffAndTime',
-                  select:['id','endTime','startTime', 'staffAndTime'],
-                  populate:{
-                    path:'staff',
-                    select: ['name']
-                  },
-
-                },
-                {
-                  path:'tasks' ,
-                  select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
-                  populate:{
-                    path:'aircraft updates',
-                    select:['registration','id','costumer','action','handoverId','note'],
-                    populate:{
-                      path: 'costumer handoverId',
-                      select:['name','id','shift' ,'station' ,'startTime'],
-                      populate:{
-                        path: 'station',
-                        select:['id', 'location'],
-                      }
-                    }
-                  },
-                }
-              ])*/
-          }
-          else{
-            allReports = await ShiftReport.find({ station: { $in: loggedInStaff.permission.station.edit } })
-          }
-          return allReports
+      let searchFilters = {}
+      if(args.filterBy === 'week'){
+        const from = getDatefromWeek (args.number,args.year)
+        searchFilters.date = {
+          $gte: from,
+          $lte: new Date(Date.UTC( from.getFullYear(), from.getMonth(), from.getDate()+6, 23, 59,59))
         }
-
+      }
+      if(args.filterBy === 'month'){
+        const to = getLastDateFromMonth (args.number,args.year)
+        searchFilters.date = {
+          $gte: new Date(Date.UTC( args.year, args.number, 1)),
+          $lte: new Date(Date.UTC( to.getFullYear(), to.getMonth(), to.getDate(), 23, 59,59))
+        }
+      }
+      if(!(loggedInStaff || currentStation)) {
+        throw new AuthenticationError ('You must authenticate for this action')
       }
 
-      if (!currentStation || currentStation.id !== args.stationId ) {
-        throw new AuthenticationError('Invalid authentication')
+      if(currentStation){
+        if(args.stations.length > 1 || args.stations[0] !== currentStation.id){
+          throw new Error('Permission denied')
+        }
+        searchFilters.station  = currentStation.id
       }
 
-      const shiftReports = await ShiftReport.find({ station:args.stationId })/*.populate(
-        [
-          {
-            path:'station'
-            ,
-            select: ['id','location']
-          },
-          {
-            path:'staffAndTime',
-            select:['id','endTime','startTime', 'staffAndTime'],
-            populate:{
-              path:'staff',
-              select: ['name']
-            },
+      if(loggedInStaff){
+        const permittedStations =loggedInStaff.permission.station.edit.map(station => station.toString())
+        if(!(loggedInStaff.permission.admin || args.stations.some( station => !permittedStations.includes(station)))){
+          throw new Error('Permission denied')
+        }
+        searchFilters.station  = { $in:args.stations }
+      }
 
-          },
-          {
-            path:'tasks' ,
-            select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
-            populate:{
-              path:'aircraft updates',
-              select:['registration','id','costumer','action','handoverId','note'],
-              populate:{
-                path: 'costumer handoverId',
-                select:['name','id','shift' ,'station' ,'startTime'],
-                populate:{
-                  path: 'station',
-                  select:['id', 'location'],
-                }
-              }
-            },
-          }
-        ])*/
-      return shiftReports
+      const allReports = await ShiftReport.find({ ... searchFilters })
+      return allReports
 
     },
 
     getShiftReportByShift: async(_root,args,_context) => {
-      const report = await ShiftReport.findOne(args) /*.populate(
-        [
-          {
-            path:'station'
-            ,
-            select: ['id','location']
-          },
-          {
-            path:'staffAndTime',
-            select:['id','endTime','startTime', 'staffAndTime'],
-            populate:{
-              path:'staff',
-              select: ['name']
-            },
+      const report = await ShiftReport.findOne(args)
 
-          },
-          {
-            path:'tasks' ,
-            select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
-            populate:{
-              path:'aircraft updates',
-              select:['registration','id','costumer','action','handoverId','note'],
-              populate:{
-                path: 'costumer handoverId',
-                select:['name','id','shift' ,'station' ,'startTime'],
-                populate:{
-                  path: 'station',
-                  select:['id', 'location'],
-                }
-              }
-            },
-          }
-        ])*/
       return report
 
     }

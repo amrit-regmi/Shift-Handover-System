@@ -51,8 +51,8 @@ query fetchReport($id:String, $station: String, $flag: String){
 `
 
 export const GET_REPORTLIST = gql ` 
-  query fetchReportList ( $stationId: String,  ){
-    getReportList (stationId: $stationId){
+  query fetchReportList ( $stations: [String!]!, $filterBy: String!, $year:Int! , $number:Int!  ){
+    getReportList (stations: $stations, filterBy: $filterBy, year: $year , number:$number){
       startTime,
       endTime,
       id,

@@ -2,7 +2,6 @@ import React from 'react'
 import { Header, Label, Modal, Segment } from 'semantic-ui-react'
 
 const TaskModal = (props) => {
-  console.log(props.viewingOnHanodover)
   const task = props.task
   return (
     <Modal

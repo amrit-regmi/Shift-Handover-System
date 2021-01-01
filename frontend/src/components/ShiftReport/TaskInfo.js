@@ -49,7 +49,10 @@ const TaskInfo = ({ task , handoverId }) => {
 
 
     </Segment>
-    <TaskModal open= {openDetail} setOpen = {setOpenDetail} task= {task} viewingOnHanodover = {handoverId}> </TaskModal></>)
+    { openDetail &&
+      <TaskModal open= {openDetail} setOpen = {setOpenDetail} task= {task} viewingOnHanodover = {handoverId}> </TaskModal>
+    }
+  </>)
 }
 
 export default TaskInfo

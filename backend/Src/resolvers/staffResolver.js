@@ -67,6 +67,7 @@ const staffResolver = {
           if(loggedInStaff.permission && (loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
 
             const t =   await Staff.findById(args.id,{ passwordHash:0,resetCode:0 } ).populate({ path:'permission lastActive.station' , populate: { path: 'station.edit timesheet.edit timesheet.view timesheet.sign ' ,model:'Station' ,select:'id location' }   })
+            if( t.registerCode ) t.registerCode = true
             return t
           }
 
@@ -91,6 +92,7 @@ const staffResolver = {
           throw new Error('Registration code has expired, please contact your supervisor' )
 
         }
+        /**Send only staff name field  */
         const t = await Staff.findOne({ ...args },{ name:1 })
         if(!t){
           throw new Error('Registration code Invalid')
@@ -123,6 +125,7 @@ const staffResolver = {
 
       if (loggedInStaff.permission && (loggedInStaff.permission.staff.add ||loggedInStaff.permission.staff.edit || loggedInStaff.permission.admin)) {
         const staff = new Staff({ ...args, registerCode:registerCode, username: tempUserName })
+
         const permission = new Permission({ staffId: staff.id })
         staff.permission = permission.id
         try {
@@ -130,7 +133,8 @@ const staffResolver = {
           await permission.save()
 
           await sendUserRegistrationEmail(registerCode, args.name, args.email)
-
+          /**Do not send back the registrcode instead send true */
+          staff.registerCode = true
           return staff
         }
         catch (error){

@@ -34,8 +34,6 @@ For Demo Purpose: you can use the credentials below if you do not want to regist
     - username: adminUser  =>  password: staffPassword
 
 If you want to test shift-report mail then login to staffPage as adminuser => AllStations => TestStation => Settings =>  MailingList : AddMore , remove other emails if any, remeber to remove yourself afterwards.
-
-ALLL THE DATA WILL BE RESET EVERY 24 HOURS
         
 Station Pages: 
 - To start shift reporting/ view reports from previous shift 

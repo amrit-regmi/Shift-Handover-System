@@ -22,9 +22,24 @@ This project is Shift Handover System for the Aircraft Maintenece Organisation.
     - Request for Approval of time sheet Per Week  or Month -Implemented
 
 # How to use
+
+Live Demo can be reached at: https://shiftreportsystem.herokuapp.com/
+
+For Demo Purpose: you can use the credentials below if you do not want to register.
+-------------------------------------------------------------------------------------------------------------
+- Station:
+    - TestStation  =>  stationkey
+- Staff:
+    - username: basicuser  =>  password: staffPassword
+    - username: adminUser  =>  password: staffPassword
+
+If you want to test shift-report mail then login to staffPage as adminuser => AllStations => TestStation => Settings =>  MailingList : AddMore , remove other emails if any, remeber to remove yourself afterwards.
+
+ALLL THE DATA WILL BE RESET EVERY 24 HOURS
+        
 Station Pages: 
 - To start shift reporting/ view reports from previous shift 
-    - Login in Station Login Page , select Station and password: stationkey (For: TestStation) 
+    - Login in Station Login Page , select Station and enter password
     - Landing Page will be shift report from previous shift. Each reports contains work times and tasks from previous shifts
         - tasks with label 'action required' has to acted on the current shift
         - If the task has label Action History, tasks was not created on last shift but has been deferred from previous shifts. you can click the label to view the history of that task 
@@ -40,9 +55,10 @@ Station Pages:
 
 Signing off from Report:
 - Click Add on Staff Section on NewReport Page , Enter StartTime / EndTime / Break . 
-Sign Off using Username and Password.
+Sign Off using Username and Password. 
 - If the user doesnot have account- select New User -Enter name/email - registration link will be sent to specified email
-- If forgot password - select forgot password - Enter email -  password reset link will be sent to email  
+- If forgot password - select forgot password - Enter email -  password reset link will be sent to email
+    
 In both cases work time will be recorded but approprite remarks will be added to record that the record is not verified with password. 
 
 View old records on 'browse all reports'

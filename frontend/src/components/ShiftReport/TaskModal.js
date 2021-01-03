@@ -33,10 +33,10 @@ const TaskModal = (props) => {
           <Segment.Group>
             {task.updates.map((update,i) =>
               <Segment clearing key={i}
-                color={update.handoverId.id === props.viewingOnHanodover || (!props.viewingOnHanodover && task.updates.length-1 === i ) ?'green':'grey'}
+                color={update.handoverId === props.viewingOnHanodover || (!props.viewingOnHanodover && task.updates.length-1 === i ) ?'green':'grey'}
               >
-                <Header as='h5'>{update.action}<Header.Subheader>{update.handoverId.station.location} {update.handoverId.shift} shift {update.handoverId.startTime.split(' ')[0]}</Header.Subheader></Header>
-                {update.handoverId.id === props.viewingOnHanodover &&
+                <Header as='h5'>{update.action}<Header.Subheader>{update.handoverDetail}</Header.Subheader></Header>
+                {update.handoverId === props.viewingOnHanodover &&
                 <Label color='green' attached='top right'> Currently Viewing this Report</Label>}
 
                 {!props.viewingOnHanodover && task.updates.length-1 === i &&

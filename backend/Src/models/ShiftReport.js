@@ -2,8 +2,15 @@ const { isArray } = require('lodash')
 const mongoose = require('mongoose')
 
 const shiftReportSchema = new mongoose.Schema({
-  station:{ type:mongoose.Schema.Types.ObjectId,
-    ref:'Station',
+  station:{
+    type:{
+      _id:false,
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref:'Station'
+      },
+      location: String
+    },
     required:true
   },
   shift: {
@@ -27,10 +34,21 @@ const shiftReportSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:'Task'
   }],
-  staffAndTime:[{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'TimeSheet'
-  }],
+
+  staffAndTime:[
+    { _id:false,
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref:'Timesheet'
+      },
+      staff: {
+        id:String,
+        name:String
+      },
+      startTime: String,
+      endTime: String,
+    }
+  ],
   flag: {
     type: String,
     enum: ['MOST_RECENTLY_COMPLETED', 'ON_PROGRESS', 'COMPLETE'],
@@ -47,33 +65,8 @@ shiftReportSchema.post(['save','findOne', 'find'] ,{ query:true,document:true } 
       await doc.populate(
         [
           {
-            path:'station',
-            select: ['id','location']
-          },
-          {
-            path:'staffAndTime',
-            select:['id','endTime','startTime', 'staffAndTime'],
-            populate:{
-              path:'staff',
-              select: ['name']
-            },
-
-          },
-          {
             path:'tasks' ,
             select:['id','aircraft','taskCategory', 'description', 'status', 'updates'],
-            populate:{
-              path:'aircraft updates',
-              select:['registration','id','costumer','action','handoverId','note'],
-              populate:{
-                path: 'costumer handoverId',
-                select:['name','id','shift' ,'station' ,'startTime'],
-                populate:{
-                  path: 'station',
-                  select:['id', 'location'],
-                }
-              }
-            },
           }
         ]
       ).execPopulate()

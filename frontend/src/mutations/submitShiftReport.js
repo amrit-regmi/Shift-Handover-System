@@ -39,10 +39,8 @@ export const SUBMIT_REPORT = gql`
       status
       updates {
         action
-        handoverId {
-          id
-          shift
-        }
+        handoverId 
+        handoverDetail
         note
       }
       

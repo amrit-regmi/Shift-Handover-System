@@ -9,6 +9,7 @@ const jwt  = require('jsonwebtoken')
 const { sendUShiftReportEmail } = require('../mailer/shiftReportEmail')
 const Staff = require('../models/Staff')
 const { Error } = require('mongoose')
+const Aircraft = require('../models/Aircraft')
 
 const shiftReportResolver = {
   Mutation: {
@@ -53,7 +54,7 @@ const shiftReportResolver = {
           }
 
           shiftReport = new  ShiftReport({
-            station:args.station,
+            station:{ id:currentStation.id, location: currentStation.location },
             shift: args.shift,
             startTime:args.startTime,
             endTime: args.endTime,
@@ -68,7 +69,14 @@ const shiftReportResolver = {
           /**Verify the jwt token  return the decoded information */
           try{
             const data = jwt.verify(staff.signOffKey, config.JWT_SECRET)
-            return { shiftReport:shiftReport.id, staff: data.id, station: args.station , startTime: data.startTime, endTime:data.endTime, break:data.break, date : date ,
+            return {
+              shiftReport:shiftReport.id,
+              staff: data.id,
+              station: currentStation.location ,
+              startTime: data.startTime,
+              endTime:data.endTime,
+              break:data.break,
+              date : date ,
               remarks: {
                 title:'Remark Added', text: data.remark , date: data.endTime ,by: staff.name
               } }
@@ -97,7 +105,21 @@ const shiftReportResolver = {
 
         const timeSheetResult = await TimeSheet.insertMany(staffAndTime)
 
-        shiftReport.staffAndTime = timeSheetResult
+        await TimeSheet.populate(timeSheetResult,'staff')
+
+        const ts = timeSheetResult.map( record => {
+          const timesheet = {
+            id: record.id,
+            startTime:record.startTime,
+            endTime:record.endTime ,
+            staff: {
+              name:record.staff.name
+            }
+          }
+          return timesheet
+        } )
+
+        shiftReport.staffAndTime = ts
 
         shiftReport.tasks = []
         if (args.tasks.length > 0){
@@ -111,8 +133,12 @@ const shiftReportResolver = {
 
               /** If task is from the current handover - task will have one update with current handoverId and taskcreated action*/
               if(existingTask.updates && existingTask.updates.length === 1 && existingTask.updates[0].handoverId=== shiftReport.id  ){
-                if(task.description ) existingTask.description = task.description
-                if(task.action )existingTask.status = task.action
+                if(task.description ) {
+                  existingTask.description = task.description
+                }
+                if(task.action ){
+                  existingTask.status = task.action
+                }
               }
               /**If task is deferred task action is required */
               if(existingTask.status === 'DEFERRED'){
@@ -131,7 +157,11 @@ const shiftReportResolver = {
                   shiftReport.tasks = [...shiftReport.tasks, (task.id)]
                 }
 
-                const newUpdate = { action: task.action, handoverId: shiftReport.id, note : task.newNote }
+                const newUpdate = {
+                  action: task.action,
+                  handoverId: shiftReport.id,
+                  handoverDetail: `${currentStation.location} ${args.shift} Shift ${args.startTime.split(' ')[0]}` ,
+                  note : task.newNote }
 
                 /**Add updates to task */
                 if(!existingTask.updates) {
@@ -154,14 +184,18 @@ const shiftReportResolver = {
             }
             /**If task doesnot have id field means it is new task*/
             if(!task.id){
-
+              const aircraft = await Aircraft.findById(task.aircraft)
+              task.aircraft = { id:aircraft.id,registration:aircraft.registration, costumer:aircraft.costumer }
               task.createdAt = args.endTime
               /*Setting action to Status*/
               if(task.action) {
                 task.status = task.action
               }
 
-              task.updates = [{ handoverId: shiftReport.id, action: `TASK_CREATED_${task.action}` }]
+              task.updates = [{
+                handoverId: shiftReport.id,
+                handoverDetail: `${currentStation.location} ${args.shift} Shift ${args.startTime.split(' ')[0]}` ,
+                action: `TASK_CREATED_${task.action}` }]
               /**Remove action field */
               delete task.action
               return task
@@ -178,7 +212,7 @@ const shiftReportResolver = {
         /**
          * Setting last shift report from the station as complete
          */
-        await ShiftReport.findOneAndUpdate({ flag:'MOST_RECENTLY_COMPLETED', station:args.station },{ flag: 'COMPLETE' })
+        await ShiftReport.findOneAndUpdate({ flag:'MOST_RECENTLY_COMPLETED', 'station.id':currentStation.id },{ flag: 'COMPLETE' })
 
         /**
          * Setting the current report as Most recent report
@@ -219,12 +253,12 @@ const shiftReportResolver = {
     getShiftReport: async(_root,args,context) => {
       const currentStation = context.currentStation
 
+      /**If station and flag is not set or id is not set */
       if (!(args.station && args.flag) && (!args.id || args.id === null) ){
         throw new UserInputError('Missing arguments')
       }
-
-
-      if (!args.id && !(currentStation && currentStation.id !== args.id )) {
+      /**If logged in as station then check if viewing station is same as requesting station */
+      if (!args.id && !(currentStation && currentStation.id === args.station )) {
         throw new AuthenticationError('Invalid authentication')
       }
 
@@ -235,9 +269,9 @@ const shiftReportResolver = {
           //throw new Error('Testing')
           shiftReport = await ShiftReport.findById(args.id)
         } else{
-          shiftReport = await ShiftReport.findOne({ ...args })
+          if(args.station )
+            shiftReport = await ShiftReport.findOne({ 'station.id':args.station, flag:args.flag })
         }
-
         return shiftReport
       }
       catch(err) {
@@ -273,7 +307,7 @@ const shiftReportResolver = {
         if(args.stations.length > 1 || args.stations[0] !== currentStation.id){
           throw new Error('Permission denied')
         }
-        searchFilters.station  = currentStation.id
+        searchFilters['station.id']  = currentStation.id
       }
 
       if(loggedInStaff){
@@ -281,9 +315,10 @@ const shiftReportResolver = {
         if(!(loggedInStaff.permission.admin || args.stations.some( station => !permittedStations.includes(station)))){
           throw new Error('Permission denied')
         }
-        searchFilters.station  = { $in:args.stations }
+        searchFilters['station.id']  = { $in:args.stations }
       }
 
+      console.log(searchFilters,args)
       const allReports = await ShiftReport.find({ ... searchFilters })
       return allReports
 

@@ -230,12 +230,13 @@ export const getFilterYear = (filterBy, number) => {
   const today = new Date()
 
   if(filterBy ==='week' ){
+    // eslint-disable-next-line no-console
     const currentWeek = getWeekNumber(today)
     if( number > currentWeek){
       year = today.getFullYear() -1
     }
     if(number <= currentWeek){
-      const weekStartDate = new Date((new Date()).setDate(today.getDate() - today.getDay()+1))
+      const weekStartDate = new Date((new Date(today)).setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6:1)))
       year = weekStartDate.getFullYear()
     }
 

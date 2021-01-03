@@ -115,14 +115,17 @@ const NewReportForm = ({ setActiveItem }) => {
 
         }
 
-        //if there is a task from a costumer who is not assigned to this station we add that arcraft & costumer to list
+        //if there is a task from a costumer who is not this station costumer list we add that arcraft & costumer to list
         if(task.aircraft){
+          /**Check if there is a match with station costumers */
           if(! _.find( station.costumers,_.matchesProperty('name',task.aircraft.costumer.name))){
 
-            if( ! _.find( costumerList,_.matchesProperty('name',task.aircraft.costumer.name))){
+            /**Check if the costumer name is already added to the extra costumer list */
+            const exisitingItem = _.find( costumerList,_.matchesProperty('name',task.aircraft.costumer.name))
+            if( !exisitingItem ){
               costumerList.push({ name:task.aircraft.costumer.name,aircrafts:[{ registration:task.aircraft.registration,id: task.aircraft.id }] })
             }else{
-              costumerList.aircrafts.push({ registration:task.aircraft.registration , id: task.aircraft.id })
+              exisitingItem.aircrafts.push({ registration:task.aircraft.registration , id: task.aircraft.id })
             }
           }
         }

@@ -9,6 +9,7 @@ const { v4: uuidv1 } = require('uuid')
 const _ = require('lodash')
 const { sendUserRegistrationEmail } = require('../mailer/sendUserRegistrationEmail')
 const bcrypt = require('bcrypt')
+const Station = require('../models/Station')
 const timeSheetResolver = {
   Mutation: {
     addToTimeSheet: async (_root,args,context) => {
@@ -50,11 +51,12 @@ const timeSheetResolver = {
         {
           const handover = await ShiftReport.findById(args.handover)
 
-          if(!handover.station.equals(args.station) || handover.shift !== args.shift ){
+          if(!handover.station.id.equals(args.station) || handover.shift !== args.shift ){
             throw new UserInputError('Provided station/shift does not match with shift report ')
           }
-
         }
+
+        const station = await Station.findById(args.id)
 
 
         const reportDateSplit = args.startTime.split(' ')[0].split('-')
@@ -65,7 +67,10 @@ const timeSheetResolver = {
           break:args.break,
           date: date,
           remarks: args.remarks,
-          station: args.station,
+          station: {
+            id: station.id,
+            location: station.location
+          },
           shift: args.shift,
           staff: args.staff
         }
@@ -78,7 +83,7 @@ const timeSheetResolver = {
 
       try{
         await timeSheet.save()
-        await TimeSheet.populate(timeSheet, [ { path:'shiftReport staff station' , populate: { path: 'station' } }] )
+        await TimeSheet.populate(timeSheet, [ { path:'shiftReport staff station' }] )
         return timeSheet
       }catch(err){
         throw new UserInputError(err.message)
@@ -279,7 +284,7 @@ const timeSheetResolver = {
       }
 
       const timesheets = await TimeSheet.find( searchFilters
-      ).populate({ path:'shiftReport staff station' , populate: { path: 'station' } })
+      ).populate({ path:'shiftReport staff station' })
 
       return timesheets
     },
@@ -352,7 +357,7 @@ const timeSheetResolver = {
       let timesheets
       try {
         timesheets = await TimeSheet.find( searchFilters
-        ).populate({ path:'staff station' , populate: { path: 'station' } }).lean()
+        ).populate({ path:'staff' ,select:['name','id'] }).lean()
 
       } catch (e) {
         throw new Error(e)
@@ -363,7 +368,6 @@ const timeSheetResolver = {
         if(!c.staff){
           return aggregatedTimesheet
         }
-
 
         let periodTitle = ''
 

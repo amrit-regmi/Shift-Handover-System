@@ -98,6 +98,7 @@ const timeSheetResolver = {
 
       let staff
 
+
       /**If Additinal action is set check if reset or new user */
       if(args.additionalAction) {
 
@@ -138,8 +139,8 @@ const timeSheetResolver = {
           staff = await Staff.findById(args.id)
 
           if(!staff ) throw new UserInputError('Cannot authenticate. check credentials')
-
-          if(args.username && staff.username !== args.username && !bcrypt.compare(args.password, staff.passwordHash )) throw new UserInputError('Cannot authenticate. Check username and password')
+          const authenticated = await bcrypt.compare(args.password, staff.passwordHash)
+          if(args.username && staff.username !== args.username && !authenticated) throw new UserInputError('Cannot authenticate. Check username and password')
           if(args.idCardCode && staff.idCardCode !== args.idCardCode ) throw new UserInputError('Cannot authenticate with this idcard ')
         }
       }
@@ -147,10 +148,12 @@ const timeSheetResolver = {
       /**If username is set check for username password combo */
       if(args.username){
         staff = await Staff.findOne({ username:args.username })
-        if(!staff)  throw new AuthenticationError ('Cannot find staff with provided credentials')
+        if(!staff) {
+          throw new AuthenticationError ('Cannot find staff with provided credentials')
+        }
+        const authenticated = await bcrypt.compare(args.password, staff.passwordHash)
 
-        if(staff && !bcrypt.compare(args.password, staff.passwordHash )  ){
-
+        if(staff && !authenticated  ){
           throw new AuthenticationError('Cannot find staff with provided credentials')
         }
       }

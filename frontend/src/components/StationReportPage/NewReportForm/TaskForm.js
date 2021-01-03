@@ -175,10 +175,7 @@ export const TaskForm = ({ label,onRemove,disabled,children,name,task }) => {
           setOpenDetail(true)
         }}> View Action History   <Icon  link name ="history"/> </Label>
 
-        {
-          openDetail &&
-          <TaskModal open= {openDetail} setOpen = {setOpenDetail} task= {task}> </TaskModal>
-        }
+        <TaskModal open= {openDetail} setOpen = {setOpenDetail} task= {task}> </TaskModal>
 
         <ErrorMessage name = {`${name}.action`} pointing='below' ></ErrorMessage>
         <div>

@@ -69,17 +69,25 @@ const shiftReportResolver = {
           /**Verify the jwt token  return the decoded information */
           try{
             const data = jwt.verify(staff.signOffKey, config.JWT_SECRET)
-            return {
+            const timesheetData = {
               shiftReport:shiftReport.id,
               staff: data.id,
-              station: currentStation.location ,
+              station: {
+                id: currentStation.id,
+                location: currentStation.location } ,
               startTime: data.startTime,
               endTime:data.endTime,
               break:data.break,
               date : date ,
-              remarks: {
+            }
+
+            if (data.remark) {
+              timesheetData.remarks = {
                 title:'Remark Added', text: data.remark , date: data.endTime ,by: staff.name
-              } }
+              }
+            }
+
+            return timesheetData
           } catch (err){
             throw new AuthenticationError(`${user} cannot be authenticated, please signoff again : ${err}`)
           }
@@ -185,7 +193,14 @@ const shiftReportResolver = {
             /**If task doesnot have id field means it is new task*/
             if(!task.id){
               const aircraft = await Aircraft.findById(task.aircraft)
-              task.aircraft = { id:aircraft.id,registration:aircraft.registration, costumer:aircraft.costumer }
+              task.aircraft = {
+                id:aircraft.id,
+                registration:aircraft.registration,
+                costumer: {
+                  id: aircraft.costumer.id,
+                  name: aircraft.costumer.name
+                }
+              }
               task.createdAt = args.endTime
               /*Setting action to Status*/
               if(task.action) {
@@ -318,7 +333,7 @@ const shiftReportResolver = {
         searchFilters['station.id']  = { $in:args.stations }
       }
 
-      console.log(searchFilters,args)
+      //console.log(searchFilters,args)
       const allReports = await ShiftReport.find({ ... searchFilters })
       return allReports
 

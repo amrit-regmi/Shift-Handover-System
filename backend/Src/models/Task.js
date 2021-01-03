@@ -11,6 +11,7 @@ const taskSchema = new mongoose.Schema({
       id:String,
       registration: String,
       costumer:{
+        id:String,
         name:String
       },
     },
@@ -51,8 +52,15 @@ const taskSchema = new mongoose.Schema({
 
 taskSchema.pre('save', async function() {
   const Aircraft = require ('./Aircraft')
-  const aircraft = await Aircraft.findOne({ _id:this.aircraft })
-  this.aircraft = { id:aircraft.id, registration: aircraft.registration, costumer: aircraft.costumer.name }
+  const aircraft = await Aircraft.findOne({ _id:this.aircraft.id })
+  this.aircraft = {
+    id:aircraft.id,
+    registration: aircraft.registration,
+    costumer: {
+      id: aircraft.costumer.id,
+      name: aircraft.costumer.name
+    } }
+
 })
 
 

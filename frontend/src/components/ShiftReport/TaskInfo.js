@@ -49,9 +49,9 @@ const TaskInfo = ({ task , handoverId }) => {
 
 
     </Segment>
-    { openDetail &&
-      <TaskModal open= {openDetail} setOpen = {setOpenDetail} task= {task} viewingOnHanodover = {handoverId}> </TaskModal>
-    }
+
+    <TaskModal open= {openDetail} setOpen = {setOpenDetail} task= {task} viewingOnHanodover = {handoverId}> </TaskModal>
+
   </>)
 }
 

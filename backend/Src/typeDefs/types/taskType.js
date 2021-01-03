@@ -11,7 +11,8 @@ const taskType = `
   }
 
   type Update {
-    handoverId: ShiftReport!
+    handoverId: String!
+    handoverDetail:String
     action: Action! 
     note: String
 

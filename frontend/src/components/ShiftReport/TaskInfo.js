@@ -5,7 +5,7 @@ import TaskModal from './TaskModal'
 
 const TaskInfo = ({ task , handoverId }) => {
   const [openDetail, setOpenDetail] = useState(false)
-  const updateOnthisHandover = _.find(task.updates, ['handoverId',{ 'id':handoverId }] )
+  const updateOnthisHandover = _.find(task.updates, { 'handoverId': handoverId } )
   return (<>
     <Segment >
       {

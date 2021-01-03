@@ -7,8 +7,13 @@ const taskSchema = new mongoose.Schema({
   },
 
   aircraft:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Aircraft',
+    type: {
+      id:String,
+      registration: String,
+      costumer:{
+        name:String
+      },
+    },
     required:  () => this.taskCategory === 'AIRCRAFT'
   },
   description: {
@@ -26,8 +31,12 @@ const taskSchema = new mongoose.Schema({
   createdBy: String,
   updates:[{
     handoverId: {
-      type:mongoose.Schema.Types.ObjectId,
-      ref:'ShiftReport'
+      type:String,
+      required:true
+    },
+    handoverDetail: {
+      type:String,
+      required:true
     },
     action:{
       type:String,
@@ -39,6 +48,13 @@ const taskSchema = new mongoose.Schema({
   }]
 
 })
+
+taskSchema.pre('save', async function() {
+  const Aircraft = require ('./Aircraft')
+  const aircraft = await Aircraft.findOne({ _id:this.aircraft })
+  this.aircraft = { id:aircraft.id, registration: aircraft.registration, costumer: aircraft.costumer.name }
+})
+
 
 taskSchema.post(['deleteOne','findOneAndDelete','remove'], { document:false, query: true },async function() {
   const id = this.getFilter()['_id']

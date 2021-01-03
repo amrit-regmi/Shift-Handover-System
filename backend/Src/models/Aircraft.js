@@ -8,8 +8,14 @@ const aircraftSchema = new mongoose.Schema({
     unique:true
   },
   costumer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref:'Costumer'
+    type: {
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref:'Costumer'
+      },
+      name: String
+    },
+    required:true
   },
   tasks:[{
     type: mongoose.Schema.Types.ObjectId,
@@ -20,13 +26,7 @@ aircraftSchema.plugin(uniqueValidator)
 
 /**After the Aircraft is Deleted */
 aircraftSchema.post(['deleteOne','findOneAndDelete'], async function() {
-
   const id = this.getFilter()['_id']
-  console.log(`Removed Aircraft ${id}`)
-
-  const Task = require('./Task')
-  await Task.deleteMany({ aircraft: id })
-
   const Costumer = require('./Costumer')
   await Costumer.findOneAndUpdate({ aircrafts: id }, { $pull:{ aircrafts:id } })
 })

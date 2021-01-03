@@ -14,6 +14,7 @@ import { useMutation } from '@apollo/client'
 import { SUBMIT_REPORT } from '../../../mutations/submitShiftReport'
 import { GET_SHIFT_REPORT } from '../../../queries/shiftReportQuery'
 import { NotificationContext } from '../../../contexts/NotificationContext'
+import { Persist } from 'formik-persist'
 
 const NewReportForm = ({ setActiveItem }) => {
   const context = useContext(Context)
@@ -35,7 +36,7 @@ const NewReportForm = ({ setActiveItem }) => {
   }
   const [initialFields,setInitialFields] = useState(init)
 
-  const [submitReport,{ loading }] = useMutation(SUBMIT_REPORT,{
+  const [submitReport,{ loading ,error }] = useMutation(SUBMIT_REPORT,{
     update(store,result) {
 
       const data = { getShiftReport: result.data.submitShiftReport }
@@ -58,6 +59,8 @@ const NewReportForm = ({ setActiveItem }) => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: error.message ,type: 'ERROR' } })
     }
   })
+
+  /**Function to get the shift name based on start time */
   const getShiftName = (startTime) => {
     const sdt = new Date(toDate(startTime))
     const shiftName = station.shifts.reduce((p,c) => {
@@ -119,13 +122,15 @@ const NewReportForm = ({ setActiveItem }) => {
         if(task.aircraft){
           /**Check if there is a match with station costumers */
           if(! _.find( station.costumers,_.matchesProperty('name',task.aircraft.costumer.name))){
-
             /**Check if the costumer name is already added to the extra costumer list */
             const exisitingItem = _.find( costumerList,_.matchesProperty('name',task.aircraft.costumer.name))
             if( !exisitingItem ){
               costumerList.push({ name:task.aircraft.costumer.name,aircrafts:[{ registration:task.aircraft.registration,id: task.aircraft.id }] })
             }else{
-              exisitingItem.aircrafts.push({ registration:task.aircraft.registration , id: task.aircraft.id })
+              const aircraftInList= exisitingItem.aircrafts.some(aircraft => aircraft.registration === task.aircraft.registration )
+              if(!aircraftInList){
+                exisitingItem.aircrafts.push({ registration:task.aircraft.registration , id: task.aircraft.id })
+              }
             }
           }
         }
@@ -160,6 +165,12 @@ const NewReportForm = ({ setActiveItem }) => {
           if(!difference) return null
           const reducedTask = difference.reduce((p,c) => p[c] = { ...p,[c]:task[c] },{})
           task = { id: task.id, ...reducedTask }
+
+          /**
+           * If form is loaded from persist then task is compred against so removing the nonessential fields */
+          delete(task.aircraft)
+          delete(task.updates)
+
         }
 
         return task
@@ -176,7 +187,6 @@ const NewReportForm = ({ setActiveItem }) => {
     const staffs = formdata.staffs.map((staff) => {return { signOffKey: staff.signOffKey, name:staff.name }})
 
     submitData = { ...submitData,tasks: updatedTasks, staffs: staffs ,shift: getShiftName(formdata.startTime) }
-
     return submitData
 
   }
@@ -217,7 +227,10 @@ const NewReportForm = ({ setActiveItem }) => {
 
         {({ values,handleSubmit,errors,touched,submitCount }) =>
           <>
-            <Form onSubmit = {handleSubmit}>
+            <Form onSubmit = {(e) => {
+              e.preventDefault()
+              handleSubmit()
+            }}>
               {/*Shift start end times*/}
               <Form.Group >
                 <DateInputField
@@ -250,9 +263,14 @@ const NewReportForm = ({ setActiveItem }) => {
               <Message
                 error
                 content={
-                  <Header as='h5'>There are some errors on the report <Header.Subheader>Please fix the errors before trying again</Header.Subheader></Header>
+                  <>
+                    <Header as='h5'>There are some errors on the report <Header.Subheader>Please fix the errors before trying again</Header.Subheader></Header>
+                    {error &&
+                  <p>{error.message}</p>}
+                  </>
+
                 }
-                visible ={(!_.isEmpty(errors) && submitCount > 0 ) === true}
+                visible ={(!_.isEmpty(errors) && submitCount > 0) || error}
               />
 
               <Message
@@ -260,11 +278,14 @@ const NewReportForm = ({ setActiveItem }) => {
                 content={
                   <Header as='h5'>Great! Everything seems to be fixed <Header.Subheader>Please, proceed to submit whenever ready</Header.Subheader></Header>
                 }
-                visible ={(_.isEmpty(errors) && submitCount > 0 ) === true}
+                visible ={(_.isEmpty(errors) && submitCount > 0 ) && !error}
               />
 
               <Segment disabled = {!_.isEmpty(errors) && submitCount > 0} color='blue' inverted tertiary clearing>
-                <Button floated='right' type="submit" primary> Submit Report </Button> </Segment>
+                <Button floated='right' type="submit" primary> Submit Report </Button>
+              </Segment>
+
+              <Persist name="submit-report" />
             </Form>
             <StaffAddModel setOpen= {setOpenAddStaffModel} open= {openAddStaffModel} shiftStartTime = {values.startTime} shiftEndTime={values.endTime}></StaffAddModel></>}
 

@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^7.2.1",
     "apollo-link-context": "^1.0.20",
     "formik": "^2.1.5",
+    "formik-persist": "^1.1.0",
     "graphql": "^15.3.0",
     "lodash": "^4.17.20",
     "react": "^16.13.1",

@@ -2,7 +2,7 @@ import React,{ useState, useContext, useReducer, useEffect } from 'react'
 import { useQuery } from '@apollo/client'
 import { GET_SHIFT_REPORT } from '../../queries/shiftReportQuery'
 import { useParams, useHistory } from 'react-router-dom'
-import { Loader,Image,Segment, Header } from 'semantic-ui-react'
+import { Loader } from 'semantic-ui-react'
 import MenuBar from './MenuBar'
 import ShiftReport from '../ShiftReport'
 import Context from './Context'
@@ -75,10 +75,6 @@ const StationReportPage = () => {
   return (
     <>
       <Context.Provider value={{ state, dispatch }}>
-        <Segment  basic>
-          <Header textAlign ="right" color ="blue" floated="right">Shift Reporting System <br/><span><h5> Station: {dataStation && dataStation.getStation.location} </h5></span></Header>
-          <Image src='\LogoBig.png' size="medium" />
-        </Segment>
 
         <MenuBar activeItem= {activeItem} setActiveItem={setActiveItem}/>
 

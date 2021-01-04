@@ -66,13 +66,13 @@ const stationResolver = {
   },
   Station: {
     staffList: async root => {
-      const staffList =  Staff.find( { 'lastActive.station':  ObjectId(root.id) , 'lastActive.activeAt': { $gte: new Date ((new Date().getTime() - (24 * 60 * 60 * 1000))) }  } )
+      const staffList =  Staff.find( { 'lastActive.station.id':  ObjectId(root.id) , 'lastActive.activeAt': { $gte: new Date ((new Date().getTime() - (24 * 60 * 60 * 1000))) }  } )
       return staffList
     },
 
     activeStaffs: async root => {
       /**Counts all the staff who are active within last 24 hours for given station */
-      const count =  await Staff.collection.countDocuments( { 'lastActive.station':  ObjectId(root.id) , 'lastActive.activeAt': { $gte: new Date ((new Date().getTime() - (24 * 60 * 60 * 1000))) }  } )
+      const count =  await Staff.collection.countDocuments( { 'lastActive.station.id':  ObjectId(root.id) , 'lastActive.activeAt': { $gte: new Date ((new Date().getTime() - (24 * 60 * 60 * 1000))) }  } )
       return count
     }
 

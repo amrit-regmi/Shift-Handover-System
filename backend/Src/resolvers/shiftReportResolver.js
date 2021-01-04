@@ -105,7 +105,11 @@ const shiftReportResolver = {
 
           const activeAtUTC = new Date (Date.UTC(dateSplit[2],dateSplit[1]-1,dateSplit[0],timeSplit[0],timeSplit[1]))
 
-          await Staff.findByIdAndUpdate(entry.staff, { lastActive: { station: entry.station , activeAt:  activeAtUTC } } )
+          await Staff.findByIdAndUpdate(entry.staff, {
+            lastActive: { station: {
+              id: currentStation.id,
+              location: currentStation.location } ,
+            activeAt:  activeAtUTC } } )
 
 
         })

@@ -19,8 +19,9 @@ const staffSchema = new mongoose.Schema({
 
   lastActive:{
     station:{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Station'
+      id:{ type: mongoose.Schema.Types.ObjectId,
+        ref: 'Station' },
+      location:String
     },
     activeAt: Date
   },

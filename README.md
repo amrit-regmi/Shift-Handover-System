@@ -154,5 +154,7 @@ Admin Pages
 ||| Studied and implemented mongoose pre/post hook in some modals
 ||| After new year some some components with date got broken, traced and fixeed those bugs
 ||| All reports page implemted for administrator
-||| Various other bug fixes
+||| Various other bug fixes |
+
+|03/04-01-2021 | 8 | Testing / BugFixes
 

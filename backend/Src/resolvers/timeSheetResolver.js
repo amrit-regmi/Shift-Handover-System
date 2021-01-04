@@ -51,12 +51,14 @@ const timeSheetResolver = {
         {
           const handover = await ShiftReport.findById(args.handover)
 
-          if(!handover.station.id.equals(args.station) || handover.shift !== args.shift ){
+          console.log(handover)
+
+          if(handover.station.id !== args.station || handover.shift !== args.shift ){
             throw new UserInputError('Provided station/shift does not match with shift report ')
           }
         }
 
-        const station = await Station.findById(args.id)
+        const station = await Station.findById(args.station)
 
 
         const reportDateSplit = args.startTime.split(' ')[0].split('-')
@@ -314,7 +316,7 @@ const timeSheetResolver = {
       }
 
       if(args.period === 'week' || args.period === 'month') {
-        if(!(args.number && args.year)){
+        if(!(!isNaN(args.number) && args.year)){
           throw new UserInputError('Must provide week/month number and year')
         }
 
@@ -328,6 +330,7 @@ const timeSheetResolver = {
 
         if(args.period === 'month'){
           const to = getLastDateFromMonth (args.number,args.year)
+
           searchFilters.date = {
             $gte: new Date(Date.UTC( args.year, args.number, 1)),
             $lte: new Date(Date.UTC( to.getFullYear(), to.getMonth(), to.getDate(), 23, 59,59))

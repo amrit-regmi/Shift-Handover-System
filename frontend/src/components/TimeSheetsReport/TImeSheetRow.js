@@ -110,7 +110,10 @@ const TimeSheetRow = ({ timeSheet, rowSpan ,openReport ,index ,date ,staffId }) 
 
               const approved = response.data.approveTimeSheet.status
               const modify = _.cloneDeep(existingTimeSheetRefs)
-              modify[period][timeSheet.staff.id].itemsPending = approved==='APPROVED'? modify[period][timeSheet.staff.id].itemsPending-1: (modify[period][timeSheet.staff.id].itemsPending)+1
+              if(modify.perid){
+                modify[period][timeSheet.staff.id].itemsPending = approved==='APPROVED'? modify[period][timeSheet.staff.id].itemsPending-1: (modify[period][timeSheet.staff.id].itemsPending)+1
+              }
+
 
 
               return modify

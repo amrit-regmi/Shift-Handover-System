@@ -10,7 +10,7 @@ const TimeSheet = ({ staffId,setStaffName, period ,selected ,selectedYear ,times
   const staff = JSON.parse( sessionStorage.getItem('staffKey'))
   const [selectBy,setSelectBy] = useState (period || 'week')
   const today = new Date()
-  const [number,setNumber] = useState (selected || getWeekNumber(today))
+  const [number,setNumber] = useState (!isNaN(selected)?selected:getWeekNumber(today))
 
   const queryParams = { staff: staffId || staff.id , filterDuration: selectBy  , number:number, year: getFilterYear(selectBy,number) }
 

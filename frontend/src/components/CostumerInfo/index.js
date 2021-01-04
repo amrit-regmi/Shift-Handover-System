@@ -37,10 +37,10 @@ const CostumerInfo = ({ costumerData ,costumerId }) => {
 
     },
 
-    onerror: (err) => {
+    onError: (err) => {
       dispatch({ type:'ADD_NOTIFICATION',  payload:{ content: <>{`Error, failed to delete  costumer ${data.name}`}<br/> {err.message}</> ,type: 'ERROR' } })
 
-    }
+    },
   })
   const [removeContact] = useMutation( REMOVE_CONTACT )
   const [removeAircraftMut] = useMutation( REMOVE_AIRCRFAT )
@@ -133,17 +133,20 @@ const CostumerInfo = ({ costumerData ,costumerId }) => {
 
   },[costumerData, fetchedData, setData])
 
-  if(!data){
-    return null
-  }
 
   if(costumerLoading){
-    return <Segment basic ><Loader active> Adding New Costumer</Loader></Segment>
+    return <Loader active size='medium'>  Fetching Costumer Info...</Loader>
   }
 
   if(costumerError){
     return <Header as='h4'>Something went wrong</Header>
   }
+
+  if(!data){
+    return null
+  }
+
+
 
   return (
     <>

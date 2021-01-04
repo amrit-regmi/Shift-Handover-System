@@ -335,7 +335,7 @@ const  TimeSheetEditModel = (props) => {
 
                 < DateInputField
                   label = 'End Time'
-                  readOnly = {!props.add && !(props.status === 'APPROVED' || !selfHasPermissionToAddEdit(props.station))}
+                  readOnly = {!props.add && (props.status === 'APPROVED' || !selfHasPermissionToAddEdit(props.station))}
                   dateTimeFormat = 'DD-MM-YYYY HH:mm'
                   name='endTime'
                   maxDate = {

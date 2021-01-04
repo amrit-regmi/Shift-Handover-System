@@ -51,7 +51,7 @@ const timeSheetResolver = {
         {
           const handover = await ShiftReport.findById(args.handover)
 
-          console.log(handover)
+          //console.log(handover)
 
           if(handover.station.id !== args.station || handover.shift !== args.shift ){
             throw new UserInputError('Provided station/shift does not match with shift report ')
@@ -282,7 +282,7 @@ const timeSheetResolver = {
 
       /**If logged staff does not have admin rights or is not requested user then only return the stations for which he has right to view/sign  */
       if(!(staff.permission.admin || staff.id.toString() === args.staff) && (staff.permission.timesheet.sign.length || staff.permission.timesheet.view.length)){
-        searchFilters.station = { $in : [...staff.permission.timesheet.view,...staff.permission.timesheet.sign] }
+        searchFilters['station.id'] = { $in : [...staff.permission.timesheet.view,...staff.permission.timesheet.sign] }
       }
 
       const timesheets = await TimeSheet.find( searchFilters
@@ -341,23 +341,25 @@ const timeSheetResolver = {
       const permittedStations =[...new Set( [...staff.permission.timesheet.view,...staff.permission.timesheet.sign])].map(station => station.toString())
       /**If logged staff does not have admin rights or is not requested user then only return the stations for which he has right to view/sign  */
       if(!(staff.permission.admin || staff.id === args.staff[0] ) ){ //If its a request by staff from personal page than args.staff will have only one item
-        searchFilters.station = { $in : permittedStations }
+        searchFilters['station.id'] = { $in : permittedStations }
 
       }
 
 
 
       if(args.stations && args.stations.length > 0 ) {
+
         const notPermitted = args.stations.find(station => !permittedStations.includes(station))
         /**Only allow permitted stations to be searched */
         if(notPermitted && (!(staff.permission.admin || staff.id === args.staff))){
           throw new Error (`You do not have rights to view timesheet for ${notPermitted} `)
         }
 
-        searchFilters.station = { $in : args.stations }
+        searchFilters['station.id'] = { $in : args.stations }
 
       }
       let timesheets
+
       try {
         timesheets = await TimeSheet.find( searchFilters
         ).populate({ path:'staff' ,select:['name','id'] }).lean()

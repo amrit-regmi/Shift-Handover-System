@@ -330,8 +330,10 @@ const shiftReportResolver = {
       }
 
       if(loggedInStaff){
+
         const permittedStations =loggedInStaff.permission.station.edit.map(station => station.toString())
-        if(!(loggedInStaff.permission.admin || args.stations.some( station => !permittedStations.includes(station)))){
+
+        if(!(loggedInStaff.permission.admin || !args.stations.some( station => !permittedStations.includes(station)))){
           throw new Error('Permission denied')
         }
         searchFilters['station.id']  = { $in:args.stations }

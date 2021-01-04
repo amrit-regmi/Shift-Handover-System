@@ -344,8 +344,11 @@ const shiftReportResolver = {
     },
 
     getShiftReportByShift: async(_root,args,_context) => {
-      const report = await ShiftReport.findOne(args)
-
+      const report = await ShiftReport.findOne({
+        'station.id':args.station,
+        shift: args.shift,
+        date: args.date
+      })
       return report
 
     }

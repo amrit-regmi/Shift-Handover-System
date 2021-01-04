@@ -38,7 +38,6 @@ const NewReportForm = ({ setActiveItem }) => {
 
   const [submitReport,{ loading ,error }] = useMutation(SUBMIT_REPORT,{
     update(store,result) {
-
       const data = { getShiftReport: result.data.submitShiftReport }
       store.writeQuery(
         { query: GET_SHIFT_REPORT ,
@@ -52,6 +51,7 @@ const NewReportForm = ({ setActiveItem }) => {
     },
 
     onCompleted: () => {
+      localStorage.clear(reportData.id) /**Clearing persisted form */
       setActiveItem('lastShiftReport')
     },
 
@@ -187,6 +187,7 @@ const NewReportForm = ({ setActiveItem }) => {
     const staffs = formdata.staffs.map((staff) => {return { signOffKey: staff.signOffKey, name:staff.name }})
 
     submitData = { ...submitData,tasks: updatedTasks, staffs: staffs ,shift: getShiftName(formdata.startTime) }
+
     return submitData
 
   }
@@ -285,7 +286,7 @@ const NewReportForm = ({ setActiveItem }) => {
                 <Button floated='right' type="submit" primary> Submit Report </Button>
               </Segment>
 
-              <Persist name="submit-report" />
+              <Persist name={reportData.id} />
             </Form>
             <StaffAddModel setOpen= {setOpenAddStaffModel} open= {openAddStaffModel} shiftStartTime = {values.startTime} shiftEndTime={values.endTime}></StaffAddModel></>}
 

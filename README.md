@@ -1,4 +1,4 @@
-This project is Shift Handover System for the Aircraft Maintenece Organisation. built using ReactJs, graphql and express
+This project is Shift Handover System for the Aircraft Maintenece Organisation built using ReactJs, graphql and express
 -Features to be Included:
 1. Support for Multiple Line station and Multiple Customers
     - Authirized User can add remove Customers/ Station -Implemented
